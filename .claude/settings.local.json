@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__context7__resolve-library-id",
+      "mcp__context7__get-library-docs",
+      "Bash(mkdir:*)",
+      "Bash(go mod init:*)",
+      "Bash(go get:*)",
+      "Bash(go build:*)",
+      "Bash(chmod:*)",
+      "Bash(./scripts/build.sh:*)",
+      "Bash(GROQ_API_KEY=test_key LOG_LEVEL=debug timeout 5s go run ./cmd/proxy)",
+      "Bash(true)",
+      "Bash(ls:*)",
+      "WebFetch(domain:openrouter.ai)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
+    ],
+    "deny": []
+  }
+}
