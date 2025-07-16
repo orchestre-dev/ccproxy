@@ -1,30 +1,37 @@
-# CC-PRoxy Claude Code Proxy Model Server
+# CCProxy - Multi-Provider AI Proxy Server
 
-A production-grade Golang proxy server that enables the use of Groq's Kimi K2 model with Claude Code by translating between Anthropic and Groq API formats.
+A production-grade Golang proxy server that enables the use of multiple AI providers (Groq, OpenRouter, OpenAI, and more) with Claude Code by translating between Anthropic and provider-specific API formats.
 
 ## 🌟 Features
 
-- **API Translation**: Seamless conversion between Anthropic and OpenAI/Groq API formats
+- **Multi-Provider Support**: Switch between Groq, OpenRouter, OpenAI, and other providers
+- **API Translation**: Seamless conversion between Anthropic and OpenAI-compatible API formats
 - **Tool Support**: Full support for Anthropic tool calling and tool results
 - **Production Ready**: Built for high performance and reliability
 - **Cross Platform**: Binaries available for Linux, macOS, and Windows (AMD64/ARM64)
 - **Docker Support**: Container-ready with multi-stage builds
 - **Comprehensive Logging**: Structured logging with configurable levels
 - **Graceful Shutdown**: Proper signal handling and connection draining
-- **Health Checks**: Built-in health monitoring endpoints
+- **Health Checks**: Built-in health monitoring and provider status endpoints
 
 ## 🚀 Quick Start
 
 ### Option 1: Download Pre-built Binary
 
-1. Download the latest binary for your platform from the [releases page](https://github.com/your-repo/cc-kimi-go/releases)
-2. Set your Groq API key:
+1. Download the latest binary for your platform from the [releases page](https://github.com/your-repo/ccproxy/releases)
+2. Set your provider and API key:
    ```bash
+   # For Groq
+   export PROVIDER=groq
    export GROQ_API_KEY=your_groq_api_key_here
+   
+   # Or for OpenRouter
+   export PROVIDER=openrouter
+   export OPENROUTER_API_KEY=your_openrouter_api_key_here
    ```
 3. Run the proxy:
    ```bash
-   ./cc-kimi-<platform>
+   ./ccproxy-<platform>
    ```
 
 ### Option 2: Build from Source
@@ -32,14 +39,14 @@ A production-grade Golang proxy server that enables the use of Groq's Kimi K2 mo
 1. **Prerequisites**: Go 1.21 or later
 2. **Clone and build**:
    ```bash
-   git clone https://github.com/your-repo/cc-kimi-go.git
-   cd cc-kimi-go
+   git clone https://github.com/your-repo/ccproxy.git
+   cd ccproxy
    go build ./cmd/proxy
    ```
 3. **Set up environment**:
    ```bash
    cp .env.example .env
-   # Edit .env and set your GROQ_API_KEY
+   # Edit .env and set your PROVIDER and API key
    ```
 4. **Run the proxy**:
    ```bash
@@ -50,8 +57,9 @@ A production-grade Golang proxy server that enables the use of Groq's Kimi K2 mo
 
 1. **Using Docker Compose** (recommended):
    ```bash
-   # Set your API key
-   echo "GROQ_API_KEY=your_groq_api_key_here" > .env
+   # Set your provider and API key
+   echo "PROVIDER=groq" > .env
+   echo "GROQ_API_KEY=your_groq_api_key_here" >> .env
    
    # Start the service
    docker-compose up -d
@@ -59,25 +67,42 @@ A production-grade Golang proxy server that enables the use of Groq's Kimi K2 mo
 
 2. **Using Docker directly**:
    ```bash
-   docker build -f docker/Dockerfile -t cc-kimi .
-   docker run -p 7187:7187 -e GROQ_API_KEY=your_api_key cc-kimi
+   docker build -f docker/Dockerfile -t ccproxy .
+   docker run -p 7187:7187 -e PROVIDER=groq -e GROQ_API_KEY=your_api_key ccproxy
    ```
 
 ## 🔧 Configuration
 
-### Environment Variables
+### Core Environment Variables
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `GROQ_API_KEY` | *(required)* | Your Groq API key |
+| `PROVIDER` | *(required)* | Provider to use: `groq`, `openrouter` |
 | `SERVER_HOST` | `0.0.0.0` | Server bind address |
 | `SERVER_PORT` | `7187` | Server port |
 | `SERVER_ENVIRONMENT` | `development` | Environment mode |
+| `LOG_LEVEL` | `info` | Log level (debug, info, warn, error) |
+| `LOG_FORMAT` | `json` | Log format (json, text) |
+
+### Provider-Specific Variables
+
+#### Groq Provider
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `GROQ_API_KEY` | *(required)* | Your Groq API key |
 | `GROQ_BASE_URL` | `https://api.groq.com/openai/v1` | Groq API base URL |
 | `GROQ_MODEL` | `moonshotai/kimi-k2-instruct` | Model to use |
 | `GROQ_MAX_TOKENS` | `16384` | Maximum tokens per request |
-| `LOG_LEVEL` | `info` | Log level (debug, info, warn, error) |
-| `LOG_FORMAT` | `json` | Log format (json, text) |
+
+#### OpenRouter Provider
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `OPENROUTER_API_KEY` | *(required)* | Your OpenRouter API key |
+| `OPENROUTER_BASE_URL` | `https://openrouter.ai/api/v1` | OpenRouter API base URL |
+| `OPENROUTER_MODEL` | `openai/gpt-4o` | Model to use |
+| `OPENROUTER_MAX_TOKENS` | `4096` | Maximum tokens per request |
+| `OPENROUTER_SITE_URL` | | Your site URL (for analytics) |
+| `OPENROUTER_SITE_NAME` | | Your site name (for analytics) |
 
 ### Configuration File
 
@@ -85,15 +110,24 @@ You can also use a YAML configuration file:
 
 ```yaml
 # config.yaml
+provider: "groq"  # or "openrouter"
+
 server:
   host: "0.0.0.0"
   port: "7187"
   environment: "production"
 
 groq:
-  api_key: "your_api_key_here"
+  api_key: "your_groq_api_key_here"
   model: "moonshotai/kimi-k2-instruct"
   max_tokens: 16384
+
+openrouter:
+  api_key: "your_openrouter_api_key_here"
+  model: "openai/gpt-4o"
+  max_tokens: 4096
+  site_url: "https://your-site.com"
+  site_name: "Your App Name"
 
 logging:
   level: "info"
@@ -104,7 +138,12 @@ logging:
 
 1. **Start the proxy server**:
    ```bash
-   ./cc-kimi-<platform>
+   # For Groq
+   PROVIDER=groq GROQ_API_KEY=your_key ./ccproxy-<platform>
+   
+   # For OpenRouter  
+   PROVIDER=openrouter OPENROUTER_API_KEY=your_key ./ccproxy-<platform>
+   
    # Or: docker-compose up -d
    ```
 
@@ -119,7 +158,49 @@ logging:
    claude
    ```
 
-Claude Code will now use Groq's Kimi K2 model through the proxy!
+Claude Code will now use your selected AI provider through the proxy!
+
+## 🏆 Provider Comparison
+
+| Provider | Strengths | Best For | Popular Models |
+|----------|-----------|----------|----------------|
+| **Groq** | Ultra-fast inference, cost-effective | Real-time applications, development | `moonshotai/kimi-k2-instruct`, `llama-3.1-405b-reasoning` |
+| **OpenRouter** | Huge model selection, competitive pricing | Access to latest models, experimentation | `openai/gpt-4o`, `anthropic/claude-3-sonnet`, `google/gemini-2.5-pro-preview` |
+
+### Model Examples by Provider
+
+#### Groq Models
+```bash
+# Kimi K2 (default) - Chinese language optimized
+GROQ_MODEL=moonshotai/kimi-k2-instruct
+
+# Llama 3.1 405B - Most capable reasoning
+GROQ_MODEL=llama-3.1-405b-reasoning
+
+# Llama 3.1 70B - Balanced performance
+GROQ_MODEL=llama-3.1-70b-versatile
+
+# Mixtral 8x7B - Fast and efficient
+GROQ_MODEL=mixtral-8x7b-32768
+```
+
+#### OpenRouter Models
+```bash
+# GPT-4o (default) - Latest OpenAI
+OPENROUTER_MODEL=openai/gpt-4o
+
+# Claude 3 Sonnet - Anthropic's balanced model
+OPENROUTER_MODEL=anthropic/claude-3-sonnet
+
+# Gemini 2.5 Pro - Google's latest
+OPENROUTER_MODEL=google/gemini-2.5-pro-preview
+
+# Llama 3.1 405B - Meta's largest
+OPENROUTER_MODEL=meta-llama/llama-3.1-405b-instruct
+
+# Mixtral 8x7B - Mistral AI
+OPENROUTER_MODEL=mistralai/mixtral-8x7b-instruct
+```
 
 ## 📊 API Endpoints
 
@@ -127,8 +208,9 @@ Claude Code will now use Groq's Kimi K2 model through the proxy!
 - `POST /v1/messages` - Anthropic-compatible messages endpoint
 
 ### Health & Monitoring
-- `GET /` - Basic health check
+- `GET /` - Basic health check with current provider info
 - `GET /health` - Detailed health information
+- `GET /status` - Current provider status and configuration
 
 ### Example Request
 
@@ -187,25 +269,30 @@ air
 
 ### Common Issues
 
-1. **"GROQ_API_KEY environment variable is required"**
-   - Ensure you've set your Groq API key
-   - Get your key from [Groq Console](https://console.groq.com/)
+1. **"PROVIDER environment variable is required"**
+   - Ensure you've set the PROVIDER variable to `groq` or `openrouter`
+   - Set the corresponding API key for your chosen provider
 
-2. **Connection refused on localhost:7187**
+2. **"API_KEY environment variable is required"**
+   - For Groq: Set `GROQ_API_KEY` - Get your key from [Groq Console](https://console.groq.com/)
+   - For OpenRouter: Set `OPENROUTER_API_KEY` - Get your key from [OpenRouter](https://openrouter.ai/)
+
+3. **Connection refused on localhost:7187**
    - Check if the proxy is running: `curl http://localhost:7187/`
    - Verify the port isn't in use: `lsof -i :7187`
 
-3. **"Failed to call Groq API"**
-   - Verify your API key is valid
+4. **"Failed to call provider API"**
+   - Verify your API key is valid for the selected provider
    - Check internet connectivity
    - Review proxy logs for detailed error messages
+   - Ensure the model name is supported by your provider
 
 ### Debug Mode
 
 Enable debug logging for troubleshooting:
 ```bash
 export LOG_LEVEL=debug
-./cc-kimi-<platform>
+./ccproxy-<platform>
 ```
 
 ### Health Check
@@ -239,11 +326,12 @@ For production deployments:
 
 ### Best Practices
 
-- Keep your Groq API key secure and rotate regularly
+- Keep your API keys secure and rotate regularly
 - Use HTTPS in production environments
 - Set up proper firewall rules
 - Monitor for unusual API usage patterns
 - Use environment variables for sensitive configuration
+- Choose the right provider for your use case (cost, speed, model availability)
 
 ### Production Deployment
 
@@ -265,20 +353,21 @@ export LOG_LEVEL=warn
 
 ### Systemd Service
 
-Create `/etc/systemd/system/cc-kimi.service`:
+Create `/etc/systemd/system/ccproxy.service`:
 
 ```ini
 [Unit]
-Description=CC-Kimi Golang Proxy Server
+Description=CCProxy Multi-Provider AI Proxy Server
 After=network.target
 
 [Service]
 Type=simple
-User=cc-kimi
-Group=cc-kimi
-ExecStart=/usr/local/bin/cc-kimi
+User=ccproxy
+Group=ccproxy
+ExecStart=/usr/local/bin/ccproxy
 Restart=always
 RestartSec=5
+Environment=PROVIDER=groq
 Environment=GROQ_API_KEY=your_api_key_here
 Environment=LOG_LEVEL=info
 Environment=SERVER_ENVIRONMENT=production
@@ -293,27 +382,29 @@ WantedBy=multi-user.target
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: cc-kimi
+  name: ccproxy
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: cc-kimi
+      app: ccproxy
   template:
     metadata:
       labels:
-        app: cc-kimi
+        app: ccproxy
     spec:
       containers:
-      - name: cc-kimi
-        image: cc-kimi:latest
+      - name: ccproxy
+        image: ccproxy:latest
         ports:
         - containerPort: 7187
         env:
+        - name: PROVIDER
+          value: "groq"
         - name: GROQ_API_KEY
           valueFrom:
             secretKeyRef:
-              name: cc-kimi-secrets
+              name: ccproxy-secrets
               key: groq-api-key
         - name: SERVER_ENVIRONMENT
           value: "production"
@@ -337,7 +428,7 @@ You can run both versions simultaneously for testing:
 python proxy.py
 
 # Golang version on port 7188
-SERVER_PORT=7188 ./cc-kimi-golang
+SERVER_PORT=7188 ./ccproxy
 ```
 
 ## 📋 Comparison with Original
@@ -365,8 +456,8 @@ SERVER_PORT=7188 ./cc-kimi-golang
 
 ```bash
 # Clone the repo
-git clone https://github.com/your-repo/cc-kimi-go.git
-cd cc-kimi-go
+git clone https://github.com/your-repo/ccproxy.git
+cd ccproxy
 
 # Install dependencies
 go mod download
@@ -386,13 +477,13 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 - Inspired by [claude-code-proxy](https://github.com/1rgs/claude-code-proxy)
 - Built with [Gin Web Framework](https://github.com/gin-gonic/gin)
-- Powered by [Groq](https://groq.com/) and their amazing inference speed
+- Supports multiple providers: [Groq](https://groq.com/), [OpenRouter](https://openrouter.ai/), and more
 
 ## 📞 Support
 
 - 📖 [Documentation](./docs/)
-- 🐛 [Issue Tracker](https://github.com/your-repo/cc-kimi-go/issues)
-- 💬 [Discussions](https://github.com/your-repo/cc-kimi-go/discussions)
+- 🐛 [Issue Tracker](https://github.com/your-repo/ccproxy/issues)
+- 💬 [Discussions](https://github.com/your-repo/ccproxy/discussions)
 
 ---
 
