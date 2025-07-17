@@ -89,7 +89,6 @@ linters:
     - gocyclo
     - godox
     - gofmt
-    - gofumpt
     - goheader
     - goimports
     - mnd
