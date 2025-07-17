@@ -70,3 +70,8 @@ tmp/
 .claude/
 .temp/
 node_modules/
+
+# VitePress build artifacts
+docs/.vitepress/cache/
+docs/.vitepress/dist/
+docs/bun.lock
