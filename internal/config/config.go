@@ -9,10 +9,10 @@ import (
 
 // Config holds all configuration for the application
 type Config struct {
-	Provider  string         `mapstructure:"provider"`
-	Server    ServerConfig   `mapstructure:"server"`
+	Provider  string          `mapstructure:"provider"`
+	Server    ServerConfig    `mapstructure:"server"`
 	Providers ProvidersConfig `mapstructure:"providers"`
-	Logging   LoggingConfig  `mapstructure:"logging"`
+	Logging   LoggingConfig   `mapstructure:"logging"`
 }
 
 // ServerConfig holds server-related configuration
@@ -29,6 +29,11 @@ type ServerConfig struct {
 type ProvidersConfig struct {
 	Groq       GroqConfig       `mapstructure:"groq"`
 	OpenRouter OpenRouterConfig `mapstructure:"openrouter"`
+	OpenAI     OpenAIConfig     `mapstructure:"openai"`
+	XAI        XAIConfig        `mapstructure:"xai"`
+	Gemini     GeminiConfig     `mapstructure:"gemini"`
+	Mistral    MistralConfig    `mapstructure:"mistral"`
+	Ollama     OllamaConfig     `mapstructure:"ollama"`
 }
 
 // GroqConfig holds Groq API configuration
@@ -49,6 +54,51 @@ type OpenRouterConfig struct {
 	Timeout   time.Duration `mapstructure:"timeout"`
 	SiteURL   string        `mapstructure:"site_url"`
 	SiteName  string        `mapstructure:"site_name"`
+}
+
+// OpenAIConfig holds OpenAI API configuration
+type OpenAIConfig struct {
+	APIKey    string        `mapstructure:"api_key"`
+	BaseURL   string        `mapstructure:"base_url"`
+	Model     string        `mapstructure:"model"`
+	MaxTokens int           `mapstructure:"max_tokens"`
+	Timeout   time.Duration `mapstructure:"timeout"`
+}
+
+// XAIConfig holds XAI (Grok) API configuration
+type XAIConfig struct {
+	APIKey    string        `mapstructure:"api_key"`
+	BaseURL   string        `mapstructure:"base_url"`
+	Model     string        `mapstructure:"model"`
+	MaxTokens int           `mapstructure:"max_tokens"`
+	Timeout   time.Duration `mapstructure:"timeout"`
+}
+
+// GeminiConfig holds Google Gemini API configuration
+type GeminiConfig struct {
+	APIKey    string        `mapstructure:"api_key"`
+	BaseURL   string        `mapstructure:"base_url"`
+	Model     string        `mapstructure:"model"`
+	MaxTokens int           `mapstructure:"max_tokens"`
+	Timeout   time.Duration `mapstructure:"timeout"`
+}
+
+// MistralConfig holds Mistral AI API configuration
+type MistralConfig struct {
+	APIKey    string        `mapstructure:"api_key"`
+	BaseURL   string        `mapstructure:"base_url"`
+	Model     string        `mapstructure:"model"`
+	MaxTokens int           `mapstructure:"max_tokens"`
+	Timeout   time.Duration `mapstructure:"timeout"`
+}
+
+// OllamaConfig holds Ollama API configuration
+type OllamaConfig struct {
+	APIKey    string        `mapstructure:"api_key"`
+	BaseURL   string        `mapstructure:"base_url"`
+	Model     string        `mapstructure:"model"`
+	MaxTokens int           `mapstructure:"max_tokens"`
+	Timeout   time.Duration `mapstructure:"timeout"`
 }
 
 // LoggingConfig holds logging configuration
@@ -111,6 +161,37 @@ func setDefaults() {
 	viper.SetDefault("providers.openrouter.max_tokens", 4096)
 	viper.SetDefault("providers.openrouter.timeout", "60s")
 
+	// OpenAI defaults
+	viper.SetDefault("providers.openai.base_url", "https://api.openai.com/v1")
+	viper.SetDefault("providers.openai.model", "gpt-4o")
+	viper.SetDefault("providers.openai.max_tokens", 4096)
+	viper.SetDefault("providers.openai.timeout", "60s")
+
+	// XAI defaults
+	viper.SetDefault("providers.xai.base_url", "https://api.x.ai/v1")
+	viper.SetDefault("providers.xai.model", "grok-beta")
+	viper.SetDefault("providers.xai.max_tokens", 128000)
+	viper.SetDefault("providers.xai.timeout", "60s")
+
+	// Gemini defaults
+	viper.SetDefault("providers.gemini.base_url", "https://generativelanguage.googleapis.com")
+	viper.SetDefault("providers.gemini.model", "gemini-2.0-flash")
+	viper.SetDefault("providers.gemini.max_tokens", 32768)
+	viper.SetDefault("providers.gemini.timeout", "60s")
+
+	// Mistral defaults
+	viper.SetDefault("providers.mistral.base_url", "https://api.mistral.ai/v1")
+	viper.SetDefault("providers.mistral.model", "mistral-large-latest")
+	viper.SetDefault("providers.mistral.max_tokens", 32768)
+	viper.SetDefault("providers.mistral.timeout", "60s")
+
+	// Ollama defaults
+	viper.SetDefault("providers.ollama.base_url", "http://localhost:11434")
+	viper.SetDefault("providers.ollama.model", "llama3.2")
+	viper.SetDefault("providers.ollama.max_tokens", 4096)
+	viper.SetDefault("providers.ollama.timeout", "120s")
+	viper.SetDefault("providers.ollama.api_key", "ollama")
+
 	// Logging defaults
 	viper.SetDefault("logging.level", "info")
 	viper.SetDefault("logging.format", "json")
@@ -142,6 +223,36 @@ func bindEnvVars() {
 	_ = viper.BindEnv("providers.openrouter.site_url", "OPENROUTER_SITE_URL")
 	_ = viper.BindEnv("providers.openrouter.site_name", "OPENROUTER_SITE_NAME")
 
+	// OpenAI environment variables
+	_ = viper.BindEnv("providers.openai.api_key", "OPENAI_API_KEY")
+	_ = viper.BindEnv("providers.openai.base_url", "OPENAI_BASE_URL")
+	_ = viper.BindEnv("providers.openai.model", "OPENAI_MODEL")
+	_ = viper.BindEnv("providers.openai.max_tokens", "OPENAI_MAX_TOKENS")
+
+	// XAI environment variables
+	_ = viper.BindEnv("providers.xai.api_key", "XAI_API_KEY")
+	_ = viper.BindEnv("providers.xai.base_url", "XAI_BASE_URL")
+	_ = viper.BindEnv("providers.xai.model", "XAI_MODEL")
+	_ = viper.BindEnv("providers.xai.max_tokens", "XAI_MAX_TOKENS")
+
+	// Gemini environment variables
+	_ = viper.BindEnv("providers.gemini.api_key", "GEMINI_API_KEY", "GOOGLE_API_KEY")
+	_ = viper.BindEnv("providers.gemini.base_url", "GEMINI_BASE_URL")
+	_ = viper.BindEnv("providers.gemini.model", "GEMINI_MODEL")
+	_ = viper.BindEnv("providers.gemini.max_tokens", "GEMINI_MAX_TOKENS")
+
+	// Mistral environment variables
+	_ = viper.BindEnv("providers.mistral.api_key", "MISTRAL_API_KEY")
+	_ = viper.BindEnv("providers.mistral.base_url", "MISTRAL_BASE_URL")
+	_ = viper.BindEnv("providers.mistral.model", "MISTRAL_MODEL")
+	_ = viper.BindEnv("providers.mistral.max_tokens", "MISTRAL_MAX_TOKENS")
+
+	// Ollama environment variables
+	_ = viper.BindEnv("providers.ollama.api_key", "OLLAMA_API_KEY")
+	_ = viper.BindEnv("providers.ollama.base_url", "OLLAMA_BASE_URL")
+	_ = viper.BindEnv("providers.ollama.model", "OLLAMA_MODEL")
+	_ = viper.BindEnv("providers.ollama.max_tokens", "OLLAMA_MAX_TOKENS")
+
 	// Logging environment variables
 	_ = viper.BindEnv("logging.level", "LOG_LEVEL")
 	_ = viper.BindEnv("logging.format", "LOG_FORMAT")
@@ -150,7 +261,7 @@ func bindEnvVars() {
 // validate validates required configuration
 func validate(config *Config) {
 	// Validate provider selection
-	validProviders := []string{"groq", "openrouter"}
+	validProviders := []string{"groq", "openrouter", "openai", "xai", "gemini", "mistral", "ollama"}
 	isValid := false
 	for _, provider := range validProviders {
 		if config.Provider == provider {
@@ -168,6 +279,16 @@ func validate(config *Config) {
 		validateGroqConfig(&config.Providers.Groq)
 	case "openrouter":
 		validateOpenRouterConfig(&config.Providers.OpenRouter)
+	case "openai":
+		validateOpenAIConfig(&config.Providers.OpenAI)
+	case "xai":
+		validateXAIConfig(&config.Providers.XAI)
+	case "gemini":
+		validateGeminiConfig(&config.Providers.Gemini)
+	case "mistral":
+		validateMistralConfig(&config.Providers.Mistral)
+	case "ollama":
+		validateOllamaConfig(&config.Providers.Ollama)
 	}
 }
 
@@ -197,4 +318,84 @@ func validateOpenRouterConfig(config *OpenRouterConfig) {
 	}
 
 	// Note: OpenRouter max tokens can be 0 (unlimited), so we don't enforce a minimum
+}
+
+// validateOpenAIConfig validates OpenAI-specific configuration
+func validateOpenAIConfig(config *OpenAIConfig) {
+	if config.APIKey == "" {
+		log.Fatal("OPENAI_API_KEY environment variable is required when using OpenAI provider")
+	}
+
+	if config.MaxTokens <= 0 {
+		log.Fatal("OPENAI_MAX_TOKENS must be greater than 0")
+	}
+
+	if config.MaxTokens > 128000 {
+		log.Printf("Warning: OPENAI_MAX_TOKENS (%d) exceeds GPT-4o context limit (128000)", config.MaxTokens)
+	}
+}
+
+// validateXAIConfig validates XAI-specific configuration
+func validateXAIConfig(config *XAIConfig) {
+	if config.APIKey == "" {
+		log.Fatal("XAI_API_KEY environment variable is required when using XAI provider")
+	}
+
+	if config.MaxTokens <= 0 {
+		log.Fatal("XAI_MAX_TOKENS must be greater than 0")
+	}
+
+	if config.MaxTokens > 128000 {
+		log.Printf("Warning: XAI_MAX_TOKENS (%d) exceeds Grok context limit (128000)", config.MaxTokens)
+	}
+}
+
+// validateGeminiConfig validates Gemini-specific configuration
+func validateGeminiConfig(config *GeminiConfig) {
+	if config.APIKey == "" {
+		log.Fatal("GEMINI_API_KEY or GOOGLE_API_KEY environment variable is required when using Gemini provider")
+	}
+
+	if config.MaxTokens <= 0 {
+		log.Fatal("GEMINI_MAX_TOKENS must be greater than 0")
+	}
+
+	if config.MaxTokens > 32768 {
+		log.Printf("Warning: GEMINI_MAX_TOKENS (%d) exceeds Gemini context limit (32768)", config.MaxTokens)
+	}
+}
+
+// validateMistralConfig validates Mistral-specific configuration
+func validateMistralConfig(config *MistralConfig) {
+	if config.APIKey == "" {
+		log.Fatal("MISTRAL_API_KEY environment variable is required when using Mistral provider")
+	}
+
+	if config.MaxTokens <= 0 {
+		log.Fatal("MISTRAL_MAX_TOKENS must be greater than 0")
+	}
+
+	if config.MaxTokens > 32768 {
+		log.Printf("Warning: MISTRAL_MAX_TOKENS (%d) exceeds Mistral context limit (32768)", config.MaxTokens)
+	}
+}
+
+// validateOllamaConfig validates Ollama-specific configuration
+func validateOllamaConfig(config *OllamaConfig) {
+	if config.BaseURL == "" {
+		log.Fatal("OLLAMA_BASE_URL environment variable is required when using Ollama provider")
+	}
+
+	if config.Model == "" {
+		log.Fatal("OLLAMA_MODEL environment variable is required when using Ollama provider")
+	}
+
+	if config.MaxTokens < 0 {
+		log.Fatal("OLLAMA_MAX_TOKENS cannot be negative")
+	}
+
+	// Note: Ollama models can have varying context limits, so we don't enforce a strict upper limit
+	if config.MaxTokens > 128000 {
+		log.Printf("Warning: OLLAMA_MAX_TOKENS (%d) is very large and may not be supported by all models", config.MaxTokens)
+	}
 }

@@ -4,8 +4,13 @@ import (
 	"fmt"
 
 	"ccproxy/internal/config"
+	"ccproxy/internal/provider/gemini"
 	"ccproxy/internal/provider/groq"
+	"ccproxy/internal/provider/mistral"
+	"ccproxy/internal/provider/ollama"
+	"ccproxy/internal/provider/openai"
 	"ccproxy/internal/provider/openrouter"
+	"ccproxy/internal/provider/xai"
 	"ccproxy/pkg/logger"
 )
 
@@ -37,6 +42,16 @@ func (f *Factory) CreateProvider() (Provider, error) {
 		provider, err = groq.NewProvider(&f.config.Providers.Groq, f.logger)
 	case ProviderTypeOpenRouter:
 		provider, err = openrouter.NewProvider(&f.config.Providers.OpenRouter, f.logger)
+	case ProviderTypeOpenAI:
+		provider = openai.NewProvider(&f.config.Providers.OpenAI, f.logger)
+	case ProviderTypeXAI:
+		provider = xai.NewProvider(&f.config.Providers.XAI, f.logger)
+	case ProviderTypeGemini:
+		provider = gemini.NewProvider(&f.config.Providers.Gemini, f.logger)
+	case ProviderTypeMistral:
+		provider = mistral.NewProvider(&f.config.Providers.Mistral, f.logger)
+	case ProviderTypeOllama:
+		provider = ollama.NewProvider(&f.config.Providers.Ollama, f.logger)
 	default:
 		return nil, fmt.Errorf("unsupported provider: %s", f.config.Provider)
 	}
@@ -50,7 +65,7 @@ func (f *Factory) CreateProvider() (Provider, error) {
 		return nil, fmt.Errorf("invalid %s provider configuration: %w", f.config.Provider, err)
 	}
 
-	f.logger.Infof("Successfully initialized %s provider with model %s", 
+	f.logger.Infof("Successfully initialized %s provider with model %s",
 		provider.GetName(), provider.GetModel())
 
 	return provider, nil
@@ -61,5 +76,10 @@ func GetAvailableProviders() []string {
 	return []string{
 		string(ProviderTypeGroq),
 		string(ProviderTypeOpenRouter),
+		string(ProviderTypeOpenAI),
+		string(ProviderTypeXAI),
+		string(ProviderTypeGemini),
+		string(ProviderTypeMistral),
+		string(ProviderTypeOllama),
 	}
 }

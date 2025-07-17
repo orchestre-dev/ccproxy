@@ -95,7 +95,7 @@ func (p *Provider) CreateChatCompletion(ctx context.Context, req *models.ChatCom
 			WithField("response_body", string(respBody)).
 			WithField("request_id", getRequestID(ctx)).
 			Error("Groq API returned error")
-		
+
 		return nil, fmt.Errorf("groq API error: %d %s", httpResp.StatusCode, string(respBody))
 	}
 
@@ -107,11 +107,11 @@ func (p *Provider) CreateChatCompletion(ctx context.Context, req *models.ChatCom
 
 	// Log response
 	p.logger.APILog("groq_response", map[string]interface{}{
-		"duration_ms":        duration.Milliseconds(),
-		"prompt_tokens":      resp.Usage.PromptTokens,
-		"completion_tokens":  resp.Usage.CompletionTokens,
-		"total_tokens":       resp.Usage.TotalTokens,
-		"finish_reason":      getFinishReason(resp),
+		"duration_ms":       duration.Milliseconds(),
+		"prompt_tokens":     resp.Usage.PromptTokens,
+		"completion_tokens": resp.Usage.CompletionTokens,
+		"total_tokens":      resp.Usage.TotalTokens,
+		"finish_reason":     getFinishReason(resp),
 	}, getRequestID(ctx))
 
 	return &resp, nil

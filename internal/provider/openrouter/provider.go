@@ -66,7 +66,7 @@ func (p *Provider) CreateChatCompletion(ctx context.Context, req *models.ChatCom
 	// Set headers
 	httpReq.Header.Set("Content-Type", "application/json")
 	httpReq.Header.Set("Authorization", "Bearer "+p.config.APIKey)
-	
+
 	// Add optional OpenRouter-specific headers
 	if p.config.SiteURL != "" {
 		httpReq.Header.Set("HTTP-Referer", p.config.SiteURL)
@@ -107,7 +107,7 @@ func (p *Provider) CreateChatCompletion(ctx context.Context, req *models.ChatCom
 			WithField("response_body", string(respBody)).
 			WithField("request_id", getRequestID(ctx)).
 			Error("OpenRouter API returned error")
-		
+
 		return nil, fmt.Errorf("openrouter API error: %d %s", httpResp.StatusCode, string(respBody))
 	}
 
@@ -119,11 +119,11 @@ func (p *Provider) CreateChatCompletion(ctx context.Context, req *models.ChatCom
 
 	// Log response
 	p.logger.APILog("openrouter_response", map[string]interface{}{
-		"duration_ms":        duration.Milliseconds(),
-		"prompt_tokens":      resp.Usage.PromptTokens,
-		"completion_tokens":  resp.Usage.CompletionTokens,
-		"total_tokens":       resp.Usage.TotalTokens,
-		"finish_reason":      getFinishReason(resp),
+		"duration_ms":       duration.Milliseconds(),
+		"prompt_tokens":     resp.Usage.PromptTokens,
+		"completion_tokens": resp.Usage.CompletionTokens,
+		"total_tokens":      resp.Usage.TotalTokens,
+		"finish_reason":     getFinishReason(resp),
 	}, getRequestID(ctx))
 
 	return &resp, nil
