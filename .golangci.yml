@@ -5,10 +5,10 @@ run:
   modules-download-mode: readonly
 
 output:
-  format: colored-line-number
+  formats:
+    - format: colored-line-number
   print-issued-lines: true
   print-linter-name: true
-  uniq-by-line: true
   sort-results: true
 
 linters-settings:
@@ -17,8 +17,8 @@ linters-settings:
     check-blank: true
 
   govet:
-    check-shadowing: true
     enable-all: true
+    shadow: true
 
   gocyclo:
     min-complexity: 15
@@ -28,7 +28,7 @@ linters-settings:
     min-occurrences: 3
 
   gofumpt:
-    lang-version: "1.24"
+    extra-rules: true
 
   gosec:
     excludes:
@@ -47,7 +47,10 @@ linters-settings:
       - HACK
 
   gci:
-    local-prefixes: ccproxy
+    sections:
+      - standard
+      - default
+      - prefix(ccproxy)
 
   revive:
     rules:
@@ -60,7 +63,6 @@ linters:
   disable-all: true
   enable:
     - bodyclose
-    - deadcode
     - depguard
     - dogsled
     - dupl
@@ -94,13 +96,11 @@ linters:
     - nolintlint
     - revive
     - staticcheck
-    - structcheck
     - stylecheck
     - typecheck
     - unconvert
     - unparam
     - unused
-    - varcheck
     - whitespace
 
 issues:
