@@ -7,7 +7,7 @@ keywords: CCProxy, Claude Code, AI proxy, Kimi K2, Groq, OpenAI, Gemini, Mistral
 hero:
   name: "CCProxy"
   text: "Universal AI Proxy for Claude Code"
-  tagline: "Connect Claude Code to Kimi K2, GPT, Gemini, and 7+ AI providers with zero config changes"
+  tagline: "Connect Claude Code to Kimi K2, OpenAI, Gemini, and 7+ AI providers with zero config changes"
   image:
     src: /ccproxy_icon.png
     alt: CCProxy - Universal AI Proxy

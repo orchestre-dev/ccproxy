@@ -3,11 +3,51 @@
 name = "ccproxy"
 compatibility_date = "2024-12-01"
 
+# Pages configuration
 [env.production]
 # Production environment settings
-# The custom domain ccproxy.orchestre.dev should be configured in Cloudflare dashboard
+# Custom domain: ccproxy.orchestre.dev (configure in Cloudflare dashboard)
 
-# Build settings are handled by Cloudflare Pages dashboard
-# Build command: npm run docs:build
-# Build output directory: docs/.vitepress/dist
-# Node.js version: 18.x
+[env.preview]
+# Preview environment for pull requests and development
+
+# Build configuration for automated deployments
+[build]
+command = "cd docs && npm run build"
+destination = "docs/.vitepress/dist"
+
+# Custom headers for security and performance
+[[headers]]
+for = "/*"
+
+  [headers.values]
+  X-Frame-Options = "DENY"
+  X-Content-Type-Options = "nosniff"
+  Referrer-Policy = "strict-origin-when-cross-origin"
+  Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+
+# Cache static assets
+[[headers]]
+for = "/assets/*"
+
+  [headers.values]
+  Cache-Control = "public, max-age=31536000, immutable"
+
+# Cache images
+[[headers]]
+for = "/*.png"
+
+  [headers.values]
+  Cache-Control = "public, max-age=31536000"
+
+[[headers]]
+for = "/*.svg"
+
+  [headers.values]
+  Cache-Control = "public, max-age=31536000"
+
+# Redirects for old URLs (if needed)
+[[redirects]]
+from = "/ccproxy/*"
+to = "/:splat"
+status = 301
