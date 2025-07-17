@@ -1,13 +1,36 @@
+---
+title: OpenAI with Claude Code - Industry-Leading AI Models via CCProxy
+description: Access GPT-4, GPT-4o, and o1 reasoning models with Claude Code through CCProxy. Experience enterprise-grade AI with vision capabilities, function calling, and production reliability.
+keywords: OpenAI, Claude Code, CCProxy, GPT-4, GPT-4o, o1 reasoning, AI proxy, enterprise AI, vision AI, function calling, production AI
+---
+
 # OpenAI Provider
 
-OpenAI is the industry standard for AI models, offering the most mature ecosystem and reliable performance for production applications.
+<div class="social-share">
+  <button class="share-twitter" onclick="shareToTwitter()">
+    🐦 Share on Twitter
+  </button>
+  <button class="share-linkedin" onclick="shareToLinkedIn()">
+    💼 Share on LinkedIn
+  </button>
+  <button class="share-reddit" onclick="shareToReddit()">
+    🔗 Share on Reddit
+  </button>
+  <button class="share-copy" onclick="copyToClipboard()">
+    📋 Copy Link
+  </button>
+</div>
 
-## Why Choose OpenAI?
+**OpenAI sets the industry standard** for AI models, offering the most mature ecosystem and reliable performance for production applications. Through **CCProxy integration with Claude Code**, you can harness the full power of GPT-4, GPT-4o, and advanced reasoning models while maintaining your familiar development workflow.
 
-- 🏭 **Industry standard**: Most mature and reliable AI models
-- 🛠️ **Rich ecosystem**: Extensive tooling and integrations
-- 👁️ **Advanced vision**: Best-in-class image understanding
-- 🎯 **Proven reliability**: Battle-tested in production
+## 🏭 Why Choose OpenAI for Claude Code?
+
+- 🥇 **Industry standard**: Most mature and reliable AI models with proven enterprise adoption
+- 🛠️ **Rich ecosystem**: Extensive tooling and integrations that work seamlessly with Claude Code
+- 👁️ **Advanced vision**: Best-in-class image understanding and multimodal capabilities
+- 🎯 **Proven reliability**: Battle-tested in production environments worldwide
+- 🧠 **Advanced reasoning**: Access to o1 models for complex problem-solving
+- 🔧 **Perfect Claude Code integration**: Zero configuration changes required with CCProxy
 
 ## Setup
 
@@ -419,7 +442,37 @@ curl http://localhost:7187/health
 
 ## Next Steps
 
-- Explore [function calling](/guide/function-calling) with OpenAI
-- Learn about [vision capabilities](/guide/vision)
+- Explore [function calling](/guide/function-calling) with OpenAI models
+- Learn about [vision capabilities](/guide/vision) with GPT-4o
 - Set up [usage monitoring](/guide/monitoring) for cost control
-- Compare with [other providers](/providers/) for specific use cases
+- Compare with [other providers](/providers/) including [Groq with Kimi K2](/providers/groq) for speed
+
+<script>
+function shareToTwitter() {
+  const url = encodeURIComponent(window.location.href);
+  const text = encodeURIComponent('🏭 OpenAI + Claude Code + CCProxy = Enterprise-grade AI development! Access GPT-4, GPT-4o, and o1 reasoning models seamlessly');
+  window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`, '_blank');
+}
+
+function shareToLinkedIn() {
+  const url = encodeURIComponent(window.location.href);
+  window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank');
+}
+
+function shareToReddit() {
+  const url = encodeURIComponent(window.location.href);
+  const title = encodeURIComponent('OpenAI with Claude Code - Industry-Leading AI Models via CCProxy');
+  window.open(`https://reddit.com/submit?url=${url}&title=${title}`, '_blank');
+}
+
+function copyToClipboard() {
+  navigator.clipboard.writeText(window.location.href).then(() => {
+    const button = event.target;
+    const originalText = button.textContent;
+    button.textContent = '✅ Copied!';
+    setTimeout(() => {
+      button.textContent = originalText;
+    }, 2000);
+  });
+}
+</script>

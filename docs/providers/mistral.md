@@ -1,13 +1,36 @@
+---
+title: Mistral AI with Claude Code - European Privacy-Focused AI via CCProxy
+description: Access Mistral Large, Codestral, and Mixtral models with Claude Code through CCProxy. Experience European GDPR-compliant AI with multilingual excellence and privacy-first approach.
+keywords: Mistral AI, Claude Code, CCProxy, European AI, GDPR compliant, multilingual AI, Codestral, privacy-focused AI, enterprise AI, AI proxy
+---
+
 # Mistral AI Provider
 
-Mistral AI offers high-quality European AI models with a strong focus on privacy, multilingual capabilities, and enterprise-grade features.
+<div class="social-share">
+  <button class="share-twitter" onclick="shareToTwitter()">
+    🐦 Share on Twitter
+  </button>
+  <button class="share-linkedin" onclick="shareToLinkedIn()">
+    💼 Share on LinkedIn
+  </button>
+  <button class="share-reddit" onclick="shareToReddit()">
+    🔗 Share on Reddit
+  </button>
+  <button class="share-copy" onclick="copyToClipboard()">
+    📋 Copy Link
+  </button>
+</div>
 
-## Why Choose Mistral AI?
+**Mistral AI leads European AI innovation** with high-quality models that prioritize privacy, multilingual excellence, and enterprise-grade features. Through **CCProxy integration with Claude Code**, you gain access to GDPR-compliant AI solutions that excel in non-English languages and maintain the highest privacy standards.
 
-- 🇪🇺 **European AI**: Privacy-focused alternative to US providers
-- 🌍 **Multilingual excellence**: Superior performance in non-English languages
-- 💼 **Enterprise-grade**: Built for business and production use
-- 🔒 **Privacy-focused**: Strong data protection and compliance
+## 🇪🇺 Why Choose Mistral AI for Claude Code?
+
+- 🇪🇺 **European AI leadership**: Privacy-focused alternative to US providers with GDPR compliance
+- 🌍 **Multilingual excellence**: Superior performance in French, German, Spanish, and other European languages
+- 💼 **Enterprise-grade**: Built for business and production use with Claude Code integration
+- 🔒 **Privacy-first approach**: Strong data protection and compliance via CCProxy
+- 💻 **Codestral specialization**: Dedicated code generation models for development workflows
+- ⚡ **Claude Code optimized**: Zero-friction integration with your existing development tools
 
 ## Setup
 
@@ -479,7 +502,37 @@ Stay updated at [mistral.ai](https://mistral.ai) and [console.mistral.ai](https:
 
 ## Next Steps
 
-- Explore [multilingual use cases](/guide/multilingual)
-- Learn about [code generation](/guide/code-generation) with Codestral
-- Set up [enterprise monitoring](/guide/enterprise-monitoring)
+- Explore [multilingual use cases](/guide/multilingual) with Mistral's European language expertise
+- Learn about [code generation](/guide/code-generation) with Codestral models
+- Set up [enterprise monitoring](/guide/enterprise-monitoring) for GDPR compliance
 - Compare [European vs US providers](/guide/provider-comparison) for compliance needs
+
+<script>
+function shareToTwitter() {
+  const url = encodeURIComponent(window.location.href);
+  const text = encodeURIComponent('🇪🇺 Mistral AI + Claude Code + CCProxy = European privacy-focused AI development! GDPR-compliant multilingual AI with Codestral');
+  window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`, '_blank');
+}
+
+function shareToLinkedIn() {
+  const url = encodeURIComponent(window.location.href);
+  window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank');
+}
+
+function shareToReddit() {
+  const url = encodeURIComponent(window.location.href);
+  const title = encodeURIComponent('Mistral AI with Claude Code - European Privacy-Focused AI via CCProxy');
+  window.open(`https://reddit.com/submit?url=${url}&title=${title}`, '_blank');
+}
+
+function copyToClipboard() {
+  navigator.clipboard.writeText(window.location.href).then(() => {
+    const button = event.target;
+    const originalText = button.textContent;
+    button.textContent = '✅ Copied!';
+    setTimeout(() => {
+      button.textContent = originalText;
+    }, 2000);
+  });
+}
+</script>

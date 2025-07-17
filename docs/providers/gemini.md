@@ -1,13 +1,36 @@
+---
+title: Google Gemini with Claude Code - Advanced Multimodal AI via CCProxy
+description: Access Google's Gemini 1.5 Pro, Flash, and experimental models with Claude Code through CCProxy. Experience advanced multimodal AI with 2M context windows and vision capabilities.
+keywords: Google Gemini, Claude Code, CCProxy, Gemini 1.5 Pro, multimodal AI, long context, vision AI, Google DeepMind, AI proxy, 2M context window
+---
+
 # Google Gemini Provider
 
-Google's Gemini models offer advanced multimodal capabilities with strong performance across text, code, and vision tasks, backed by Google's cutting-edge AI research.
+<div class="social-share">
+  <button class="share-twitter" onclick="shareToTwitter()">
+    🐦 Share on Twitter
+  </button>
+  <button class="share-linkedin" onclick="shareToLinkedIn()">
+    💼 Share on LinkedIn
+  </button>
+  <button class="share-reddit" onclick="shareToReddit()">
+    🔗 Share on Reddit
+  </button>
+  <button class="share-copy" onclick="copyToClipboard()">
+    📋 Copy Link
+  </button>
+</div>
 
-## Why Choose Google Gemini?
+**Google's Gemini models** represent the cutting edge of multimodal AI, offering advanced capabilities across text, code, and vision tasks. When integrated with **Claude Code through CCProxy**, Gemini provides unparalleled **long-context understanding** with up to 2M tokens and sophisticated multimodal processing.
 
-- 🎥 **Advanced multimodal**: Excellent vision and text understanding
-- 🏗️ **Google's latest tech**: Cutting-edge AI from Google DeepMind
-- 📊 **Strong analytics**: Excellent at data analysis and reasoning
-- 💰 **Competitive pricing**: Good value for multimodal capabilities
+## 🎥 Why Choose Google Gemini for Claude Code?
+
+- 🧠 **Advanced multimodal**: Excellent vision and text understanding with Claude Code integration
+- 🏗️ **Google's latest tech**: Cutting-edge AI from Google DeepMind accessible via CCProxy
+- 📊 **Massive context windows**: Up to 2M tokens for comprehensive code and document analysis
+- 💰 **Competitive pricing**: Excellent value for multimodal capabilities and long context
+- 🔍 **Superior analytics**: Outstanding at data analysis and complex reasoning tasks
+- ⚡ **Claude Code optimized**: Seamless integration with your development workflow
 
 ## Setup
 
@@ -499,7 +522,37 @@ Stay updated at [ai.google.dev](https://ai.google.dev) and [aistudio.google.com]
 
 ## Next Steps
 
-- Explore [long context use cases](/guide/long-context)
-- Learn about [multimodal capabilities](/guide/multimodal)
-- Set up [usage monitoring](/guide/monitoring)
-- Compare with [other providers](/providers/) for your specific needs
+- Explore [long context use cases](/guide/long-context) with Gemini's 2M token windows
+- Learn about [multimodal capabilities](/guide/multimodal) for vision and document analysis
+- Set up [usage monitoring](/guide/monitoring) to optimize your Gemini usage
+- Compare with [other providers](/providers/) including [Groq for speed](/providers/groq) and [OpenAI for reliability](/providers/openai)
+
+<script>
+function shareToTwitter() {
+  const url = encodeURIComponent(window.location.href);
+  const text = encodeURIComponent('🎥 Google Gemini + Claude Code + CCProxy = Advanced multimodal AI development! Experience 2M context windows and vision capabilities');
+  window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`, '_blank');
+}
+
+function shareToLinkedIn() {
+  const url = encodeURIComponent(window.location.href);
+  window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank');
+}
+
+function shareToReddit() {
+  const url = encodeURIComponent(window.location.href);
+  const title = encodeURIComponent('Google Gemini with Claude Code - Advanced Multimodal AI via CCProxy');
+  window.open(`https://reddit.com/submit?url=${url}&title=${title}`, '_blank');
+}
+
+function copyToClipboard() {
+  navigator.clipboard.writeText(window.location.href).then(() => {
+    const button = event.target;
+    const originalText = button.textContent;
+    button.textContent = '✅ Copied!';
+    setTimeout(() => {
+      button.textContent = originalText;
+    }, 2000);
+  });
+}
+</script>

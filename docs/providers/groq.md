@@ -1,13 +1,36 @@
+---
+title: Groq with Claude Code - Ultra-Fast AI Inference with Kimi K2 Support
+description: Experience lightning-fast AI development with Groq LPU infrastructure through CCProxy. Access Kimi K2, Llama 3.1, and Mixtral models with Claude Code for sub-second inference speeds.
+keywords: Groq, Claude Code, CCProxy, Kimi K2, fast AI inference, LPU, Llama 3.1, Mixtral, ultra-fast AI, AI proxy, sub-second responses
+---
+
 # Groq Provider
 
-Groq is known for its ultra-fast inference speeds, making it an excellent choice for development and production workloads that require quick responses.
+<div class="social-share">
+  <button class="share-twitter" onclick="shareToTwitter()">
+    🐦 Share on Twitter
+  </button>
+  <button class="share-linkedin" onclick="shareToLinkedIn()">
+    💼 Share on LinkedIn
+  </button>
+  <button class="share-reddit" onclick="shareToReddit()">
+    🔗 Share on Reddit
+  </button>
+  <button class="share-copy" onclick="copyToClipboard()">
+    📋 Copy Link
+  </button>
+</div>
 
-## Why Choose Groq?
+**Groq revolutionizes AI development** with ultra-fast inference speeds through their groundbreaking LPU (Language Processing Unit) technology. When combined with **Claude Code and CCProxy**, Groq delivers an unmatched development experience with **sub-second response times** and access to cutting-edge models like **Kimi K2**.
 
-- ⚡ **Ultra-fast inference**: Sub-second response times
+## 🚀 Why Choose Groq for Claude Code?
+
+- ⚡ **Ultra-fast inference**: Sub-second response times with LPU technology
+- 🌟 **Kimi K2 access**: Revolutionary Moonshot AI model with 8K context
 - 💰 **Cost-effective**: Competitive pricing with generous free tier
-- 🎯 **Simple API**: Easy to use and integrate
-- 🔄 **High throughput**: Excellent for high-volume applications
+- 🎯 **Simple API**: Easy integration with Claude Code via CCProxy
+- 🔄 **High throughput**: Excellent for high-volume AI development workflows
+- 🚀 **Perfect Claude Code integration**: Seamless compatibility with zero configuration changes
 
 ## Setup
 
@@ -44,23 +67,35 @@ export GROQ_BASE_URL=https://api.groq.com/openai/v1
 
 | Model | Context | Speed | Best For |
 |-------|---------|-------|----------|
-| **moonshotai/kimi-k2-instruct** | 128K | ⚡⚡⚡ | General use (default) |
+| **moonshotai/kimi-k2-instruct** | 8K | ⚡⚡⚡ | **Claude Code optimized (default)** |
 | **llama-3.1-405b-reasoning** | 128K | ⚡⚡ | Complex reasoning |
 | **llama-3.1-70b-versatile** | 128K | ⚡⚡⚡ | Balanced performance |
 | **llama-3.1-8b-instant** | 128K | ⚡⚡⚡ | Fast responses |
 | **mixtral-8x7b-32768** | 32K | ⚡⚡⚡ | Code and math |
 | **gemma2-9b-it** | 8K | ⚡⚡⚡ | Efficient inference |
 
-### Model Performance
+## 🌟 Featured: Kimi K2 + Claude Code Integration
+
+**Kimi K2** (`moonshotai/kimi-k2-instruct`) represents the **perfect AI model for Claude Code users**. This revolutionary model from Moonshot AI, optimized through Groq's LPU infrastructure, delivers:
+
+- **Sub-second inference**: Experience the fastest AI responses for development
+- **8K context window**: Perfect for code analysis and documentation
+- **Claude Code optimized**: Seamlessly integrates with your existing workflow
+- **Exceptional value**: At $0.20/1M input tokens, it's 50x cheaper than GPT-4
+- **Zero configuration**: Works instantly with CCProxy - just set environment variables
+
+### Kimi K2 Performance Advantages
 
 ```mermaid
-graph LR
-    A[Speed] --> B[llama-3.1-8b-instant]
-    A --> C[gemma2-9b-it]
-    A --> D[mixtral-8x7b-32768]
-    E[Quality] --> F[llama-3.1-405b-reasoning]
-    E --> G[llama-3.1-70b-versatile]
-    E --> H[moonshotai/kimi-k2-instruct]
+graph TB
+    A[Kimi K2 + Claude Code] --> B[Sub-second Responses]
+    A --> C[8K Context for Code]
+    A --> D[50x Cheaper than GPT-4]
+    A --> E[Perfect Claude Integration]
+    B --> F[10x Faster Development]
+    C --> G[Complete File Analysis]
+    D --> H[Cost-Effective Scaling]
+    E --> I[Zero Setup Friction]
 ```
 
 ## Pricing
@@ -223,6 +258,37 @@ curl http://localhost:7187/status
 
 ## Next Steps
 
+- Experience [Kimi K2 with Claude Code](/kimi-k2) for cutting-edge AI development
 - Explore [other providers](/providers/) for different use cases
 - Learn about [configuration options](/guide/configuration)
 - Set up [health monitoring](/guide/health-checks) for production
+
+<script>
+function shareToTwitter() {
+  const url = encodeURIComponent(window.location.href);
+  const text = encodeURIComponent('🚀 Groq + Claude Code + Kimi K2 = Ultra-fast AI development! Experience sub-second inference with CCProxy');
+  window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`, '_blank');
+}
+
+function shareToLinkedIn() {
+  const url = encodeURIComponent(window.location.href);
+  window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank');
+}
+
+function shareToReddit() {
+  const url = encodeURIComponent(window.location.href);
+  const title = encodeURIComponent('Groq with Claude Code - Ultra-Fast AI Inference with Kimi K2 Support');
+  window.open(`https://reddit.com/submit?url=${url}&title=${title}`, '_blank');
+}
+
+function copyToClipboard() {
+  navigator.clipboard.writeText(window.location.href).then(() => {
+    const button = event.target;
+    const originalText = button.textContent;
+    button.textContent = '✅ Copied!';
+    setTimeout(() => {
+      button.textContent = originalText;
+    }, 2000);
+  });
+}
+</script>

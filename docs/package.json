@@ -10,5 +10,10 @@
   "devDependencies": {
     "vitepress": "^1.0.0"
   },
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "@algolia/client-search": "^5.33.0",
+    "local-search": "^1.1.2",
+    "vitepress-plugin-search": "^1.0.4-alpha.22"
+  }
 }

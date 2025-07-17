@@ -1,13 +1,36 @@
+---
+title: OpenRouter with Claude Code - 100+ AI Models via CCProxy
+description: Access 100+ AI models including Claude, GPT-4, Llama, and Mistral with Claude Code through CCProxy and OpenRouter. Perfect for model experimentation and cost optimization with unified API access.
+keywords: OpenRouter, Claude Code, CCProxy, 100+ AI models, model fallbacks, Claude 3.5, GPT-4, Llama, model comparison, unified AI API
+---
+
 # OpenRouter Provider
 
-OpenRouter provides access to 100+ different AI models through a single API, making it perfect for experimentation and finding the best model for your specific use case.
+<div class="social-share">
+  <button class="share-twitter" onclick="shareToTwitter()">
+    🐦 Share on Twitter
+  </button>
+  <button class="share-linkedin" onclick="shareToLinkedIn()">
+    💼 Share on LinkedIn
+  </button>
+  <button class="share-reddit" onclick="shareToReddit()">
+    🔗 Share on Reddit
+  </button>
+  <button class="share-copy" onclick="copyToClipboard()">
+    📋 Copy Link
+  </button>
+</div>
 
-## Why Choose OpenRouter?
+**OpenRouter unlocks the full AI ecosystem** by providing access to 100+ different AI models through a single API. When combined with **Claude Code and CCProxy**, OpenRouter becomes the ultimate platform for AI experimentation, allowing you to find the perfect model for each development task.
 
-- 🎯 **100+ models**: Access to all major AI models in one place
-- 🔄 **Model fallbacks**: Automatic failover between models
-- 📊 **Usage analytics**: Detailed tracking and monitoring
-- 💰 **Cost optimization**: Compare and choose the most cost-effective models
+## 🎯 Why Choose OpenRouter for Claude Code?
+
+- 🎯 **100+ models**: Access to all major AI models through familiar Claude Code interface
+- 🔄 **Model fallbacks**: Automatic failover between models for maximum reliability
+- 📊 **Usage analytics**: Detailed tracking and monitoring integrated with CCProxy
+- 💰 **Cost optimization**: Compare and choose the most cost-effective models for each task
+- 🧪 **Perfect for experimentation**: Test different models without changing your Claude Code workflow
+- ⚡ **Unified API**: Single integration for Claude 3.5, GPT-4, Llama, Mistral, and more
 
 ## Setup
 
@@ -321,6 +344,37 @@ curl http://localhost:7187/status
 
 ## Next Steps
 
-- Explore [other providers](/providers/) for comparison
-- Learn about [model fallbacks](/guide/fallbacks)
-- Set up [usage monitoring](/guide/monitoring)
+- Explore [other providers](/providers/) for comparison and specialized use cases
+- Learn about [model fallbacks](/guide/fallbacks) for production reliability
+- Set up [usage monitoring](/guide/monitoring) to optimize model selection and costs
+- Try [Groq with Kimi K2](/providers/groq) for ultra-fast inference alongside OpenRouter
+
+<script>
+function shareToTwitter() {
+  const url = encodeURIComponent(window.location.href);
+  const text = encodeURIComponent('🎯 OpenRouter + Claude Code + CCProxy = Access to 100+ AI models! Claude 3.5, GPT-4, Llama, Mistral, and more through unified API');
+  window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`, '_blank');
+}
+
+function shareToLinkedIn() {
+  const url = encodeURIComponent(window.location.href);
+  window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank');
+}
+
+function shareToReddit() {
+  const url = encodeURIComponent(window.location.href);
+  const title = encodeURIComponent('OpenRouter with Claude Code - 100+ AI Models via CCProxy');
+  window.open(`https://reddit.com/submit?url=${url}&title=${title}`, '_blank');
+}
+
+function copyToClipboard() {
+  navigator.clipboard.writeText(window.location.href).then(() => {
+    const button = event.target;
+    const originalText = button.textContent;
+    button.textContent = '✅ Copied!';
+    setTimeout(() => {
+      button.textContent = originalText;
+    }, 2000);
+  });
+}
+</script>

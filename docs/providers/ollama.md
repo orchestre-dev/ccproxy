@@ -1,13 +1,36 @@
+---
+title: Ollama with Claude Code - Local Privacy-First AI via CCProxy
+description: Run local AI models with Claude Code through CCProxy and Ollama. Experience complete privacy, offline capabilities, zero API costs, and local control with Llama, Mistral, and CodeLlama models.
+keywords: Ollama, Claude Code, CCProxy, local AI, privacy AI, offline AI, zero cost AI, local models, Llama, CodeLlama, private AI development
+---
+
 # Ollama Provider
 
-Ollama enables you to run large language models locally on your machine, providing complete privacy, offline capabilities, and zero ongoing costs.
+<div class="social-share">
+  <button class="share-twitter" onclick="shareToTwitter()">
+    🐦 Share on Twitter
+  </button>
+  <button class="share-linkedin" onclick="shareToLinkedIn()">
+    💼 Share on LinkedIn
+  </button>
+  <button class="share-reddit" onclick="shareToReddit()">
+    🔗 Share on Reddit
+  </button>
+  <button class="share-copy" onclick="copyToClipboard()">
+    📋 Copy Link
+  </button>
+</div>
 
-## Why Choose Ollama?
+**Ollama revolutionizes AI development** by enabling you to run large language models locally on your machine. Through **CCProxy integration with Claude Code**, you gain complete privacy, offline capabilities, and zero ongoing costs while maintaining the familiar Claude Code experience.
 
-- 🔒 **Complete privacy**: All processing happens locally
-- 🌐 **Offline capabilities**: No internet required after setup
-- 💸 **Zero ongoing costs**: No API fees or subscription charges
-- 🎛️ **Full control**: Choose your models and hardware
+## 🔒 Why Choose Ollama for Claude Code?
+
+- 🔒 **Complete privacy**: All AI processing happens locally with Claude Code integration
+- 🌐 **Offline capabilities**: Full AI development without internet dependency
+- 💸 **Zero ongoing costs**: No API fees or subscription charges - perfect for Claude Code users
+- 🎛️ **Full control**: Choose your models and hardware while keeping Claude Code workflow
+- 🏠 **Local sovereignty**: Your code and data never leave your machine
+- ⚡ **Claude Code optimized**: Seamless local AI experience with familiar interface
 
 ## Setup
 
@@ -515,7 +538,37 @@ curl http://localhost:7187/health
 
 ## Next Steps
 
-- Install and try [different models](/guide/model-selection)
-- Learn about [local privacy benefits](/guide/privacy)
-- Set up [hardware optimization](/guide/hardware-setup)
-- Explore [custom model creation](/guide/custom-models)
+- Install and try [different models](/guide/model-selection) for various development tasks
+- Learn about [local privacy benefits](/guide/privacy) for sensitive code and data
+- Set up [hardware optimization](/guide/hardware-setup) for best performance
+- Explore [custom model creation](/guide/custom-models) and local fine-tuning
+
+<script>
+function shareToTwitter() {
+  const url = encodeURIComponent(window.location.href);
+  const text = encodeURIComponent('🔒 Ollama + Claude Code + CCProxy = Privacy-first local AI development! Zero costs, complete privacy, offline capabilities');
+  window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`, '_blank');
+}
+
+function shareToLinkedIn() {
+  const url = encodeURIComponent(window.location.href);
+  window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank');
+}
+
+function shareToReddit() {
+  const url = encodeURIComponent(window.location.href);
+  const title = encodeURIComponent('Ollama with Claude Code - Local Privacy-First AI via CCProxy');
+  window.open(`https://reddit.com/submit?url=${url}&title=${title}`, '_blank');
+}
+
+function copyToClipboard() {
+  navigator.clipboard.writeText(window.location.href).then(() => {
+    const button = event.target;
+    const originalText = button.textContent;
+    button.textContent = '✅ Copied!';
+    setTimeout(() => {
+      button.textContent = originalText;
+    }, 2000);
+  });
+}
+</script>

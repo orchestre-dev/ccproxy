@@ -1,13 +1,36 @@
+---
+title: XAI Grok with Claude Code - Real-Time AI with X Integration via CCProxy
+description: Access XAI Grok models with Claude Code through CCProxy. Experience real-time information, X/Twitter integration, and cutting-edge AI from Elon Musk's team for current events and web search.
+keywords: XAI Grok, Claude Code, CCProxy, real-time AI, X Twitter integration, Elon Musk AI, current events AI, web search AI, real-time data
+---
+
 # XAI (Grok) Provider
 
-XAI's Grok models offer real-time information access and cutting-edge AI capabilities, with unique access to X (formerly Twitter) data and current events.
+<div class="social-share">
+  <button class="share-twitter" onclick="shareToTwitter()">
+    🐦 Share on Twitter
+  </button>
+  <button class="share-linkedin" onclick="shareToLinkedIn()">
+    💼 Share on LinkedIn
+  </button>
+  <button class="share-reddit" onclick="shareToReddit()">
+    🔗 Share on Reddit
+  </button>
+  <button class="share-copy" onclick="copyToClipboard()">
+    📋 Copy Link
+  </button>
+</div>
 
-## Why Choose XAI (Grok)?
+**XAI's Grok models** revolutionize AI development with real-time information access and cutting-edge capabilities. Through **CCProxy integration with Claude Code**, you gain unique access to X (formerly Twitter) data, current events, and web search - bringing real-time intelligence to your development workflow.
 
-- 📰 **Real-time data**: Access to current information and X/Twitter
-- 🆕 **Cutting-edge**: Latest AI technology from Elon Musk's team
-- 🔍 **Web search**: Built-in internet access capabilities
-- 🚀 **Innovation**: Rapid development and new features
+## 📰 Why Choose XAI (Grok) for Claude Code?
+
+- 📰 **Real-time intelligence**: Live access to current information and X/Twitter data via Claude Code
+- 🆕 **Cutting-edge innovation**: Latest AI technology from Elon Musk's team integrated with CCProxy
+- 🔍 **Built-in web search**: Internet access capabilities for current information within Claude Code
+- 🚀 **Rapid innovation**: Continuous development and new features accessible through familiar interface
+- 📊 **Social media insights**: Unique X platform integration for trend analysis and social monitoring
+- ⚡ **Claude Code optimized**: Seamless real-time AI integration with your development workflow
 
 ## Setup
 
@@ -439,7 +462,37 @@ Stay updated at [x.ai](https://x.ai) and [console.x.ai](https://console.x.ai).
 
 ## Next Steps
 
-- Monitor [XAI announcements](https://x.ai) for new features
-- Explore [real-time use cases](/guide/real-time) specific to Grok
-- Compare costs with [other providers](/providers/) for your use case
-- Set up [usage monitoring](/guide/monitoring) for cost control
+- Monitor [XAI announcements](https://x.ai) for new features and model releases
+- Explore [real-time use cases](/guide/real-time) specific to Grok's capabilities
+- Compare costs with [other providers](/providers/) including [Groq for speed](/providers/groq)
+- Set up [usage monitoring](/guide/monitoring) for cost control and optimization
+
+<script>
+function shareToTwitter() {
+  const url = encodeURIComponent(window.location.href);
+  const text = encodeURIComponent('📰 XAI Grok + Claude Code + CCProxy = Real-time AI development! Access live data, X integration, and cutting-edge AI from Elon Musk\'s team');
+  window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`, '_blank');
+}
+
+function shareToLinkedIn() {
+  const url = encodeURIComponent(window.location.href);
+  window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank');
+}
+
+function shareToReddit() {
+  const url = encodeURIComponent(window.location.href);
+  const title = encodeURIComponent('XAI Grok with Claude Code - Real-Time AI with X Integration via CCProxy');
+  window.open(`https://reddit.com/submit?url=${url}&title=${title}`, '_blank');
+}
+
+function copyToClipboard() {
+  navigator.clipboard.writeText(window.location.href).then(() => {
+    const button = event.target;
+    const originalText = button.textContent;
+    button.textContent = '✅ Copied!';
+    setTimeout(() => {
+      button.textContent = originalText;
+    }, 2000);
+  });
+}
+</script>
