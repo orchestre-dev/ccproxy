@@ -5,7 +5,10 @@
   "scripts": {
     "dev": "vitepress dev",
     "build": "vitepress build",
-    "preview": "vitepress preview"
+    "preview": "vitepress preview",
+    "deploy": "../scripts/deploy-cloudflare.sh --production",
+    "deploy:preview": "../scripts/deploy-cloudflare.sh --preview",
+    "deploy:local": "../scripts/deploy-local.sh"
   },
   "devDependencies": {
     "vitepress": "^1.0.0"

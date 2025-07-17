@@ -23,18 +23,34 @@ export default defineConfig({
     ['meta', { property: 'og:description', content: 'Universal AI proxy supporting Claude Code with Kimi K2, OpenAI, Gemini, Mistral, XAI Grok, and Ollama providers.' }],
     ['meta', { property: 'og:type', content: 'website' }],
     ['meta', { property: 'og:url', content: 'https://ccproxy.orchestre.dev' }],
-    ['meta', { property: 'og:image', content: 'https://ccproxy.orchestre.dev/ccproxy_icon.png' }],
+    ['meta', { property: 'og:image', content: 'https://ccproxy.orchestre.dev/og-image.png' }],
     ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
     ['meta', { name: 'twitter:title', content: 'CCProxy - Multi-Provider AI Proxy' }],
     ['meta', { name: 'twitter:description', content: 'Universal AI proxy for Claude Code with Kimi K2, OpenAI, Gemini, and more providers.' }],
-    ['meta', { name: 'twitter:image', content: 'https://ccproxy.orchestre.dev/ccproxy_icon.png' }],
+    ['meta', { name: 'twitter:image', content: 'https://ccproxy.orchestre.dev/og-image.png' }],
     
     // Favicons
     ['link', { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
     ['link', { rel: 'icon', type: 'image/png', sizes: '96x96', href: '/favicon-96x96.png' }],
     ['link', { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png' }],
     ['link', { rel: 'manifest', href: '/site.webmanifest' }],
-    ['meta', { name: 'msapplication-config', content: '/browserconfig.xml' }]
+    ['meta', { name: 'msapplication-config', content: '/browserconfig.xml' }],
+    
+    // Google Analytics - Configure with GA_MEASUREMENT_ID environment variable
+    ...(process.env.GA_MEASUREMENT_ID ? [
+      ['script', { async: true, src: `https://www.googletagmanager.com/gtag/js?id=${process.env.GA_MEASUREMENT_ID}` }],
+      ['script', {}, `
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', '${process.env.GA_MEASUREMENT_ID}', {
+          anonymize_ip: true,
+          cookie_flags: 'SameSite=None;Secure',
+          allow_google_signals: false,
+          allow_ad_personalization_signals: false
+        });
+      `]
+    ] : [])
   ],
 
   themeConfig: {
@@ -67,6 +83,7 @@ export default defineConfig({
       { text: 'Guide', link: '/guide/' },
       { text: 'Providers', link: '/providers/' },
       { text: 'Kimi K2', link: '/kimi-k2' },
+      { text: 'Blog', link: '/blog/' },
       { text: 'API', link: '/api/' },
       { 
         text: 'Community', 
@@ -168,6 +185,35 @@ export default defineConfig({
             { text: 'Quick Start', link: '/guide/quick-start' }
           ]
         }
+      ],
+      
+      '/blog/': [
+        {
+          text: 'Latest Posts',
+          items: [
+            { text: 'Kimi K2 + Claude Code Guide', link: '/blog/kimi-k2-claude-code-ultimate-guide' },
+            { text: 'Groq + Claude Code Future', link: '/blog/groq-claude-code-future-ai-development' },
+            { text: 'OpenAI Integration Guide', link: '/blog/openai-claude-code-integration' },
+            { text: 'Gemini Multimodal AI', link: '/blog/google-gemini-claude-code-multimodal' }
+          ]
+        },
+        {
+          text: 'Provider Deep Dives',
+          items: [
+            { text: 'Mistral AI Privacy-First', link: '/blog/mistral-ai-claude-code-privacy-first' },
+            { text: 'XAI Grok Real-Time', link: '/blog/xai-grok-claude-code-real-time' },
+            { text: 'Ollama Complete Privacy', link: '/blog/ollama-claude-code-complete-privacy' }
+          ]
+        },
+        {
+          text: 'Categories',
+          items: [
+            { text: 'Performance & Speed', link: '/blog/#performance-speed' },
+            { text: 'Privacy & Security', link: '/blog/#privacy-security' },
+            { text: 'AI Integration', link: '/blog/#ai-integration' },
+            { text: 'Multimodal AI', link: '/blog/#multimodal' }
+          ]
+        }
       ]
     },
 
@@ -177,7 +223,7 @@ export default defineConfig({
 
     footer: {
       message: 'Released under the MIT License. <a href="https://github.com/orchestre-dev/ccproxy" target="_blank">⭐ GitHub</a> • <a href="https://github.com/orchestre-dev/ccproxy/discussions" target="_blank">💬 Join Discussions</a> • <a href="https://github.com/orchestre-dev/ccproxy/issues" target="_blank">🐛 Report Issues</a>',
-      copyright: 'Copyright © 2025 Praney Behl - Universal AI Proxy for Claude Code'
+      copyright: 'Copyright © 2025, Made with ❤️ by Orchestre for the Claude code community'
     },
 
     editLink: {
