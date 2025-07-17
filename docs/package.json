@@ -4,8 +4,9 @@
   "description": "Documentation for CCProxy",
   "scripts": {
     "dev": "vitepress dev",
-    "build": "vitepress build",
-    "docs:build": "vitepress build",
+    "clean": "rm -rf .vitepress/dist",
+    "build": "npm run clean && vitepress build",
+    "docs:build": "npm run clean && vitepress build",
     "preview": "vitepress preview",
     "deploy": "../scripts/deploy-cloudflare.sh --production",
     "deploy:preview": "../scripts/deploy-cloudflare.sh --preview",

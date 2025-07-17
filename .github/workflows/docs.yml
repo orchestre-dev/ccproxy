@@ -40,10 +40,13 @@ jobs:
 
       - name: Build documentation
         run: |
-          echo "Starting VitePress build..."
+          echo "Starting clean build process..."
           npm run build
-          echo "Build completed, checking output..."
-          ls -la .vitepress/dist/
+          echo "Build completed successfully!"
+          echo "Checking output directory:"
+          ls -la .vitepress/dist/ | head -10
+          echo "Total files in dist:"
+          find .vitepress/dist -type f | wc -l
         working-directory: docs
 
       - name: Upload artifact
