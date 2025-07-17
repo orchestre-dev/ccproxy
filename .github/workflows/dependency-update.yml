@@ -1,0 +1,183 @@
+name: Dependency Update
+
+on:
+  schedule:
+    # Run every Monday at 9 AM UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-dependencies:
+    name: Update Go Dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24.2'
+
+      - name: Check for dependency updates
+        id: check_updates
+        run: |
+          # Get current module versions
+          go list -m -json all > current_modules.json
+          
+          # Update all dependencies
+          go get -u ./...
+          go mod tidy
+          
+          # Check if go.mod or go.sum changed
+          if git diff --quiet go.mod go.sum; then
+            echo "No dependency updates available"
+            echo "has_updates=false" >> $GITHUB_OUTPUT
+          else
+            echo "Dependency updates found"
+            echo "has_updates=true" >> $GITHUB_OUTPUT
+            
+            # Generate update summary
+            echo "## Dependency Updates" > update_summary.md
+            echo "" >> update_summary.md
+            echo "The following dependencies have been updated:" >> update_summary.md
+            echo "" >> update_summary.md
+            
+            # Show what changed
+            git diff go.mod >> update_summary.md
+            
+            # Set multiline output
+            echo "summary<<EOF" >> $GITHUB_OUTPUT
+            cat update_summary.md >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run tests with updated dependencies
+        if: steps.check_updates.outputs.has_updates == 'true'
+        run: |
+          go test ./...
+
+      - name: Run security audit
+        if: steps.check_updates.outputs.has_updates == 'true'
+        run: |
+          # Install govulncheck if not available
+          go install golang.org/x/vuln/cmd/govulncheck@latest
+          
+          # Run vulnerability check
+          govulncheck ./...
+
+      - name: Create Pull Request
+        if: steps.check_updates.outputs.has_updates == 'true'
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'deps: update Go dependencies'
+          title: 'deps: automated dependency updates'
+          body: |
+            ${{ steps.check_updates.outputs.summary }}
+            
+            ## Automated Changes
+            
+            This PR contains automated dependency updates. The following checks have been performed:
+            
+            - ✅ All tests pass with updated dependencies
+            - ✅ Security vulnerability scan completed
+            - ✅ Go modules are properly tidied
+            
+            ## Review Checklist
+            
+            - [ ] Review the dependency changes
+            - [ ] Verify all tests pass
+            - [ ] Check for any breaking changes in dependencies
+            - [ ] Confirm security scan results
+            
+            **Note**: This PR was created automatically by the dependency update workflow.
+          branch: automated/dependency-updates
+          delete-branch: true
+          draft: false
+
+  security-audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24.2'
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Run govulncheck
+        run: |
+          go install golang.org/x/vuln/cmd/govulncheck@latest
+          govulncheck ./...
+
+      - name: Run gosec
+        uses: securecodewarrior/github-action-gosec@master
+        with:
+          args: '-fmt sarif -out gosec-results.sarif ./...'
+
+      - name: Upload SARIF file
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: gosec-results.sarif
+
+      - name: Run Nancy (dependency vulnerability scanner)
+        run: |
+          # Install nancy
+          go install github.com/sonatypecommunity/nancy@latest
+          
+          # Generate list of dependencies and scan
+          go list -json -deps ./... | nancy sleuth
+
+  docker-security:
+    name: Docker Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image for scanning
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./docker/Dockerfile
+          load: true
+          tags: ccproxy:security-scan
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'ccproxy:security-scan'
+          format: 'sarif'
+          output: 'trivy-docker-results.sarif'
+
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-docker-results.sarif'
+
+      - name: Run Snyk to check Docker image for vulnerabilities
+        continue-on-error: true
+        uses: snyk/actions/docker@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          image: ccproxy:security-scan
+          args: --severity-threshold=high --file=docker/Dockerfile

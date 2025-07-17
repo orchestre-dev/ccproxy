@@ -1,0 +1,206 @@
+name: Pre-Release
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.gitignore'
+      - '.github/workflows/**'
+
+env:
+  GO_VERSION: '1.24.2'
+
+jobs:
+  check-changes:
+    name: Check for relevant changes
+    runs-on: ubuntu-latest
+    outputs:
+      should_release: ${{ steps.check.outputs.should_release }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for changes since last release
+        id: check
+        run: |
+          # Get the latest release tag
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          
+          if [ -z "$LATEST_TAG" ]; then
+            echo "No previous tags found, creating pre-release"
+            echo "should_release=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          # Check if there are any commits since the last tag
+          COMMITS_SINCE_TAG=$(git rev-list ${LATEST_TAG}..HEAD --count)
+          
+          if [ "$COMMITS_SINCE_TAG" -gt "0" ]; then
+            echo "Found $COMMITS_SINCE_TAG commits since last release"
+            echo "should_release=true" >> $GITHUB_OUTPUT
+          else
+            echo "No commits since last release"
+            echo "should_release=false" >> $GITHUB_OUTPUT
+          fi
+
+  create-pre-release:
+    name: Create Pre-Release
+    runs-on: ubuntu-latest
+    needs: check-changes
+    if: needs.check-changes.outputs.should_release == 'true'
+    outputs:
+      tag_name: ${{ steps.create_tag.outputs.tag_name }}
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create pre-release tag
+        id: create_tag
+        run: |
+          # Get the latest release tag
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          
+          # Extract version numbers
+          if [[ $LATEST_TAG =~ v([0-9]+)\.([0-9]+)\.([0-9]+) ]]; then
+            MAJOR=${BASH_REMATCH[1]}
+            MINOR=${BASH_REMATCH[2]}
+            PATCH=${BASH_REMATCH[3]}
+          else
+            MAJOR=0
+            MINOR=1
+            PATCH=0
+          fi
+          
+          # Increment patch version for pre-release
+          PATCH=$((PATCH + 1))
+          
+          # Create pre-release tag with timestamp
+          TIMESTAMP=$(date +%Y%m%d%H%M%S)
+          TAG_NAME="v${MAJOR}.${MINOR}.${PATCH}-rc.${TIMESTAMP}"
+          
+          echo "tag_name=${TAG_NAME}" >> $GITHUB_OUTPUT
+          echo "Creating pre-release tag: ${TAG_NAME}"
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          # Get the previous tag
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          
+          echo "## 🚀 Pre-Release ${{ steps.create_tag.outputs.tag_name }}" > changelog.md
+          echo "" >> changelog.md
+          echo "This is an automated pre-release created from the main branch." >> changelog.md
+          echo "" >> changelog.md
+          echo "### Changes since last release:" >> changelog.md
+          echo "" >> changelog.md
+          
+          if [ -n "$PREV_TAG" ]; then
+            git log --pretty=format:"- %s (%h)" ${PREV_TAG}..HEAD >> changelog.md
+          else
+            git log --pretty=format:"- %s (%h)" HEAD >> changelog.md
+          fi
+          
+          echo "" >> changelog.md
+          echo "**⚠️ This is a pre-release version and may contain bugs. Use at your own risk.**" >> changelog.md
+          
+          # Set multiline output
+          echo "notes<<EOF" >> $GITHUB_OUTPUT
+          cat changelog.md >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create and push tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a ${{ steps.create_tag.outputs.tag_name }} -m "Pre-release ${{ steps.create_tag.outputs.tag_name }}"
+          git push origin ${{ steps.create_tag.outputs.tag_name }}
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.create_tag.outputs.tag_name }}
+          release_name: Pre-Release ${{ steps.create_tag.outputs.tag_name }}
+          body: ${{ steps.changelog.outputs.notes }}
+          draft: false
+          prerelease: true
+
+  build-pre-release:
+    name: Build Pre-Release Binaries
+    runs-on: ubuntu-latest
+    needs: create-pre-release
+    strategy:
+      matrix:
+        include:
+          - goos: linux
+            goarch: amd64
+          - goos: linux
+            goarch: arm64
+          - goos: darwin
+            goarch: amd64
+          - goos: darwin
+            goarch: arm64
+          - goos: windows
+            goarch: amd64
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Get dependencies
+        run: go mod download
+
+      - name: Set binary name
+        id: binary_name
+        run: |
+          BINARY_NAME="ccproxy-${{ matrix.goos }}-${{ matrix.goarch }}"
+          if [ "${{ matrix.goos }}" = "windows" ]; then
+            BINARY_NAME="${BINARY_NAME}.exe"
+          fi
+          echo "name=${BINARY_NAME}" >> $GITHUB_OUTPUT
+
+      - name: Build binary
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: 0
+        run: |
+          go build -a -installsuffix cgo -ldflags="-w -s -X main.version=${{ needs.create-pre-release.outputs.tag_name }}" -o ${{ steps.binary_name.outputs.name }} ./cmd/proxy
+
+      - name: Generate checksum
+        run: |
+          sha256sum ${{ steps.binary_name.outputs.name }} > ${{ steps.binary_name.outputs.name }}.sha256
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-pre-release.outputs.upload_url }}
+          asset_path: ./${{ steps.binary_name.outputs.name }}
+          asset_name: ${{ steps.binary_name.outputs.name }}
+          asset_content_type: application/octet-stream
+
+      - name: Upload Checksum
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-pre-release.outputs.upload_url }}
+          asset_path: ./${{ steps.binary_name.outputs.name }}.sha256
+          asset_name: ${{ steps.binary_name.outputs.name }}.sha256
+          asset_content_type: text/plain
