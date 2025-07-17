@@ -157,6 +157,7 @@ func TestIntegrationAnthropicProxy(t *testing.T) {
 	}
 }
 
+//nolint:gocyclo // Test function complexity is acceptable for comprehensive test coverage
 func TestIntegrationAnthropicProxyWithTools(t *testing.T) {
 	// Create a mock provider server that returns tool calls
 	mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

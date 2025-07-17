@@ -137,6 +137,17 @@ func Load() *Config {
 	return &config
 }
 
+// Default token limits for various providers
+const (
+	groqMaxTokens       = 16384
+	openRouterMaxTokens = 4096
+	openAIMaxTokens     = 4096
+	xaiMaxTokens        = 128000
+	geminiMaxTokens     = 32768
+	mistralMaxTokens    = 32768
+	ollamaMaxTokens     = 4096
+)
+
 // setDefaults sets default configuration values
 func setDefaults() {
 	// Provider defaults
@@ -153,43 +164,43 @@ func setDefaults() {
 	// Groq defaults
 	viper.SetDefault("providers.groq.base_url", "https://api.groq.com/openai/v1")
 	viper.SetDefault("providers.groq.model", "moonshotai/kimi-k2-instruct")
-	viper.SetDefault("providers.groq.max_tokens", 16384)
+	viper.SetDefault("providers.groq.max_tokens", groqMaxTokens)
 	viper.SetDefault("providers.groq.timeout", "60s")
 
 	// OpenRouter defaults
 	viper.SetDefault("providers.openrouter.base_url", "https://openrouter.ai/api/v1")
 	viper.SetDefault("providers.openrouter.model", "openai/gpt-4o")
-	viper.SetDefault("providers.openrouter.max_tokens", 4096)
+	viper.SetDefault("providers.openrouter.max_tokens", openRouterMaxTokens)
 	viper.SetDefault("providers.openrouter.timeout", "60s")
 
 	// OpenAI defaults
 	viper.SetDefault("providers.openai.base_url", "https://api.openai.com/v1")
 	viper.SetDefault("providers.openai.model", "gpt-4o")
-	viper.SetDefault("providers.openai.max_tokens", 4096)
+	viper.SetDefault("providers.openai.max_tokens", openAIMaxTokens)
 	viper.SetDefault("providers.openai.timeout", "60s")
 
 	// XAI defaults
 	viper.SetDefault("providers.xai.base_url", "https://api.x.ai/v1")
 	viper.SetDefault("providers.xai.model", "grok-beta")
-	viper.SetDefault("providers.xai.max_tokens", 128000)
+	viper.SetDefault("providers.xai.max_tokens", xaiMaxTokens)
 	viper.SetDefault("providers.xai.timeout", "60s")
 
 	// Gemini defaults
 	viper.SetDefault("providers.gemini.base_url", "https://generativelanguage.googleapis.com")
 	viper.SetDefault("providers.gemini.model", "gemini-2.0-flash")
-	viper.SetDefault("providers.gemini.max_tokens", 32768)
+	viper.SetDefault("providers.gemini.max_tokens", geminiMaxTokens)
 	viper.SetDefault("providers.gemini.timeout", "60s")
 
 	// Mistral defaults
 	viper.SetDefault("providers.mistral.base_url", "https://api.mistral.ai/v1")
 	viper.SetDefault("providers.mistral.model", "mistral-large-latest")
-	viper.SetDefault("providers.mistral.max_tokens", 32768)
+	viper.SetDefault("providers.mistral.max_tokens", mistralMaxTokens)
 	viper.SetDefault("providers.mistral.timeout", "60s")
 
 	// Ollama defaults
 	viper.SetDefault("providers.ollama.base_url", "http://localhost:11434")
 	viper.SetDefault("providers.ollama.model", "llama3.2")
-	viper.SetDefault("providers.ollama.max_tokens", 4096)
+	viper.SetDefault("providers.ollama.max_tokens", ollamaMaxTokens)
 	viper.SetDefault("providers.ollama.timeout", "120s")
 	viper.SetDefault("providers.ollama.api_key", "ollama")
 
@@ -303,8 +314,8 @@ func validateGroqConfig(config *GroqConfig) {
 		log.Fatal("GROQ_MAX_TOKENS must be greater than 0")
 	}
 
-	if config.MaxTokens > 16384 {
-		log.Printf("Warning: GROQ_MAX_TOKENS (%d) exceeds recommended limit (16384)", config.MaxTokens)
+	if config.MaxTokens > groqMaxTokens {
+		log.Printf("Warning: GROQ_MAX_TOKENS (%d) exceeds recommended limit (%d)", config.MaxTokens, groqMaxTokens)
 	}
 }
 
@@ -331,8 +342,9 @@ func validateOpenAIConfig(config *OpenAIConfig) {
 		log.Fatal("OPENAI_MAX_TOKENS must be greater than 0")
 	}
 
-	if config.MaxTokens > 128000 {
-		log.Printf("Warning: OPENAI_MAX_TOKENS (%d) exceeds GPT-4o context limit (128000)", config.MaxTokens)	}
+	if config.MaxTokens > xaiMaxTokens {
+		log.Printf("Warning: OPENAI_MAX_TOKENS (%d) exceeds GPT-4o context limit (%d)", config.MaxTokens, xaiMaxTokens)
+	}
 }
 
 // validateXAIConfig validates XAI-specific configuration
@@ -345,8 +357,9 @@ func validateXAIConfig(config *XAIConfig) {
 		log.Fatal("XAI_MAX_TOKENS must be greater than 0")
 	}
 
-	if config.MaxTokens > 128000 {
-		log.Printf("Warning: XAI_MAX_TOKENS (%d) exceeds Grok context limit (128000)", config.MaxTokens)	}
+	if config.MaxTokens > xaiMaxTokens {
+		log.Printf("Warning: XAI_MAX_TOKENS (%d) exceeds Grok context limit (%d)", config.MaxTokens, xaiMaxTokens)
+	}
 }
 
 // validateGeminiConfig validates Gemini-specific configuration
@@ -359,8 +372,9 @@ func validateGeminiConfig(config *GeminiConfig) {
 		log.Fatal("GEMINI_MAX_TOKENS must be greater than 0")
 	}
 
-	if config.MaxTokens > 32768 {
-		log.Printf("Warning: GEMINI_MAX_TOKENS (%d) exceeds Gemini context limit (32768)", config.MaxTokens)	}
+	if config.MaxTokens > geminiMaxTokens {
+		log.Printf("Warning: GEMINI_MAX_TOKENS (%d) exceeds Gemini context limit (%d)", config.MaxTokens, geminiMaxTokens)
+	}
 }
 
 // validateMistralConfig validates Mistral-specific configuration
@@ -373,8 +387,9 @@ func validateMistralConfig(config *MistralConfig) {
 		log.Fatal("MISTRAL_MAX_TOKENS must be greater than 0")
 	}
 
-	if config.MaxTokens > 32768 {
-		log.Printf("Warning: MISTRAL_MAX_TOKENS (%d) exceeds Mistral context limit (32768)", config.MaxTokens)	}
+	if config.MaxTokens > mistralMaxTokens {
+		log.Printf("Warning: MISTRAL_MAX_TOKENS (%d) exceeds Mistral context limit (%d)", config.MaxTokens, mistralMaxTokens)
+	}
 }
 
 // validateOllamaConfig validates Ollama-specific configuration
@@ -392,6 +407,7 @@ func validateOllamaConfig(config *OllamaConfig) {
 	}
 
 	// Note: Ollama models can have varying context limits, so we don't enforce a strict upper limit
-	if config.MaxTokens > 128000 {
-		log.Printf("Warning: OLLAMA_MAX_TOKENS (%d) is very large and may not be supported by all models", config.MaxTokens)	}
+	if config.MaxTokens > xaiMaxTokens {
+		log.Printf("Warning: OLLAMA_MAX_TOKENS (%d) is very large and may not be supported by all models", config.MaxTokens)
+	}
 }
