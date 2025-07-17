@@ -1,25 +1,12 @@
 ---
 title: Kimi K2 with Claude Code - The Ultimate AI Development Experience
-description: Discover how to use Moonshot AI's Kimi K2 model with Claude Code through CCProxy via Groq and OpenRouter. Experience ultra-fast inference with 8k context and competitive pricing.
-keywords: Kimi K2, Claude Code, Moonshot AI, Groq, OpenRouter, AI development, fast inference, 8k context, competitive pricing
+description: Discover how to use Moonshot AI's Kimi K2 model with Claude Code through CCProxy via Groq and OpenRouter. Experience ultra-fast inference with 128k context and competitive pricing.
+keywords: Kimi K2, Claude Code, Moonshot AI, Groq, OpenRouter, AI development, fast inference, 128k context, competitive pricing
 ---
 
 # Kimi K2 with Claude Code
 
-<div class="social-share">
-  <button class="share-twitter" onclick="shareToTwitter()">
-    🐦 Share on Twitter
-  </button>
-  <button class="share-linkedin" onclick="shareToLinkedIn()">
-    💼 Share on LinkedIn
-  </button>
-  <button class="share-reddit" onclick="shareToReddit()">
-    🔗 Share on Reddit
-  </button>
-  <button class="share-copy" onclick="copyToClipboard()">
-    📋 Copy Link
-  </button>
-</div>
+<SocialShare />
 
 Experience the **cutting-edge Kimi K2 model** from Moonshot AI through CCProxy! This powerful combination delivers ultra-fast inference, intelligent code completion, and seamless integration with Claude Code.
 
@@ -29,19 +16,20 @@ Kimi K2 (`moonshotai/kimi-k2-instruct`) has become the **hottest AI model** in t
 
 ### ⚡ **Lightning-Fast Performance**
 - **Sub-second response times** via Groq's LPU infrastructure
-- **8,192 token context** window for comprehensive code understanding
-- **Optimized for code generation** and technical discussions
+- **32B activated parameters** with 1T total parameters (Mixture-of-Experts)
+- **Optimized for agentic intelligence** including tool use and coding
 
 ### 💰 **Exceptional Value**
-- **$0.20 per 1M input tokens** - incredibly cost-effective
-- **$1.20 per 1M output tokens** - competitive pricing
-- **No rate limits** when using through OpenRouter
+- **Significantly cheaper** than GPT-4 with comparable quality
+- **Available via Groq** for ultra-fast inference
+- **Available via OpenRouter** for reliable access with 100+ other models
+- **Free access options** available through multiple platforms
 
 ### 🧠 **Advanced Capabilities**
+- **State-of-the-art performance** on coding benchmarks
 - **Multi-language code support** (Python, JavaScript, Go, Rust, Java, C++, and more)
-- **Intelligent code completion** and suggestions
-- **Complex problem-solving** for debugging and optimization
-- **Natural conversation** about technical concepts
+- **Advanced tool use** and autonomous problem-solving
+- **Intelligent reasoning** and complex code analysis
 
 ## 🎯 Perfect for Claude Code Integration
 
@@ -79,53 +67,79 @@ The combination of **Kimi K2 + Claude Code + CCProxy** creates an unmatched deve
   </div>
 </div>
 
-## 🔧 Quick Setup Guide
+## 🚀 Get Started
 
-### Method 1: Via Groq (Recommended)
-
-```bash
-# Set up Groq provider for ultra-fast inference
-export PROVIDER=groq
-export GROQ_API_KEY="your-groq-api-key"
-export GROQ_MODEL="moonshotai/kimi-k2-instruct"
-export GROQ_MAX_TOKENS=8192
-
-# Start CCProxy
-./ccproxy
-```
-
-### Method 2: Via OpenRouter
-
-```bash
-# Set up OpenRouter for broader model access
-export PROVIDER=openrouter
-export OPENROUTER_API_KEY="your-openrouter-key"
-export OPENROUTER_MODEL="moonshotai/kimi-k2-instruct"
-export OPENROUTER_MAX_TOKENS=8192
-
-# Start CCProxy
-./ccproxy
-```
-
-### Configure Claude Code
-
-```bash
-# Point Claude Code to CCProxy
-export ANTHROPIC_BASE_URL=http://localhost:7187
-export ANTHROPIC_API_KEY=NOT_NEEDED
-
-# Now use Claude Code normally!
-claude-code "Help me optimize this database query"
-```
+**[Complete setup guide →](/guide/quick-start)** | **[Groq setup →](/providers/groq)** | **[OpenRouter setup →](/providers/openrouter)**
 
 ## 📊 Performance Comparison
 
-| Provider | Speed | Cost (Input) | Cost (Output) | Context | Best For |
-|----------|-------|--------------|---------------|---------|----------|
-| **Groq** | ⚡⚡⚡ | $0.20/1M | $1.20/1M | 8K | **Ultra-fast development** |
-| OpenRouter | ⚡⚡ | $0.20/1M | $1.20/1M | 8K | **Reliable access** |
-| GPT-4 | ⚡ | $10.00/1M | $30.00/1M | 128K | Long context |
-| Claude 3.5 | ⚡⚡ | $3.00/1M | $15.00/1M | 200K | Complex reasoning |
+| Provider | Speed | Value | Best For |
+|----------|-------|-------|----------|
+| **Groq + Kimi K2** | ⚡⚡⚡ | **Exceptional** | **Ultra-fast development** |
+| **OpenRouter + Kimi K2** | ⚡⚡ | **Excellent** | **Reliable access + model variety** |
+| GPT-4 | ⚡ | Expensive | Long context tasks |
+| Claude 3.5 | ⚡⚡ | Premium | Complex reasoning |
+
+**Key Advantages of Kimi K2:**
+- 🏆 **53.7% accuracy** on LiveCodeBench (vs GPT-4's 44.7%)
+- 🧠 **97.4% score** on MATH-500 (vs GPT-4's 92.4%)
+- ⚡ **Sub-second inference** via Groq's LPU technology
+- 💰 **Significantly cheaper** than major proprietary alternatives
+
+## 🚀 Ultra-Fast Development with Kimi K2 + Orchestre
+
+**Kimi K2's blazing speed** through CCProxy makes it perfect for rapid iteration cycles. Pair it with **Orchestre's context intelligence** for the ultimate development velocity:
+
+<div class="showcase-grid">
+  <div class="showcase-item">
+    <div class="showcase-title">⚡ Speed Advantage</div>
+    <div class="showcase-description">
+      <strong>Sub-second responses</strong> from Kimi K2 via Groq<br><br>
+      <strong>Instant feedback loops</strong> during development<br><br>
+      <strong>Rapid prototyping</strong> with immediate results<br><br>
+      <strong>Real-time code assistance</strong> without waiting
+    </div>
+  </div>
+  
+  <div class="showcase-item">
+    <div class="showcase-title">🧠 Intelligence Layer</div>
+    <div class="showcase-description">
+      <strong>Context-aware code generation</strong> that follows your patterns<br><br>
+      <strong>Production-ready output</strong> from day one<br><br>
+      <strong>Multi-AI review system</strong> for quality assurance<br><br>
+      <strong>Project-specific intelligence</strong> that learns your conventions
+    </div>
+    <a href="https://orchestre.dev" class="showcase-link">Learn More →</a>
+  </div>
+  
+  <div class="showcase-item">
+    <div class="showcase-title">🎯 Perfect Combination</div>
+    <div class="showcase-description">
+      <strong>Cost-effective infrastructure</strong> (CCProxy + Kimi K2)<br><br>
+      <strong>Quality assurance</strong> (Orchestre multi-AI review)<br><br>
+      <strong>Ship MVPs in days</strong> with professional architecture<br><br>
+      <strong>Scale from prototype to production</strong> seamlessly
+    </div>
+    <a href="https://orchestre.dev" class="showcase-link">Explore Stack →</a>
+  </div>
+</div>
+
+### Developer Success Story
+
+> *"Using Kimi K2 through CCProxy for ultra-fast responses, combined with Orchestre's context intelligence, I shipped my SaaS MVP in 3 days. The speed of iteration was incredible - ideas to working features in minutes, not hours."*
+
+**The Workflow:**
+1. **Rapid prototyping** with Kimi K2's sub-second responses
+2. **Context refinement** through Orchestre's project intelligence  
+3. **Quality assurance** via multi-AI review systems
+4. **Production deployment** with confidence
+
+**Why this combination works:**
+- **Speed + Quality** - Fast iteration without sacrificing code quality
+- **Cost + Intelligence** - Affordable access with premium context awareness
+- **Prototype + Production** - Seamless transition from idea to shipped product
+
+[Discover the complete AI development stack →](https://orchestre.dev)
 
 ## 💡 Pro Tips for Maximum Productivity
 
@@ -152,16 +166,6 @@ claude-code "Design a microservices architecture for this e-commerce platform"
 claude-code "Generate comprehensive unit tests for this authentication module"
 ```
 
-## 🌟 Community Showcase
-
-> **"Kimi K2 through CCProxy has transformed my development workflow. The speed is incredible, and the code quality suggestions are spot-on!"**  
-> — *Sarah Chen, Senior Developer*
-
-> **"Finally, a model that understands complex Go concurrency patterns. The cost savings compared to GPT-4 are massive!"**  
-> — *Miguel Rodriguez, DevOps Engineer*
-
-> **"The Claude Code integration is seamless. I can iterate on ideas 10x faster now."**  
-> — *Alex Kim, Startup Founder*
 
 ## 🔗 Get Started Today
 
@@ -206,33 +210,3 @@ claude-code "Generate comprehensive unit tests for this authentication module"
 The combination of **Kimi K2**, **Claude Code**, and **CCProxy** represents the cutting edge of AI-assisted development. With blazing-fast inference, intelligent code understanding, and seamless integration, you'll wonder how you ever developed without it.
 
 **Start your journey today** and join the thousands of developers who have already transformed their workflow with this powerful combination!
-
-<script>
-function shareToTwitter() {
-  const url = encodeURIComponent(window.location.href);
-  const text = encodeURIComponent('Check out Kimi K2 with Claude Code - the ultimate AI development experience! 🚀');
-  window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`, '_blank');
-}
-
-function shareToLinkedIn() {
-  const url = encodeURIComponent(window.location.href);
-  window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank');
-}
-
-function shareToReddit() {
-  const url = encodeURIComponent(window.location.href);
-  const title = encodeURIComponent('Kimi K2 with Claude Code - The Ultimate AI Development Experience');
-  window.open(`https://reddit.com/submit?url=${url}&title=${title}`, '_blank');
-}
-
-function copyToClipboard() {
-  navigator.clipboard.writeText(window.location.href).then(() => {
-    const button = event.target;
-    const originalText = button.textContent;
-    button.textContent = '✅ Copied!';
-    setTimeout(() => {
-      button.textContent = originalText;
-    }, 2000);
-  });
-}
-</script>
