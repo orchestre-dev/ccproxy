@@ -47,6 +47,15 @@ func NewProviderError(provider, message string, original error) *ProviderError {
 
 // NewHTTPError creates a provider error from HTTP response
 func NewHTTPError(provider string, resp *http.Response, original error) *ProviderError {
+	if resp == nil {
+		return &ProviderError{
+			Provider:  provider,
+			Message:   "nil response",
+			Original:  original,
+			Retryable: false,
+		}
+	}
+	
 	retryable := isRetryableHTTPError(resp.StatusCode)
 
 	return &ProviderError{
