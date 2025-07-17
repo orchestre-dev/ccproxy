@@ -49,16 +49,9 @@ CCProxy uses standard HTTP status codes and returns errors in a consistent forma
 | `502` | Bad Gateway | Provider returned an error |
 | `503` | Service Unavailable | CCProxy or provider is down |
 
-## Rate Limiting
+## Provider Rate Limits
 
-CCProxy itself doesn't impose rate limits, but the underlying providers do. Rate limits are passed through from the provider.
-
-Common rate limit headers:
-```http
-X-RateLimit-Limit: 1000
-X-RateLimit-Remaining: 999
-X-RateLimit-Reset: 1640995200
-```
+CCProxy is a local proxy and doesn't impose any rate limits. However, the underlying providers (Groq, OpenAI, etc.) may have their own rate limits which will be passed through as errors.
 
 ## Request/Response Format
 
