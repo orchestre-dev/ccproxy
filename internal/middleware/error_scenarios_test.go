@@ -235,6 +235,7 @@ func TestRecoveryErrorScenarios(t *testing.T) {
 			name: "Nil Pointer Panic",
 			handler: func(c *gin.Context) {
 				var nilPointer *string
+				//nolint:govet // Intentional nil dereference for panic test
 				_ = *nilPointer // This will panic
 			},
 			expectPanic: true,
@@ -252,6 +253,7 @@ func TestRecoveryErrorScenarios(t *testing.T) {
 			handler: func(c *gin.Context) {
 				var i interface{} = "string"
 				// This will panic - intentionally not checking the ok value
+				//nolint:errcheck // Intentional panic for test
 				v := i.(int)
 				_ = v
 			},

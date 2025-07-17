@@ -521,7 +521,7 @@ func TestRequestTimeoutScenarios(t *testing.T) {
 			}
 			ctx, cancel := context.WithTimeout(context.Background(), tt.contextTimeout)
 			defer cancel()
-			
+
 			req, err := http.NewRequestWithContext(ctx, "POST", "/v1/messages", bytes.NewReader(bodyBytes))
 			if err != nil {
 				t.Fatalf("Failed to create request: %v", err)

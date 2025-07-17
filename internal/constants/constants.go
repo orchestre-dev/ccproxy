@@ -44,6 +44,9 @@ const (
 	HealthCheckTokens  = 1
 )
 
+// ContextKey is a custom type for context keys to avoid collisions
+type ContextKey string
+
 // API constants
 const (
 	// OpenAI API paths
@@ -53,7 +56,7 @@ const (
 	ChatCompletionsEndpoint = "/chat/completions"
 
 	// Request context keys
-	RequestIDKey = "request_id"
+	RequestIDKey = ContextKey("request_id")
 
 	// Default values
 	DefaultRequestID    = "unknown"
