@@ -43,9 +43,10 @@ func main() {
 	router.Use(middleware.Logger(logger))
 	router.Use(middleware.Recovery(logger))
 	router.Use(middleware.CORS())
-	
+
 	// Add rate limiting - 100 requests per minute per client
-	router.Use(middleware.RateLimit(100, time.Minute))
+	const defaultRateLimit = 100
+	router.Use(middleware.RateLimit(defaultRateLimit, time.Minute))
 
 	// Register routes
 	handlers.RegisterRoutes(router, providerClient, logger)

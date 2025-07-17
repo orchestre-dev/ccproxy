@@ -96,8 +96,8 @@ func (p *Provider) CreateChatCompletion(
 		return nil, fmt.Errorf("failed to send request: %w", err)
 	}
 	defer func() {
-		if err := httpResp.Body.Close(); err != nil {
-			p.logger.WithError(err).Warn("Failed to close response body")
+		if closeErr := httpResp.Body.Close(); closeErr != nil {
+			p.logger.WithError(closeErr).Warn("Failed to close response body")
 		}
 	}()
 
@@ -203,11 +203,11 @@ func (p *Provider) HealthCheck(ctx context.Context) error {
 		},
 		MaxTokens: &[]int{1}[0],
 	}
-	
+
 	_, err := p.CreateChatCompletion(ctx, req)
 	if err != nil {
 		return fmt.Errorf("openrouter health check failed: %w", err)
 	}
-	
+
 	return nil
 }

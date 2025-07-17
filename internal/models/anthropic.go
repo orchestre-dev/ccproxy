@@ -1,3 +1,4 @@
+// Package models defines data structures for API requests and responses
 package models
 
 import "encoding/json"

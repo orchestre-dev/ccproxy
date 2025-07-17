@@ -1,3 +1,4 @@
+// Package handlers provides HTTP request handlers for the CCProxy server
 package handlers
 
 import (
@@ -110,7 +111,9 @@ func (h *Handler) ProxyMessages(c *gin.Context) {
 	}
 
 	// Add request ID to context for provider
-	ctx := context.WithValue(c.Request.Context(), "request_id", requestID)
+	type contextKey string
+	const requestIDKey contextKey = "request_id"
+	ctx := context.WithValue(c.Request.Context(), requestIDKey, requestID)
 
 	// Send request to provider
 	openaiResp, err := h.provider.CreateChatCompletion(ctx, openaiReq)

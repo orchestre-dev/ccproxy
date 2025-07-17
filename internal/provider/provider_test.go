@@ -86,16 +86,19 @@ func TestCreateProvider_ValidProviders(t *testing.T) {
 				if provider != nil {
 					t.Errorf("Expected nil provider for invalid provider %s", tc.providerName)
 				}
-			} else {
-				if err != nil {
-					// Some providers might fail due to missing dependencies (like Ollama)
-					// but they should still be recognized as valid provider types
-					t.Logf("Provider %s failed to initialize (expected in test): %v", tc.providerName, err)
-				}
-				// Don't test provider methods if initialization failed
-				if provider != nil {
-					testProviderInterface(t, provider, tc.providerName)
-				}
+				return
+			}
+
+			if err != nil {
+				// Some providers might fail due to missing dependencies (like Ollama)
+				// but they should still be recognized as valid provider types
+				t.Logf("Provider %s failed to initialize (expected in test): %v", tc.providerName, err)
+				return
+			}
+
+			// Test provider methods if initialization succeeded
+			if provider != nil {
+				testProviderInterface(t, provider, tc.providerName)
 			}
 		})
 	}

@@ -20,7 +20,10 @@ func TestNewProvider(t *testing.T) {
 	}
 	log := logger.New(config.LoggingConfig{Level: "info", Format: "json"})
 
-	provider := NewProvider(cfg, log)
+	provider, err := NewProvider(cfg, log)
+	if err != nil {
+		t.Fatalf("Failed to create provider: %v", err)
+	}
 
 	if provider == nil {
 		t.Fatal("Provider should not be nil")
@@ -57,6 +60,7 @@ func TestProvider_CreateChatCompletion_Success(t *testing.T) {
 		// Return mock Gemini response
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
+		//nolint:errcheck
 		w.Write([]byte(`{
 			"candidates": [{
 				"content": {
@@ -84,7 +88,10 @@ func TestProvider_CreateChatCompletion_Success(t *testing.T) {
 		MaxTokens: 1000,
 	}
 	log := logger.New(config.LoggingConfig{Level: "info", Format: "json"})
-	provider := NewProvider(cfg, log)
+	provider, err := NewProvider(cfg, log)
+	if err != nil {
+		t.Fatalf("Failed to create provider: %v", err)
+	}
 
 	maxTokens := 100
 	req := &models.ChatCompletionRequest{
@@ -127,6 +134,7 @@ func TestProvider_CreateChatCompletion_WithTools(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
+		//nolint:errcheck
 		w.Write([]byte(`{
 			"candidates": [{
 				"content": {
@@ -159,7 +167,10 @@ func TestProvider_CreateChatCompletion_WithTools(t *testing.T) {
 		MaxTokens: 1000,
 	}
 	log := logger.New(config.LoggingConfig{Level: "info", Format: "json"})
-	provider := NewProvider(cfg, log)
+	provider, err := NewProvider(cfg, log)
+	if err != nil {
+		t.Fatalf("Failed to create provider: %v", err)
+	}
 
 	maxTokens := 100
 	req := &models.ChatCompletionRequest{
@@ -219,6 +230,7 @@ func TestProvider_CreateChatCompletion_Error(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
+		//nolint:errcheck
 		w.Write([]byte(`{
 			"error": {
 				"code": 400,
@@ -236,7 +248,10 @@ func TestProvider_CreateChatCompletion_Error(t *testing.T) {
 		MaxTokens: 1000,
 	}
 	log := logger.New(config.LoggingConfig{Level: "info", Format: "json"})
-	provider := NewProvider(cfg, log)
+	provider, err := NewProvider(cfg, log)
+	if err != nil {
+		t.Fatalf("Failed to create provider: %v", err)
+	}
 
 	maxTokens := 100
 	req := &models.ChatCompletionRequest{
@@ -267,7 +282,10 @@ func TestProvider_InterfaceCompliance(t *testing.T) {
 		MaxTokens: 1000,
 	}
 	log := logger.New(config.LoggingConfig{Level: "info", Format: "json"})
-	provider := NewProvider(cfg, log)
+	provider, err := NewProvider(cfg, log)
+	if err != nil {
+		t.Fatalf("Failed to create provider: %v", err)
+	}
 
 	// Test interface methods
 	if provider.GetName() != "gemini" {
@@ -287,7 +305,7 @@ func TestProvider_InterfaceCompliance(t *testing.T) {
 	}
 
 	// Test ValidateConfig
-	err := provider.ValidateConfig()
+	err = provider.ValidateConfig()
 	if err != nil {
 		t.Errorf("Expected ValidateConfig() to pass, got error: %v", err)
 	}

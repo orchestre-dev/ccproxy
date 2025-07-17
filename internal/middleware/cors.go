@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"net/http"
 	"os"
 	"strings"
 
@@ -11,7 +12,7 @@ import (
 func CORS() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		origin := c.Request.Header.Get("Origin")
-		
+
 		// Get environment and configure allowed origins
 		env := os.Getenv("SERVER_ENVIRONMENT")
 		if env == "" {
@@ -20,7 +21,7 @@ func CORS() gin.HandlerFunc {
 		if env == "" {
 			env = os.Getenv("ENVIRONMENT")
 		}
-		
+
 		var allowedOrigins []string
 		if env == "development" || env == "dev" {
 			// Development: Allow localhost and common development origins
@@ -38,13 +39,13 @@ func CORS() gin.HandlerFunc {
 				"https://ccproxy.orchestre.dev",
 				"https://docs.ccproxy.orchestre.dev",
 			}
-			
+
 			// Allow custom origins from environment variable
 			if customOrigins := os.Getenv("CORS_ALLOWED_ORIGINS"); customOrigins != "" {
 				allowedOrigins = append(allowedOrigins, strings.Split(customOrigins, ",")...)
 			}
 		}
-		
+
 		// Check if origin is allowed
 		isAllowed := false
 		for _, allowedOrigin := range allowedOrigins {
@@ -53,7 +54,7 @@ func CORS() gin.HandlerFunc {
 				break
 			}
 		}
-		
+
 		// Set CORS headers
 		if isAllowed {
 			c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
@@ -63,12 +64,17 @@ func CORS() gin.HandlerFunc {
 			c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
 			c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
 		}
-		
-		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With, anthropic-version, x-api-key")
+
+		allowedHeaders := []string{
+			"Content-Type", "Content-Length", "Accept-Encoding", "X-CSRF-Token",
+			"Authorization", "accept", "origin", "Cache-Control", "X-Requested-With",
+			"anthropic-version", "x-api-key",
+		}
+		c.Writer.Header().Set("Access-Control-Allow-Headers", strings.Join(allowedHeaders, ", "))
 		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE")
 
 		if c.Request.Method == "OPTIONS" {
-			c.AbortWithStatus(204)
+			c.AbortWithStatus(http.StatusNoContent)
 			return
 		}
 

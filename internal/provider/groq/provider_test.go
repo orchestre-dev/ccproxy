@@ -61,6 +61,7 @@ func TestProvider_CreateChatCompletion_Success(t *testing.T) {
 		// Return mock response
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
+		//nolint:errcheck
 		w.Write([]byte(`{
 			"id": "chatcmpl-test123",
 			"object": "chat.completion",
@@ -90,7 +91,7 @@ func TestProvider_CreateChatCompletion_Success(t *testing.T) {
 		MaxTokens: 1000,
 	}
 	log := logger.New(config.LoggingConfig{Level: "info", Format: "json"})
-	provider, _ := NewProvider(cfg, log)
+	provider, _ := NewProvider(cfg, log) //nolint:errcheck
 
 	maxTokens := 100
 	req := &models.ChatCompletionRequest{
@@ -133,6 +134,7 @@ func TestProvider_CreateChatCompletion_WithTools(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
+		//nolint:errcheck
 		w.Write([]byte(`{
 			"id": "chatcmpl-test123",
 			"object": "chat.completion",
@@ -170,7 +172,7 @@ func TestProvider_CreateChatCompletion_WithTools(t *testing.T) {
 		MaxTokens: 1000,
 	}
 	log := logger.New(config.LoggingConfig{Level: "info", Format: "json"})
-	provider, _ := NewProvider(cfg, log)
+	provider, _ := NewProvider(cfg, log) //nolint:errcheck
 
 	maxTokens := 100
 	req := &models.ChatCompletionRequest{
@@ -232,6 +234,7 @@ func TestProvider_CreateChatCompletion_Error(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusUnauthorized)
+		//nolint:errcheck
 		w.Write([]byte(`{
 			"error": {
 				"message": "Invalid API key",
@@ -248,7 +251,7 @@ func TestProvider_CreateChatCompletion_Error(t *testing.T) {
 		MaxTokens: 1000,
 	}
 	log := logger.New(config.LoggingConfig{Level: "info", Format: "json"})
-	provider, _ := NewProvider(cfg, log)
+	provider, _ := NewProvider(cfg, log) //nolint:errcheck
 
 	maxTokens := 100
 	req := &models.ChatCompletionRequest{
@@ -282,6 +285,7 @@ func TestProvider_CreateChatCompletion_Timeout(t *testing.T) {
 		time.Sleep(200 * time.Millisecond) // Delay longer than context timeout
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
+		//nolint:errcheck
 		w.Write([]byte(`{"id":"test","choices":[{"message":{"role":"assistant","content":"delayed"}}]}`))
 	}))
 	defer server.Close()
@@ -293,7 +297,7 @@ func TestProvider_CreateChatCompletion_Timeout(t *testing.T) {
 		MaxTokens: 1000,
 	}
 	log := logger.New(config.LoggingConfig{Level: "info", Format: "json"})
-	provider, _ := NewProvider(cfg, log)
+	provider, _ := NewProvider(cfg, log) //nolint:errcheck
 
 	maxTokens := 100
 	req := &models.ChatCompletionRequest{
@@ -332,7 +336,7 @@ func TestProvider_InterfaceCompliance(t *testing.T) {
 		MaxTokens: 1000,
 	}
 	log := logger.New(config.LoggingConfig{Level: "info", Format: "json"})
-	provider, _ := NewProvider(cfg, log)
+	provider, _ := NewProvider(cfg, log) //nolint:errcheck
 
 	// Verify interface compliance (this will be checked in the provider package tests)
 	// Here we just test the basic methods

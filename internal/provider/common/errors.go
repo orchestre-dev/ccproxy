@@ -5,14 +5,16 @@ import (
 	"net/http"
 )
 
+// Use standard HTTP status codes from the http package
+
 // ProviderError represents a structured error from a provider
 type ProviderError struct {
-	Provider   string
-	Code       int
-	Message    string
-	Original   error
-	RequestID  string
-	Retryable  bool
+	Original  error
+	Provider  string
+	Message   string
+	RequestID string
+	Code      int
+	Retryable bool
 }
 
 // Error implements the error interface
@@ -36,9 +38,9 @@ func (e *ProviderError) IsRetryable() bool {
 // NewProviderError creates a new provider error
 func NewProviderError(provider, message string, original error) *ProviderError {
 	return &ProviderError{
-		Provider: provider,
-		Message:  message,
-		Original: original,
+		Provider:  provider,
+		Message:   message,
+		Original:  original,
 		Retryable: false,
 	}
 }
@@ -46,7 +48,7 @@ func NewProviderError(provider, message string, original error) *ProviderError {
 // NewHTTPError creates a provider error from HTTP response
 func NewHTTPError(provider string, resp *http.Response, original error) *ProviderError {
 	retryable := isRetryableHTTPError(resp.StatusCode)
-	
+
 	return &ProviderError{
 		Provider:  provider,
 		Code:      resp.StatusCode,
@@ -59,7 +61,8 @@ func NewHTTPError(provider string, resp *http.Response, original error) *Provide
 // isRetryableHTTPError determines if an HTTP error is retryable
 func isRetryableHTTPError(statusCode int) bool {
 	switch statusCode {
-	case 408, 429, 500, 502, 503, 504:
+	case http.StatusRequestTimeout, http.StatusTooManyRequests, http.StatusInternalServerError,
+		http.StatusBadGateway, http.StatusServiceUnavailable, http.StatusGatewayTimeout:
 		return true
 	default:
 		return false
@@ -69,8 +72,8 @@ func isRetryableHTTPError(statusCode int) bool {
 // NewConfigError creates a configuration error
 func NewConfigError(provider, field, message string) *ProviderError {
 	return &ProviderError{
-		Provider: provider,
-		Message:  fmt.Sprintf("config error for %s: %s", field, message),
+		Provider:  provider,
+		Message:   fmt.Sprintf("config error for %s: %s", field, message),
 		Retryable: false,
 	}
 }
@@ -78,9 +81,9 @@ func NewConfigError(provider, field, message string) *ProviderError {
 // NewAuthError creates an authentication error
 func NewAuthError(provider string) *ProviderError {
 	return &ProviderError{
-		Provider: provider,
-		Code:     401,
-		Message:  "authentication failed - check API key",
+		Provider:  provider,
+		Code:      http.StatusUnauthorized,
+		Message:   "authentication failed - check API key",
 		Retryable: false,
 	}
 }
@@ -91,11 +94,11 @@ func NewRateLimitError(provider string, retryAfter string) *ProviderError {
 	if retryAfter != "" {
 		message += fmt.Sprintf(" - retry after %s", retryAfter)
 	}
-	
+
 	return &ProviderError{
-		Provider: provider,
-		Code:     429,
-		Message:  message,
+		Provider:  provider,
+		Code:      http.StatusTooManyRequests,
+		Message:   message,
 		Retryable: true,
 	}
 }
@@ -103,10 +106,10 @@ func NewRateLimitError(provider string, retryAfter string) *ProviderError {
 // NewTimeoutError creates a timeout error
 func NewTimeoutError(provider string, original error) *ProviderError {
 	return &ProviderError{
-		Provider: provider,
-		Code:     408,
-		Message:  "request timeout",
-		Original: original,
+		Provider:  provider,
+		Code:      http.StatusRequestTimeout,
+		Message:   "request timeout",
+		Original:  original,
 		Retryable: true,
 	}
 }
@@ -114,9 +117,9 @@ func NewTimeoutError(provider string, original error) *ProviderError {
 // NewServiceUnavailableError creates a service unavailable error
 func NewServiceUnavailableError(provider string) *ProviderError {
 	return &ProviderError{
-		Provider: provider,
-		Code:     503,
-		Message:  "service temporarily unavailable",
+		Provider:  provider,
+		Code:      http.StatusServiceUnavailable,
+		Message:   "service temporarily unavailable",
 		Retryable: true,
 	}
 }

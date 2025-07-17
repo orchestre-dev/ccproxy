@@ -1,3 +1,4 @@
+// Package middleware provides HTTP middleware for the CCProxy server
 package middleware
 
 import (
@@ -18,7 +19,11 @@ func Recovery(logger *logger.Logger) gin.HandlerFunc {
 					requestID = "unknown"
 				}
 
-				logger.WithRequestID(requestID.(string)).WithField("panic", err).Error("Panic recovered")
+				if requestIDStr, ok := requestID.(string); ok {
+					logger.WithRequestID(requestIDStr).WithField("panic", err).Error("Panic recovered")
+				} else {
+					logger.WithField("panic", err).Error("Panic recovered")
+				}
 
 				c.JSON(http.StatusInternalServerError, gin.H{
 					"error":      "Internal server error",

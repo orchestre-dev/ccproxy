@@ -15,6 +15,10 @@ import (
 	"ccproxy/pkg/logger"
 )
 
+const (
+	providerName = "gemini"
+)
+
 // Provider implements the provider interface for Google Gemini API
 type Provider struct {
 	httpClient *http.Client
@@ -27,7 +31,7 @@ func NewProvider(cfg *config.GeminiConfig, logger *logger.Logger) (*Provider, er
 	if cfg == nil {
 		return nil, fmt.Errorf("gemini config cannot be nil")
 	}
-	
+
 	return &Provider{
 		httpClient: &http.Client{
 			Timeout: cfg.Timeout,
@@ -43,7 +47,7 @@ func (p *Provider) CreateChatCompletion(
 	req *models.ChatCompletionRequest,
 ) (*models.ChatCompletionResponse, error) {
 	// Convert OpenAI format to Gemini format
-	geminiReq := p.convertToGeminiRequest(req)
+	geminiReq := p.convertToRequest(req)
 
 	// Marshal request
 	reqBody, err := json.Marshal(geminiReq)
@@ -75,8 +79,8 @@ func (p *Provider) CreateChatCompletion(
 		return nil, fmt.Errorf("failed to send request: %w", err)
 	}
 	defer func() {
-		if err := httpResp.Body.Close(); err != nil {
-			p.logger.WithError(err).Warn("Failed to close response body")
+		if closeErr := httpResp.Body.Close(); closeErr != nil {
+			p.logger.WithError(closeErr).Warn("Failed to close response body")
 		}
 	}()
 
@@ -99,13 +103,13 @@ func (p *Provider) CreateChatCompletion(
 	}
 
 	// Parse Gemini response and convert to OpenAI format
-	var geminiResp GeminiResponse
+	var geminiResp Response
 	if err := json.Unmarshal(respBody, &geminiResp); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal response: %w", err)
 	}
 
 	// Convert to OpenAI format
-	resp := p.convertFromGeminiResponse(&geminiResp)
+	resp := p.convertFromResponse(&geminiResp)
 
 	// Log response
 	p.logger.APILog("gemini_response", map[string]interface{}{
@@ -119,7 +123,7 @@ func (p *Provider) CreateChatCompletion(
 
 // GetName returns the provider name
 func (p *Provider) GetName() string {
-	return "gemini"
+	return providerName
 }
 
 // GetModel returns the configured model
@@ -151,82 +155,82 @@ func (p *Provider) GetBaseURL() string {
 	return p.config.BaseURL
 }
 
-// GeminiRequest represents the request format for Gemini API
-type GeminiRequest struct {
-	GenerationConfig *GeminiGenerationConfig `json:"generationConfig,omitempty"`
-	Contents         []GeminiContent         `json:"contents"`
-	Tools            []GeminiTool            `json:"tools,omitempty"`
+// Request represents the request format for Gemini API
+type Request struct {
+	GenerationConfig *GenerationConfig `json:"generationConfig,omitempty"`
+	Contents         []Content         `json:"contents"`
+	Tools            []Tool            `json:"tools,omitempty"`
 }
 
-// GeminiContent represents content in Gemini format
-type GeminiContent struct {
-	Role  string       `json:"role"`
-	Parts []GeminiPart `json:"parts"`
+// Content represents content in Gemini format
+type Content struct {
+	Role  string `json:"role"`
+	Parts []Part `json:"parts"`
 }
 
-// GeminiPart represents a part of content
-type GeminiPart struct {
-	FunctionCall     *GeminiFunctionCall     `json:"functionCall,omitempty"`
-	FunctionResponse *GeminiFunctionResponse `json:"functionResponse,omitempty"`
-	Text             string                  `json:"text,omitempty"`
+// Part represents a part of content
+type Part struct {
+	FunctionCall     *FunctionCall     `json:"functionCall,omitempty"`
+	FunctionResponse *FunctionResponse `json:"functionResponse,omitempty"`
+	Text             string            `json:"text,omitempty"`
 }
 
-// GeminiFunctionCall represents a function call in Gemini format
-type GeminiFunctionCall struct {
+// FunctionCall represents a function call in Gemini format
+type FunctionCall struct {
 	Args map[string]interface{} `json:"args"`
 	Name string                 `json:"name"`
 }
 
-// GeminiFunctionResponse represents a function response in Gemini format
-type GeminiFunctionResponse struct {
+// FunctionResponse represents a function response in Gemini format
+type FunctionResponse struct {
 	Response map[string]interface{} `json:"response"`
 	Name     string                 `json:"name"`
 }
 
-// GeminiTool represents a tool in Gemini format
-type GeminiTool struct {
-	FunctionDeclarations []GeminiFunctionDeclaration `json:"functionDeclarations"`
+// Tool represents a tool in Gemini format
+type Tool struct {
+	FunctionDeclarations []FunctionDeclaration `json:"functionDeclarations"`
 }
 
-// GeminiFunctionDeclaration represents a function declaration
-type GeminiFunctionDeclaration struct {
+// FunctionDeclaration represents a function declaration
+type FunctionDeclaration struct {
 	Parameters  map[string]interface{} `json:"parameters"`
 	Name        string                 `json:"name"`
 	Description string                 `json:"description"`
 }
 
-// GeminiGenerationConfig represents generation configuration
-type GeminiGenerationConfig struct {
+// GenerationConfig represents generation configuration
+type GenerationConfig struct {
 	Temperature     *float64 `json:"temperature,omitempty"`
 	TopP            *float64 `json:"topP,omitempty"`
 	TopK            *int     `json:"topK,omitempty"`
 	MaxOutputTokens *int     `json:"maxOutputTokens,omitempty"`
 }
 
-// GeminiResponse represents the response format from Gemini API
-type GeminiResponse struct {
-	Candidates    []GeminiCandidate   `json:"candidates"`
-	UsageMetadata GeminiUsageMetadata `json:"usageMetadata"`
+// Response represents the response format from Gemini API
+type Response struct {
+	Candidates    []Candidate   `json:"candidates"`
+	UsageMetadata UsageMetadata `json:"usageMetadata"`
 }
 
-// GeminiCandidate represents a candidate response
-type GeminiCandidate struct {
-	FinishReason string        `json:"finishReason"`
-	Content      GeminiContent `json:"content"`
-	Index        int           `json:"index"`
+// Candidate represents a candidate response
+type Candidate struct {
+	FinishReason string  `json:"finishReason"`
+	Content      Content `json:"content"`
+	Index        int     `json:"index"`
 }
 
-// GeminiUsageMetadata represents usage metadata
-type GeminiUsageMetadata struct {
+// UsageMetadata represents usage metadata
+type UsageMetadata struct {
 	PromptTokenCount     int `json:"promptTokenCount"`
 	CandidatesTokenCount int `json:"candidatesTokenCount"`
 	TotalTokenCount      int `json:"totalTokenCount"`
 }
 
-// convertToGeminiRequest converts OpenAI format to Gemini format
-func (p *Provider) convertToGeminiRequest(req *models.ChatCompletionRequest) *GeminiRequest {
-	geminiReq := &GeminiRequest{
-		Contents: make([]GeminiContent, 0, len(req.Messages)),
+// convertToRequest converts OpenAI format to Gemini format
+func (p *Provider) convertToRequest(req *models.ChatCompletionRequest) *Request {
+	geminiReq := &Request{
+		Contents: make([]Content, 0, len(req.Messages)),
 	}
 
 	// Convert messages
@@ -236,9 +240,9 @@ func (p *Provider) convertToGeminiRequest(req *models.ChatCompletionRequest) *Ge
 			role = "model"
 		}
 
-		content := GeminiContent{
+		content := Content{
 			Role:  role,
-			Parts: []GeminiPart{{Text: msg.Content}},
+			Parts: []Part{{Text: msg.Content}},
 		}
 
 		// Handle tool calls
@@ -247,8 +251,8 @@ func (p *Provider) convertToGeminiRequest(req *models.ChatCompletionRequest) *Ge
 				if toolCall.Function.Name != "" {
 					var args map[string]interface{}
 					if err := json.Unmarshal([]byte(toolCall.Function.Arguments), &args); err == nil {
-						content.Parts = append(content.Parts, GeminiPart{
-							FunctionCall: &GeminiFunctionCall{
+						content.Parts = append(content.Parts, Part{
+							FunctionCall: &FunctionCall{
 								Name: toolCall.Function.Name,
 								Args: args,
 							},
@@ -263,13 +267,13 @@ func (p *Provider) convertToGeminiRequest(req *models.ChatCompletionRequest) *Ge
 
 	// Convert tools
 	if len(req.Tools) > 0 {
-		geminiTool := GeminiTool{
-			FunctionDeclarations: make([]GeminiFunctionDeclaration, 0, len(req.Tools)),
+		geminiTool := Tool{
+			FunctionDeclarations: make([]FunctionDeclaration, 0, len(req.Tools)),
 		}
 
 		for _, tool := range req.Tools {
 			if tool.Function.Name != "" {
-				decl := GeminiFunctionDeclaration{
+				decl := FunctionDeclaration{
 					Name:        tool.Function.Name,
 					Description: tool.Function.Description,
 					Parameters:  tool.Function.Parameters,
@@ -278,15 +282,15 @@ func (p *Provider) convertToGeminiRequest(req *models.ChatCompletionRequest) *Ge
 			}
 		}
 
-		geminiReq.Tools = []GeminiTool{geminiTool}
+		geminiReq.Tools = []Tool{geminiTool}
 	}
 
 	// Convert generation config
-	config := &GeminiGenerationConfig{}
+	config := &GenerationConfig{}
 	if req.Temperature != nil {
 		config.Temperature = req.Temperature
 	}
-	// Note: TopP is not available in current ChatCompletionRequest model
+	// TopP is not available in current ChatCompletionRequest model
 	// This would need to be added if required
 	if req.MaxTokens != nil {
 		maxTokens := *req.MaxTokens
@@ -301,8 +305,8 @@ func (p *Provider) convertToGeminiRequest(req *models.ChatCompletionRequest) *Ge
 	return geminiReq
 }
 
-// convertFromGeminiResponse converts Gemini response to OpenAI format
-func (p *Provider) convertFromGeminiResponse(geminiResp *GeminiResponse) *models.ChatCompletionResponse {
+// convertFromResponse converts Gemini response to OpenAI format
+func (p *Provider) convertFromResponse(geminiResp *Response) *models.ChatCompletionResponse {
 	resp := &models.ChatCompletionResponse{
 		ID:      fmt.Sprintf("chatcmpl-%d", time.Now().Unix()),
 		Object:  "chat.completion",
@@ -335,7 +339,10 @@ func (p *Provider) convertFromGeminiResponse(geminiResp *GeminiResponse) *models
 
 			// Handle function calls
 			if part.FunctionCall != nil {
-				argsBytes, _ := json.Marshal(part.FunctionCall.Args)
+				argsBytes, err := json.Marshal(part.FunctionCall.Args)
+				if err != nil {
+					argsBytes = []byte("{}")
+				}
 				toolCall := models.ToolCall{
 					ID:   fmt.Sprintf("call_%d", time.Now().UnixNano()),
 					Type: "function",
@@ -401,11 +408,11 @@ func (p *Provider) HealthCheck(ctx context.Context) error {
 		},
 		MaxTokens: &[]int{1}[0],
 	}
-	
+
 	_, err := p.CreateChatCompletion(ctx, req)
 	if err != nil {
 		return fmt.Errorf("gemini health check failed: %w", err)
 	}
-	
+
 	return nil
 }

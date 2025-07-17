@@ -210,66 +210,64 @@ func setDefaults() {
 }
 
 // bindEnvVars binds environment variables to config keys
-//
-//nolint:errcheck // viper.BindEnv errors are non-critical for configuration binding
 func bindEnvVars() {
 	viper.AutomaticEnv()
 
 	// Provider selection
-	viper.BindEnv("provider", "PROVIDER")
+	bindEnvVar("provider", "PROVIDER")
 
 	// Server environment variables
-	viper.BindEnv("server.host", "SERVER_HOST")
-	viper.BindEnv("server.port", "SERVER_PORT", "PORT")
-	viper.BindEnv("server.environment", "SERVER_ENVIRONMENT", "ENV", "ENVIRONMENT")
+	bindEnvVar("server.host", "SERVER_HOST")
+	bindEnvVar("server.port", "SERVER_PORT", "PORT")
+	bindEnvVar("server.environment", "SERVER_ENVIRONMENT", "ENV", "ENVIRONMENT")
 
 	// Groq environment variables
-	viper.BindEnv("providers.groq.api_key", "GROQ_API_KEY")
-	viper.BindEnv("providers.groq.base_url", "GROQ_BASE_URL")
-	viper.BindEnv("providers.groq.model", "GROQ_MODEL")
-	viper.BindEnv("providers.groq.max_tokens", "GROQ_MAX_TOKENS")
+	bindEnvVar("providers.groq.api_key", "GROQ_API_KEY")
+	bindEnvVar("providers.groq.base_url", "GROQ_BASE_URL")
+	bindEnvVar("providers.groq.model", "GROQ_MODEL")
+	bindEnvVar("providers.groq.max_tokens", "GROQ_MAX_TOKENS")
 
 	// OpenRouter environment variables
-	viper.BindEnv("providers.openrouter.api_key", "OPENROUTER_API_KEY")
-	viper.BindEnv("providers.openrouter.base_url", "OPENROUTER_BASE_URL")
-	viper.BindEnv("providers.openrouter.model", "OPENROUTER_MODEL")
-	viper.BindEnv("providers.openrouter.max_tokens", "OPENROUTER_MAX_TOKENS")
-	viper.BindEnv("providers.openrouter.site_url", "OPENROUTER_SITE_URL")
-	viper.BindEnv("providers.openrouter.site_name", "OPENROUTER_SITE_NAME")
+	bindEnvVar("providers.openrouter.api_key", "OPENROUTER_API_KEY")
+	bindEnvVar("providers.openrouter.base_url", "OPENROUTER_BASE_URL")
+	bindEnvVar("providers.openrouter.model", "OPENROUTER_MODEL")
+	bindEnvVar("providers.openrouter.max_tokens", "OPENROUTER_MAX_TOKENS")
+	bindEnvVar("providers.openrouter.site_url", "OPENROUTER_SITE_URL")
+	bindEnvVar("providers.openrouter.site_name", "OPENROUTER_SITE_NAME")
 
 	// OpenAI environment variables
-	viper.BindEnv("providers.openai.api_key", "OPENAI_API_KEY")
-	viper.BindEnv("providers.openai.base_url", "OPENAI_BASE_URL")
-	viper.BindEnv("providers.openai.model", "OPENAI_MODEL")
-	viper.BindEnv("providers.openai.max_tokens", "OPENAI_MAX_TOKENS")
+	bindEnvVar("providers.openai.api_key", "OPENAI_API_KEY")
+	bindEnvVar("providers.openai.base_url", "OPENAI_BASE_URL")
+	bindEnvVar("providers.openai.model", "OPENAI_MODEL")
+	bindEnvVar("providers.openai.max_tokens", "OPENAI_MAX_TOKENS")
 
 	// XAI environment variables
-	viper.BindEnv("providers.xai.api_key", "XAI_API_KEY")
-	viper.BindEnv("providers.xai.base_url", "XAI_BASE_URL")
-	viper.BindEnv("providers.xai.model", "XAI_MODEL")
-	viper.BindEnv("providers.xai.max_tokens", "XAI_MAX_TOKENS")
+	bindEnvVar("providers.xai.api_key", "XAI_API_KEY")
+	bindEnvVar("providers.xai.base_url", "XAI_BASE_URL")
+	bindEnvVar("providers.xai.model", "XAI_MODEL")
+	bindEnvVar("providers.xai.max_tokens", "XAI_MAX_TOKENS")
 
 	// Gemini environment variables
-	viper.BindEnv("providers.gemini.api_key", "GEMINI_API_KEY", "GOOGLE_API_KEY")
-	viper.BindEnv("providers.gemini.base_url", "GEMINI_BASE_URL")
-	viper.BindEnv("providers.gemini.model", "GEMINI_MODEL")
-	viper.BindEnv("providers.gemini.max_tokens", "GEMINI_MAX_TOKENS")
+	bindEnvVar("providers.gemini.api_key", "GEMINI_API_KEY", "GOOGLE_API_KEY")
+	bindEnvVar("providers.gemini.base_url", "GEMINI_BASE_URL")
+	bindEnvVar("providers.gemini.model", "GEMINI_MODEL")
+	bindEnvVar("providers.gemini.max_tokens", "GEMINI_MAX_TOKENS")
 
 	// Mistral environment variables
-	viper.BindEnv("providers.mistral.api_key", "MISTRAL_API_KEY")
-	viper.BindEnv("providers.mistral.base_url", "MISTRAL_BASE_URL")
-	viper.BindEnv("providers.mistral.model", "MISTRAL_MODEL")
-	viper.BindEnv("providers.mistral.max_tokens", "MISTRAL_MAX_TOKENS")
+	bindEnvVar("providers.mistral.api_key", "MISTRAL_API_KEY")
+	bindEnvVar("providers.mistral.base_url", "MISTRAL_BASE_URL")
+	bindEnvVar("providers.mistral.model", "MISTRAL_MODEL")
+	bindEnvVar("providers.mistral.max_tokens", "MISTRAL_MAX_TOKENS")
 
 	// Ollama environment variables
-	viper.BindEnv("providers.ollama.api_key", "OLLAMA_API_KEY")
-	viper.BindEnv("providers.ollama.base_url", "OLLAMA_BASE_URL")
-	viper.BindEnv("providers.ollama.model", "OLLAMA_MODEL")
-	viper.BindEnv("providers.ollama.max_tokens", "OLLAMA_MAX_TOKENS")
+	bindEnvVar("providers.ollama.api_key", "OLLAMA_API_KEY")
+	bindEnvVar("providers.ollama.base_url", "OLLAMA_BASE_URL")
+	bindEnvVar("providers.ollama.model", "OLLAMA_MODEL")
+	bindEnvVar("providers.ollama.max_tokens", "OLLAMA_MAX_TOKENS")
 
 	// Logging environment variables
-	viper.BindEnv("logging.level", "LOG_LEVEL")
-	viper.BindEnv("logging.format", "LOG_FORMAT")
+	bindEnvVar("logging.level", "LOG_LEVEL")
+	bindEnvVar("logging.format", "LOG_FORMAT")
 }
 
 // validate validates required configuration
@@ -331,7 +329,7 @@ func validateOpenRouterConfig(config *OpenRouterConfig) {
 		log.Fatal("OPENROUTER_MAX_TOKENS cannot be negative")
 	}
 
-	// Note: OpenRouter max tokens can be 0 (unlimited), so we don't enforce a minimum
+	// OpenRouter max tokens can be 0 (unlimited), so we don't enforce a minimum
 }
 
 // validateOpenAIConfig validates OpenAI-specific configuration
@@ -408,8 +406,18 @@ func validateOllamaConfig(config *OllamaConfig) {
 		log.Fatal("OLLAMA_MAX_TOKENS cannot be negative")
 	}
 
-	// Note: Ollama models can have varying context limits, so we don't enforce a strict upper limit
+	// Ollama models can have varying context limits, so we don't enforce a strict upper limit
 	if config.MaxTokens > xaiMaxTokens {
 		log.Printf("Warning: OLLAMA_MAX_TOKENS (%d) is very large and may not be supported by all models", config.MaxTokens)
+	}
+}
+
+// bindEnvVar is a helper function that properly handles viper.BindEnv errors
+func bindEnvVar(key string, envVars ...string) {
+	args := make([]string, 0, len(envVars)+1)
+	args = append(args, key)
+	args = append(args, envVars...)
+	if err := viper.BindEnv(args...); err != nil {
+		log.Printf("Warning: Failed to bind environment variable %s: %v", key, err)
 	}
 }

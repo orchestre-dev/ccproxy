@@ -1,3 +1,4 @@
+// Package common provides shared utilities for providers
 package common
 
 import (
@@ -11,8 +12,8 @@ import (
 
 // TokenLimitConfig holds token limit configuration for providers
 type TokenLimitConfig struct {
-	MaxTokens     int
 	ProviderName  string
+	MaxTokens     int
 	ProviderLimit int
 }
 
@@ -52,11 +53,11 @@ func CreateStandardHeaders(apiKey, userAgent string) map[string]string {
 	headers := make(map[string]string)
 	headers["Content-Type"] = "application/json"
 	headers["User-Agent"] = userAgent
-	
+
 	if apiKey != "" {
 		headers["Authorization"] = "Bearer " + apiKey
 	}
-	
+
 	return headers
 }
 

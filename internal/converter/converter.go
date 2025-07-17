@@ -1,3 +1,4 @@
+// Package converter provides conversion utilities between different API formats
 package converter
 
 import (
@@ -25,10 +26,7 @@ func ConvertAnthropicToOpenAI(req *models.MessagesRequest) (*models.ChatCompleti
 
 	// Convert tools
 	if req.Tools != nil {
-		tools, err := convertTools(req.Tools)
-		if err != nil {
-			return nil, fmt.Errorf("failed to convert tools: %w", err)
-		}
+		tools := convertTools(req.Tools)
 		chatReq.Tools = tools
 		chatReq.ToolChoice = req.ToolChoice
 	}
@@ -37,7 +35,10 @@ func ConvertAnthropicToOpenAI(req *models.MessagesRequest) (*models.ChatCompleti
 }
 
 // ConvertOpenAIToAnthropic converts OpenAI response to Anthropic format
-func ConvertOpenAIToAnthropic(resp *models.ChatCompletionResponse, requestID, providerName string) (*models.MessagesResponse, error) {
+func ConvertOpenAIToAnthropic(
+	resp *models.ChatCompletionResponse,
+	requestID, providerName string,
+) (*models.MessagesResponse, error) {
 	if len(resp.Choices) == 0 {
 		return nil, fmt.Errorf("no choices in response")
 	}
@@ -125,7 +126,7 @@ func convertMessages(messages []models.Message) ([]models.ChatMessage, error) {
 }
 
 // convertTools converts Anthropic tools to OpenAI format
-func convertTools(tools []models.Tool) ([]models.ChatCompletionTool, error) {
+func convertTools(tools []models.Tool) []models.ChatCompletionTool {
 	var chatTools []models.ChatCompletionTool
 
 	for _, tool := range tools {
@@ -146,7 +147,7 @@ func convertTools(tools []models.Tool) ([]models.ChatCompletionTool, error) {
 		chatTools = append(chatTools, chatTool)
 	}
 
-	return chatTools, nil
+	return chatTools
 }
 
 // mustMarshalJSON marshals to JSON or returns empty string on error

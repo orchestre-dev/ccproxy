@@ -1,8 +1,17 @@
+// Package common provides shared utilities for providers
 package common
 
 import (
 	"net/http"
 	"time"
+)
+
+// Default HTTP client configuration values
+const (
+	DefaultMaxIdleConns        = 100
+	DefaultMaxIdleConnsPerHost = 10
+	DefaultMaxConnsPerHost     = 10
+	DefaultIdleConnTimeout     = 90 * time.Second
 )
 
 // HTTPClientConfig holds configuration for HTTP client
@@ -19,10 +28,10 @@ func NewConfiguredHTTPClient(timeout time.Duration) *http.Client {
 	return &http.Client{
 		Timeout: timeout,
 		Transport: &http.Transport{
-			MaxIdleConns:        100,
-			MaxIdleConnsPerHost: 10,
-			MaxConnsPerHost:     10,
-			IdleConnTimeout:     90 * time.Second,
+			MaxIdleConns:        DefaultMaxIdleConns,
+			MaxIdleConnsPerHost: DefaultMaxIdleConnsPerHost,
+			MaxConnsPerHost:     DefaultMaxConnsPerHost,
+			IdleConnTimeout:     DefaultIdleConnTimeout,
 			DisableKeepAlives:   false,
 		},
 	}
