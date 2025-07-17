@@ -27,65 +27,125 @@ echo.
 REM Create build directory
 if not exist %BUILD_DIR% mkdir %BUILD_DIR%
 
+REM Build proxy command
+echo Building proxy command...
+echo.
+
 REM Build for Windows AMD64
-echo Building for windows/amd64...
+echo Building proxy for windows/amd64...
 set GOOS=windows
 set GOARCH=amd64
 set CGO_ENABLED=0
 go build -ldflags "%LDFLAGS%" -o %BUILD_DIR%\%APP_NAME%-windows-amd64.exe .\cmd\proxy
 if %errorlevel% neq 0 (
-    echo Failed to build for windows/amd64
+    echo Failed to build proxy for windows/amd64
     exit /b 1
 )
 echo Successfully built %APP_NAME%-windows-amd64.exe
-echo.
 
 REM Build for Linux AMD64
-echo Building for linux/amd64...
+echo Building proxy for linux/amd64...
 set GOOS=linux
 set GOARCH=amd64
 go build -ldflags "%LDFLAGS%" -o %BUILD_DIR%\%APP_NAME%-linux-amd64 .\cmd\proxy
 if %errorlevel% neq 0 (
-    echo Failed to build for linux/amd64
+    echo Failed to build proxy for linux/amd64
     exit /b 1
 )
 echo Successfully built %APP_NAME%-linux-amd64
-echo.
 
 REM Build for Linux ARM64
-echo Building for linux/arm64...
+echo Building proxy for linux/arm64...
 set GOOS=linux
 set GOARCH=arm64
 go build -ldflags "%LDFLAGS%" -o %BUILD_DIR%\%APP_NAME%-linux-arm64 .\cmd\proxy
 if %errorlevel% neq 0 (
-    echo Failed to build for linux/arm64
+    echo Failed to build proxy for linux/arm64
     exit /b 1
 )
 echo Successfully built %APP_NAME%-linux-arm64
-echo.
 
 REM Build for macOS AMD64
-echo Building for darwin/amd64...
+echo Building proxy for darwin/amd64...
 set GOOS=darwin
 set GOARCH=amd64
 go build -ldflags "%LDFLAGS%" -o %BUILD_DIR%\%APP_NAME%-darwin-amd64 .\cmd\proxy
 if %errorlevel% neq 0 (
-    echo Failed to build for darwin/amd64
+    echo Failed to build proxy for darwin/amd64
     exit /b 1
 )
 echo Successfully built %APP_NAME%-darwin-amd64
-echo.
 
 REM Build for macOS ARM64 (Apple Silicon)
-echo Building for darwin/arm64...
+echo Building proxy for darwin/arm64...
 set GOOS=darwin
 set GOARCH=arm64
 go build -ldflags "%LDFLAGS%" -o %BUILD_DIR%\%APP_NAME%-darwin-arm64 .\cmd\proxy
 if %errorlevel% neq 0 (
-    echo Failed to build for darwin/arm64
+    echo Failed to build proxy for darwin/arm64
     exit /b 1
 )
 echo Successfully built %APP_NAME%-darwin-arm64
+echo.
+
+REM Build setup command
+echo Building setup command...
+echo.
+
+REM Build setup for Windows AMD64
+echo Building setup for windows/amd64...
+set GOOS=windows
+set GOARCH=amd64
+go build -ldflags "%LDFLAGS%" -o %BUILD_DIR%\%APP_NAME%-setup-windows-amd64.exe .\cmd\setup
+if %errorlevel% neq 0 (
+    echo Failed to build setup for windows/amd64
+    exit /b 1
+)
+echo Successfully built %APP_NAME%-setup-windows-amd64.exe
+
+REM Build setup for Linux AMD64
+echo Building setup for linux/amd64...
+set GOOS=linux
+set GOARCH=amd64
+go build -ldflags "%LDFLAGS%" -o %BUILD_DIR%\%APP_NAME%-setup-linux-amd64 .\cmd\setup
+if %errorlevel% neq 0 (
+    echo Failed to build setup for linux/amd64
+    exit /b 1
+)
+echo Successfully built %APP_NAME%-setup-linux-amd64
+
+REM Build setup for Linux ARM64
+echo Building setup for linux/arm64...
+set GOOS=linux
+set GOARCH=arm64
+go build -ldflags "%LDFLAGS%" -o %BUILD_DIR%\%APP_NAME%-setup-linux-arm64 .\cmd\setup
+if %errorlevel% neq 0 (
+    echo Failed to build setup for linux/arm64
+    exit /b 1
+)
+echo Successfully built %APP_NAME%-setup-linux-arm64
+
+REM Build setup for macOS AMD64
+echo Building setup for darwin/amd64...
+set GOOS=darwin
+set GOARCH=amd64
+go build -ldflags "%LDFLAGS%" -o %BUILD_DIR%\%APP_NAME%-setup-darwin-amd64 .\cmd\setup
+if %errorlevel% neq 0 (
+    echo Failed to build setup for darwin/amd64
+    exit /b 1
+)
+echo Successfully built %APP_NAME%-setup-darwin-amd64
+
+REM Build setup for macOS ARM64 (Apple Silicon)
+echo Building setup for darwin/arm64...
+set GOOS=darwin
+set GOARCH=arm64
+go build -ldflags "%LDFLAGS%" -o %BUILD_DIR%\%APP_NAME%-setup-darwin-arm64 .\cmd\setup
+if %errorlevel% neq 0 (
+    echo Failed to build setup for darwin/arm64
+    exit /b 1
+)
+echo Successfully built %APP_NAME%-setup-darwin-arm64
 echo.
 
 echo All builds completed successfully!

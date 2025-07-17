@@ -35,34 +35,51 @@ declare -a targets=(
     "windows/amd64"
 )
 
-for target in "${targets[@]}"; do
-    IFS='/' read -r GOOS GOARCH <<< "$target"
+# Build commands
+declare -a commands=(
+    "proxy"
+    "setup"
+)
+
+for cmd in "${commands[@]}"; do
+    echo -e "${GREEN}Building ${cmd} command...${NC}"
     
-    if [ "$GOOS" = "windows" ]; then
-        OUTPUT_NAME="${APP_NAME}-${GOOS}-${GOARCH}.exe"
-    else
-        OUTPUT_NAME="${APP_NAME}-${GOOS}-${GOARCH}"
-    fi
-    
-    echo -e "${YELLOW}Building for ${GOOS}/${GOARCH}...${NC}"
-    
-    CGO_ENABLED=0 GOOS=$GOOS GOARCH=$GOARCH go build \
-        -ldflags "$LDFLAGS" \
-        -o ${BUILD_DIR}/${OUTPUT_NAME} \
-        ./cmd/proxy
-    
-    if [ $? -eq 0 ]; then
-        echo -e "${GREEN}✓ Successfully built ${OUTPUT_NAME}${NC}"
+    for target in "${targets[@]}"; do
+        IFS='/' read -r GOOS GOARCH <<< "$target"
         
-        # Show file size
-        if command -v ls >/dev/null 2>&1; then
-            SIZE=$(ls -lh ${BUILD_DIR}/${OUTPUT_NAME} | awk '{print $5}')
-            echo -e "  Size: ${SIZE}"
+        if [ "$cmd" = "setup" ]; then
+            CMD_NAME="${APP_NAME}-setup"
+        else
+            CMD_NAME="${APP_NAME}"
         fi
-    else
-        echo -e "${RED}✗ Failed to build ${OUTPUT_NAME}${NC}"
-        exit 1
-    fi
+        
+        if [ "$GOOS" = "windows" ]; then
+            OUTPUT_NAME="${CMD_NAME}-${GOOS}-${GOARCH}.exe"
+        else
+            OUTPUT_NAME="${CMD_NAME}-${GOOS}-${GOARCH}"
+        fi
+        
+        echo -e "${YELLOW}Building ${cmd} for ${GOOS}/${GOARCH}...${NC}"
+        
+        CGO_ENABLED=0 GOOS=$GOOS GOARCH=$GOARCH go build \
+            -ldflags "$LDFLAGS" \
+            -o ${BUILD_DIR}/${OUTPUT_NAME} \
+            ./cmd/${cmd}
+        
+        if [ $? -eq 0 ]; then
+            echo -e "${GREEN}✓ Successfully built ${OUTPUT_NAME}${NC}"
+            
+            # Show file size
+            if command -v ls >/dev/null 2>&1; then
+                SIZE=$(ls -lh ${BUILD_DIR}/${OUTPUT_NAME} | awk '{print $5}')
+                echo -e "  Size: ${SIZE}"
+            fi
+        else
+            echo -e "${RED}✗ Failed to build ${OUTPUT_NAME}${NC}"
+            exit 1
+        fi
+        echo ""
+    done
     echo ""
 done
 
