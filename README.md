@@ -167,40 +167,20 @@ Claude Code will now use your selected AI provider through the proxy!
 | **Groq** | Ultra-fast inference, cost-effective | Real-time applications, development | `moonshotai/kimi-k2-instruct`, `llama-3.1-405b-reasoning` |
 | **OpenRouter** | Huge model selection, competitive pricing | Access to latest models, experimentation | `openai/gpt-4o`, `anthropic/claude-3-sonnet`, `google/gemini-2.5-pro-preview` |
 
-### Model Examples by Provider
+### Important: Tool Calling Requirement
 
-#### Groq Models
-```bash
-# Kimi K2 (default) - Chinese language optimized
-GROQ_MODEL=moonshotai/kimi-k2-instruct
+**⚠️ Critical for Claude Code Users**: You must select models that support **tool calling** or **function calling** capabilities, as Claude Code requires these features to operate correctly.
 
-# Llama 3.1 405B - Most capable reasoning
-GROQ_MODEL=llama-3.1-405b-reasoning
+### Model Selection Guidelines
 
-# Llama 3.1 70B - Balanced performance
-GROQ_MODEL=llama-3.1-70b-versatile
+When choosing models from any provider:
 
-# Mixtral 8x7B - Fast and efficient
-GROQ_MODEL=mixtral-8x7b-32768
-```
+1. **Verify Tool Support**: Ensure the model supports function calling/tool use
+2. **Check Current Availability**: Model availability changes frequently
+3. **Review Capabilities**: Different models excel at different tasks
+4. **Consider Performance**: Balance speed, quality, and cost for your needs
 
-#### OpenRouter Models
-```bash
-# GPT-4o (default) - Latest OpenAI
-OPENROUTER_MODEL=openai/gpt-4o
-
-# Claude 3 Sonnet - Anthropic's balanced model
-OPENROUTER_MODEL=anthropic/claude-3-sonnet
-
-# Gemini 2.5 Pro - Google's latest
-OPENROUTER_MODEL=google/gemini-2.5-pro-preview
-
-# Llama 3.1 405B - Meta's largest
-OPENROUTER_MODEL=meta-llama/llama-3.1-405b-instruct
-
-# Mixtral 8x7B - Mistral AI
-OPENROUTER_MODEL=mistralai/mixtral-8x7b-instruct
-```
+For current model lists and capabilities, visit each provider's official documentation.
 
 ## 📊 API Endpoints
 
