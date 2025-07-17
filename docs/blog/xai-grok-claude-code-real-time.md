@@ -538,7 +538,7 @@ The future of professional work increasingly depends on staying current with rap
 
 **Ready to enhance your information workflows?**
 
-[Set up XAI Grok with CCProxy](/guide/providers/xai) and discover how real-time AI can transform your professional practice.
+[Set up XAI Grok with CCProxy](/providers/xai) and discover how real-time AI can transform your professional practice.
 
 ---
 

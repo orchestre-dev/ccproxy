@@ -340,7 +340,7 @@ curl http://localhost:7187/status
 ## Next Steps
 
 - Explore [other providers](/providers/) for comparison and specialized use cases
-- Learn about [model fallbacks](/guide/fallbacks) for production reliability
+- Learn about model fallbacks for production reliability
 - Set up [usage monitoring](/guide/monitoring) to optimize model selection and costs
 - Try [Groq with Kimi K2](/providers/groq) for ultra-fast inference alongside OpenRouter
 

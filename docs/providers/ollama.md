@@ -533,10 +533,10 @@ curl http://localhost:7187/health
 
 ## Next Steps
 
-- Install and try [different models](/guide/model-selection) for various development tasks
-- Learn about [local privacy benefits](/guide/privacy) for sensitive code and data
-- Set up [hardware optimization](/guide/hardware-setup) for best performance
-- Explore [custom model creation](/guide/custom-models) and local fine-tuning
+- Install and try different models for various development tasks
+- Learn about local privacy benefits for sensitive code and data
+- Set up hardware optimization for best performance
+- Explore custom model creation and local fine-tuning
 
 <script>
 function shareToTwitter() {

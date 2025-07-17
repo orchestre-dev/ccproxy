@@ -424,8 +424,8 @@ curl http://localhost:7187/health
 
 ## Next Steps
 
-- Explore [function calling](/guide/function-calling) with OpenAI models
-- Learn about [vision capabilities](/guide/vision) with GPT-4o
+- Explore function calling with OpenAI models
+- Learn about vision capabilities with GPT-4o
 - Set up [usage monitoring](/guide/monitoring) for cost control
 - Compare with [other providers](/providers/) including [Groq with Kimi K2](/providers/groq) for speed
 

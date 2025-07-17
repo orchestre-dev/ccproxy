@@ -489,4 +489,4 @@ curl http://localhost:7187/health | jq '.requests'
 - Learn about [provider-specific features](/providers/) to optimize for your use case
 - Set up [monitoring and alerting](/guide/monitoring) for production use
 - Explore [advanced configuration](/guide/configuration) options
-- Check out [best practices](/guide/best-practices) for Claude Code + CCProxy workflows
+- Check out [advanced workflows](/guide/advanced-workflows) for Claude Code + CCProxy integration

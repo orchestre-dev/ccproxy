@@ -269,7 +269,7 @@ curl http://localhost:7187/status
 - Explore [other providers](/providers/) for different use cases
 - Learn about [configuration options](/guide/configuration)
 - Set up [health monitoring](/guide/health-checks) for production
-- Compare [performance benchmarks](/guide/performance) across providers
+- Compare [performance benchmarks](/guide/monitoring) across providers
 
 <script>
 function shareToTwitter() {

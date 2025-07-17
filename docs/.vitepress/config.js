@@ -4,16 +4,7 @@ export default defineConfig({
   title: 'CCProxy',
   description: 'Universal AI proxy supporting Claude Code, Groq Kimi K2, OpenAI, Gemini, Mistral, XAI Grok, and Ollama. Seamless integration with any AI provider through a unified API.',
   base: '/',
-  ignoreDeadLinks: [
-    // Ignore internal dead links that reference missing guide pages
-    /^\/guide\/(docker|environment|health-checks|logging|monitoring|alerting|performance|best-practices|multilingual|code-generation|enterprise-monitoring|provider-comparison|long-context|multimodal|model-selection|privacy|hardware-setup|custom-models|fallbacks|function-calling|vision|real-time)$/,
-    // Ignore missing provider guide pages
-    /^\/guide\/providers\/(mistral|ollama|xai|groq)$/,
-    // Ignore missing API pages
-    /^\/api\/(rate-limits)$/,
-    // Ignore missing LICENSE file reference
-    /^\.\/LICENSE$/
-  ],
+  ignoreDeadLinks: false,
   
   // Enable sitemap generation
   sitemap: {

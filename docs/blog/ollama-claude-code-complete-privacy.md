@@ -937,7 +937,7 @@ By choosing local AI, you're not just protecting your own data—you're supporti
 
 Whether you're a healthcare worker protecting patient privacy, a legal professional maintaining client confidentiality, a researcher safeguarding intellectual property, or simply someone who values privacy, local AI offers a compelling path forward.
 
-[Learn more about setting up CCProxy with Ollama](/guide/providers/ollama) and join the growing community of privacy-conscious professionals using local AI.
+[Learn more about setting up CCProxy with Ollama](/providers/ollama) and join the growing community of privacy-conscious professionals using local AI.
 
 ---
 

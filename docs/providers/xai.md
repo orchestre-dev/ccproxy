@@ -478,7 +478,7 @@ Stay updated at [x.ai](https://x.ai) and [console.x.ai](https://console.x.ai).
 ## Next Steps
 
 - Monitor [XAI announcements](https://x.ai) for new features and model releases
-- Explore [real-time use cases](/guide/real-time) specific to Grok's capabilities
+- Explore real-time use cases specific to Grok's capabilities
 - Compare costs with [other providers](/providers/) including [Groq for speed](/providers/groq)
 - Set up [usage monitoring](/guide/monitoring) for cost control and optimization
 

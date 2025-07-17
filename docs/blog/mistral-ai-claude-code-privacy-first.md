@@ -868,7 +868,7 @@ As privacy requirements become stricter and AI becomes more prevalent, privacy-f
 
 **Ready to get started?**
 
-[Set up Mistral AI with CCProxy](/guide/providers/mistral) and join the privacy-first AI revolution today.
+[Set up Mistral AI with CCProxy](/providers/mistral) and join the privacy-first AI revolution today.
 
 ---
 

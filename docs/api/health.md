@@ -531,5 +531,5 @@ fi
 ## Next Steps
 
 - Set up [monitoring dashboard](/guide/monitoring) with Grafana
-- Configure [alerting rules](/guide/alerting) for your environment
-- Learn about [performance optimization](/guide/performance)
+- Configure [alerting rules](/guide/monitoring) for your environment
+- Learn about [performance optimization](/guide/monitoring)

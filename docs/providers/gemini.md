@@ -513,8 +513,8 @@ Stay updated at [ai.google.dev](https://ai.google.dev) and [aistudio.google.com]
 
 ## Next Steps
 
-- Explore [long context use cases](/guide/long-context) with Gemini's 2M token windows
-- Learn about [multimodal capabilities](/guide/multimodal) for vision and document analysis
+- Explore long context use cases with Gemini's 2M token windows
+- Learn about multimodal capabilities for vision and document analysis
 - Set up [usage monitoring](/guide/monitoring) to optimize your Gemini usage
 - Compare with [other providers](/providers/) including [Groq for speed](/providers/groq) and [OpenAI for reliability](/providers/openai)
 

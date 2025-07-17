@@ -488,10 +488,10 @@ Stay updated at [mistral.ai](https://mistral.ai) and [console.mistral.ai](https:
 
 ## Next Steps
 
-- Explore [multilingual use cases](/guide/multilingual) with Mistral's European language expertise
-- Learn about [code generation](/guide/code-generation) with Codestral models
-- Set up [enterprise monitoring](/guide/enterprise-monitoring) for GDPR compliance
-- Compare [European vs US providers](/guide/provider-comparison) for compliance needs
+- Explore multilingual use cases with Mistral's European language expertise
+- Learn about code generation with Codestral models
+- Set up [enterprise monitoring](/guide/monitoring) for GDPR compliance
+- Compare European vs US providers for compliance needs
 
 <script>
 function shareToTwitter() {

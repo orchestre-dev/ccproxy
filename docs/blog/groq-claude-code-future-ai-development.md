@@ -255,7 +255,7 @@ Whether you're debugging complex issues, learning new technologies, or working o
 
 **Ready to experience the difference?**
 
-[Set up Groq with CCProxy](/guide/providers/groq) and see what instant AI assistance feels like.
+[Set up Groq with CCProxy](/providers/groq) and see what instant AI assistance feels like.
 
 ---
 
