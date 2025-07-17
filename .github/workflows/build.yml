@@ -181,10 +181,11 @@ jobs:
         with:
           go-version: ${{ env.GO_VERSION }}
 
+      - name: Install gosec
+        run: go install github.com/securecodewarrior/gosec/v2/cmd/gosec@latest
+
       - name: Run Gosec Security Scanner
-        uses: securecodewarrior/github-action-gosec@v1
-        with:
-          args: './...'
+        run: gosec ./...
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
