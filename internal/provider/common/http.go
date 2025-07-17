@@ -2,8 +2,11 @@
 package common
 
 import (
+	"context"
 	"net/http"
 	"time"
+
+	"ccproxy/internal/constants"
 )
 
 // Default HTTP client configuration values
@@ -52,10 +55,13 @@ func NewConfiguredHTTPClientWithConfig(config HTTPClientConfig) *http.Client {
 }
 
 // GetRequestID extracts request ID from context or generates one
-func GetRequestID(ctx interface{}) string {
-	// This is a simple implementation - in production you might want
-	// to use a proper request ID from context
-	return "request-id-placeholder"
+func GetRequestID(ctx context.Context) string {
+	if requestID := ctx.Value(constants.RequestIDKey); requestID != nil {
+		if id, ok := requestID.(string); ok {
+			return id
+		}
+	}
+	return constants.DefaultRequestID
 }
 
 // GetFinishReason determines finish reason from response
