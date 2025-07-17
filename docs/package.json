@@ -15,5 +15,8 @@
   "devDependencies": {
     "vitepress": "^1.6.3"
   },
+  "overrides": {
+    "esbuild": ">=0.24.3"
+  },
   "type": "module"
 }
