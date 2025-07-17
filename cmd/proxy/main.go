@@ -9,8 +9,8 @@ import (
 
 	"ccproxy/internal/config"
 	"ccproxy/internal/handlers"
-	"ccproxy/internal/provider"
 	"ccproxy/internal/middleware"
+	"ccproxy/internal/provider"
 	"ccproxy/pkg/logger"
 
 	"github.com/gin-gonic/gin"

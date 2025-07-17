@@ -21,7 +21,7 @@ func Recovery(logger *logger.Logger) gin.HandlerFunc {
 				logger.WithRequestID(requestID.(string)).WithField("panic", err).Error("Panic recovered")
 
 				c.JSON(http.StatusInternalServerError, gin.H{
-					"error": "Internal server error",
+					"error":      "Internal server error",
 					"request_id": requestID,
 				})
 				c.Abort()
