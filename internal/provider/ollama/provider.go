@@ -5,13 +5,13 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 	"time"
 
 	"ccproxy/internal/config"
 	"ccproxy/internal/models"
+	"ccproxy/internal/provider/common"
 	"ccproxy/pkg/logger"
 )
 
@@ -25,13 +25,11 @@ type Provider struct {
 // NewProvider creates a new Ollama provider instance
 func NewProvider(cfg *config.OllamaConfig, logger *logger.Logger) (*Provider, error) {
 	if cfg == nil {
-		return nil, fmt.Errorf("ollama config cannot be nil")
+		return nil, common.NewConfigError("ollama", "config", "config cannot be nil")
 	}
 
 	return &Provider{
-		httpClient: &http.Client{
-			Timeout: cfg.Timeout,
-		},
+		httpClient: common.NewConfiguredHTTPClient(cfg.Timeout),
 		config: cfg,
 		logger: logger,
 	}, nil
@@ -58,14 +56,14 @@ func (p *Provider) CreateChatCompletion(
 	// Marshal request
 	reqBody, err := json.Marshal(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to marshal request: %w", err)
+		return nil, common.NewProviderError("ollama", "failed to marshal request", err)
 	}
 
 	// Create HTTP request - Ollama uses OpenAI-compatible endpoints
 	httpReq, err := http.NewRequestWithContext(
 		ctx, "POST", p.config.BaseURL+"/v1/chat/completions", bytes.NewReader(reqBody))
 	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
+		return nil, common.NewProviderError("ollama", "failed to create HTTP request", err)
 	}
 
 	// Set headers
@@ -87,7 +85,7 @@ func (p *Provider) CreateChatCompletion(
 	start := time.Now()
 	httpResp, err := p.httpClient.Do(httpReq)
 	if err != nil {
-		return nil, fmt.Errorf("failed to send request: %w", err)
+		return nil, common.NewProviderError("ollama", "failed to send HTTP request", err)
 	}
 	defer func() {
 		if closeErr := httpResp.Body.Close(); closeErr != nil {
@@ -100,7 +98,7 @@ func (p *Provider) CreateChatCompletion(
 	// Read response body
 	respBody, err := io.ReadAll(httpResp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read response: %w", err)
+		return nil, common.NewProviderError("ollama", "failed to read response body", err)
 	}
 
 	// Check for HTTP errors
@@ -110,13 +108,13 @@ func (p *Provider) CreateChatCompletion(
 			WithField("request_id", getRequestID(ctx)).
 			Error("Ollama API returned error")
 
-		return nil, fmt.Errorf("ollama API error: %d %s", httpResp.StatusCode, string(respBody))
+		return nil, common.NewHTTPError("ollama", httpResp, nil)
 	}
 
 	// Parse response
 	var resp models.ChatCompletionResponse
 	if err := json.Unmarshal(respBody, &resp); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal response: %w", err)
+		return nil, common.NewProviderError("ollama", "failed to unmarshal response", err)
 	}
 
 	// Log response
@@ -149,10 +147,10 @@ func (p *Provider) GetMaxTokens() int {
 // ValidateConfig validates the provider configuration
 func (p *Provider) ValidateConfig() error {
 	if p.config.BaseURL == "" {
-		return fmt.Errorf("OLLAMA_BASE_URL is required")
+		return common.NewConfigError("ollama", "BaseURL", "base URL is required")
 	}
 	if p.config.Model == "" {
-		return fmt.Errorf("OLLAMA_MODEL is required")
+		return common.NewConfigError("ollama", "Model", "model is required")
 	}
 	return nil
 }
@@ -196,7 +194,7 @@ func (p *Provider) HealthCheck(ctx context.Context) error {
 
 	_, err := p.CreateChatCompletion(ctx, req)
 	if err != nil {
-		return fmt.Errorf("ollama health check failed: %w", err)
+		return common.NewProviderError("ollama", "health check failed", err)
 	}
 
 	return nil

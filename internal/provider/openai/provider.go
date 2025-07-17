@@ -2,16 +2,15 @@
 package openai
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 	"time"
 
 	"ccproxy/internal/config"
+	"ccproxy/internal/constants"
 	"ccproxy/internal/models"
+	"ccproxy/internal/provider/common"
 	"ccproxy/pkg/logger"
 )
 
@@ -25,15 +24,13 @@ type Provider struct {
 // NewProvider creates a new OpenAI provider instance
 func NewProvider(cfg *config.OpenAIConfig, logger *logger.Logger) (*Provider, error) {
 	if cfg == nil {
-		return nil, fmt.Errorf("openai config cannot be nil")
+		return nil, common.NewConfigError("openai", "config", "config cannot be nil")
 	}
 
 	return &Provider{
-		httpClient: &http.Client{
-			Timeout: cfg.Timeout,
-		},
-		config: cfg,
-		logger: logger,
+		httpClient: common.NewConfiguredHTTPClient(cfg.Timeout),
+		config:     cfg,
+		logger:     logger,
 	}, nil
 }
 
@@ -54,34 +51,29 @@ func (p *Provider) CreateChatCompletion(
 	req.Model = p.config.Model
 
 	// Marshal request
-	reqBody, err := json.Marshal(req)
+	reqBody, err := common.MarshalJSONRequest(req, "openai")
 	if err != nil {
-		return nil, fmt.Errorf("failed to marshal request: %w", err)
+		return nil, err
 	}
 
 	// Create HTTP request
-	httpReq, err := http.NewRequestWithContext(ctx, "POST", p.config.BaseURL+"/chat/completions", bytes.NewReader(reqBody))
+	httpReq, err := common.CreateHTTPRequest(ctx, "POST", p.config.BaseURL+"/chat/completions", reqBody, "openai")
 	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
+		return nil, err
 	}
 
 	// Set headers
-	httpReq.Header.Set("Content-Type", "application/json")
-	httpReq.Header.Set("Authorization", "Bearer "+p.config.APIKey)
+	common.SetStandardHeaders(httpReq, p.config.APIKey)
 
 	// Log request
-	p.logger.APILog("openai_request", map[string]interface{}{
-		"model":      req.Model,
-		"messages":   len(req.Messages),
-		"max_tokens": req.MaxTokens,
-		"tools":      len(req.Tools),
-	}, getRequestID(ctx))
+	requestMetrics := common.CreateRequestMetrics(req)
+	p.logger.APILog("openai_request", requestMetrics, common.GetRequestID(ctx))
 
 	// Send request
 	start := time.Now()
 	httpResp, err := p.httpClient.Do(httpReq)
 	if err != nil {
-		return nil, fmt.Errorf("failed to send request: %w", err)
+		return nil, common.NewProviderError("openai", "failed to send HTTP request", err)
 	}
 	defer func() {
 		if closeErr := httpResp.Body.Close(); closeErr != nil {
@@ -94,33 +86,28 @@ func (p *Provider) CreateChatCompletion(
 	// Read response body
 	respBody, err := io.ReadAll(httpResp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read response: %w", err)
+		return nil, common.NewProviderError("openai", "failed to read response body", err)
 	}
 
 	// Check for HTTP errors
 	if httpResp.StatusCode != http.StatusOK {
 		p.logger.WithField("status_code", httpResp.StatusCode).
 			WithField("response_body", string(respBody)).
-			WithField("request_id", getRequestID(ctx)).
+			WithField("request_id", common.GetRequestID(ctx)).
 			Error("OpenAI API returned error")
 
-		return nil, fmt.Errorf("openai API error: %d %s", httpResp.StatusCode, string(respBody))
+		return nil, common.NewHTTPError("openai", httpResp, nil)
 	}
 
 	// Parse response
 	var resp models.ChatCompletionResponse
-	if err := json.Unmarshal(respBody, &resp); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal response: %w", err)
+	if err := common.UnmarshalJSONResponse(respBody, &resp, "openai"); err != nil {
+		return nil, err
 	}
 
 	// Log response
-	p.logger.APILog("openai_response", map[string]interface{}{
-		"duration_ms":       duration.Milliseconds(),
-		"prompt_tokens":     resp.Usage.PromptTokens,
-		"completion_tokens": resp.Usage.CompletionTokens,
-		"total_tokens":      resp.Usage.TotalTokens,
-		"finish_reason":     getFinishReason(resp),
-	}, getRequestID(ctx))
+	responseMetrics := common.CreateResponseMetrics(resp, duration.Milliseconds())
+	p.logger.APILog("openai_response", responseMetrics, common.GetRequestID(ctx))
 
 	return &resp, nil
 }
@@ -143,13 +130,13 @@ func (p *Provider) GetMaxTokens() int {
 // ValidateConfig validates the provider configuration
 func (p *Provider) ValidateConfig() error {
 	if p.config.APIKey == "" {
-		return fmt.Errorf("OPENAI_API_KEY is required")
+		return common.NewConfigError("openai", "OPENAI_API_KEY", "API key is required")
 	}
 	if p.config.BaseURL == "" {
-		return fmt.Errorf("OPENAI_BASE_URL is required")
+		return common.NewConfigError("openai", "OPENAI_BASE_URL", "base URL is required")
 	}
 	if p.config.Model == "" {
-		return fmt.Errorf("OPENAI_MODEL is required")
+		return common.NewConfigError("openai", "OPENAI_MODEL", "model is required")
 	}
 	return nil
 }
@@ -159,23 +146,6 @@ func (p *Provider) GetBaseURL() string {
 	return p.config.BaseURL
 }
 
-// getRequestID extracts request ID from context
-func getRequestID(ctx context.Context) string {
-	if requestID := ctx.Value("request_id"); requestID != nil {
-		if id, ok := requestID.(string); ok {
-			return id
-		}
-	}
-	return "unknown"
-}
-
-// getFinishReason extracts finish reason from response
-func getFinishReason(resp models.ChatCompletionResponse) string {
-	if len(resp.Choices) > 0 {
-		return resp.Choices[0].FinishReason
-	}
-	return "unknown"
-}
 
 // HealthCheck performs a health check on the openai provider
 func (p *Provider) HealthCheck(ctx context.Context) error {
@@ -185,15 +155,15 @@ func (p *Provider) HealthCheck(ctx context.Context) error {
 		Messages: []models.ChatMessage{
 			{
 				Role:    "user",
-				Content: "health check",
+				Content: constants.HealthCheckMessage,
 			},
 		},
-		MaxTokens: &[]int{1}[0],
+		MaxTokens: &[]int{constants.HealthCheckTokens}[0],
 	}
 
 	_, err := p.CreateChatCompletion(ctx, req)
 	if err != nil {
-		return fmt.Errorf("openai health check failed: %w", err)
+		return common.NewProviderError("openai", "health check failed", err)
 	}
 
 	return nil

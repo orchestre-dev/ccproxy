@@ -5,13 +5,13 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 	"time"
 
 	"ccproxy/internal/config"
 	"ccproxy/internal/models"
+	"ccproxy/internal/provider/common"
 	"ccproxy/pkg/logger"
 )
 
@@ -25,13 +25,11 @@ type Provider struct {
 // NewProvider creates a new Groq provider
 func NewProvider(cfg *config.GroqConfig, logger *logger.Logger) (*Provider, error) {
 	if cfg == nil {
-		return nil, fmt.Errorf("groq config cannot be nil")
+		return nil, common.NewConfigError("groq", "config", "config cannot be nil")
 	}
 
 	return &Provider{
-		httpClient: &http.Client{
-			Timeout: cfg.Timeout,
-		},
+		httpClient: common.NewConfiguredHTTPClient(cfg.Timeout),
 		config: cfg,
 		logger: logger,
 	}, nil
@@ -56,13 +54,13 @@ func (p *Provider) CreateChatCompletion(
 	// Marshal request
 	reqBody, err := json.Marshal(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to marshal request: %w", err)
+		return nil, common.NewProviderError("groq", "failed to marshal request", err)
 	}
 
 	// Create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, "POST", p.config.BaseURL+"/chat/completions", bytes.NewReader(reqBody))
 	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
+		return nil, common.NewProviderError("groq", "failed to create HTTP request", err)
 	}
 
 	// Set headers
@@ -81,7 +79,7 @@ func (p *Provider) CreateChatCompletion(
 	start := time.Now()
 	httpResp, err := p.httpClient.Do(httpReq)
 	if err != nil {
-		return nil, fmt.Errorf("failed to send request: %w", err)
+		return nil, common.NewProviderError("groq", "failed to send HTTP request", err)
 	}
 	defer func() {
 		if closeErr := httpResp.Body.Close(); closeErr != nil {
@@ -94,7 +92,7 @@ func (p *Provider) CreateChatCompletion(
 	// Read response body
 	respBody, err := io.ReadAll(httpResp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read response: %w", err)
+		return nil, common.NewProviderError("groq", "failed to read response body", err)
 	}
 
 	// Check for HTTP errors
@@ -104,13 +102,13 @@ func (p *Provider) CreateChatCompletion(
 			WithField("request_id", getRequestID(ctx)).
 			Error("Groq API returned error")
 
-		return nil, fmt.Errorf("groq API error: %d %s", httpResp.StatusCode, string(respBody))
+		return nil, common.NewHTTPError("groq", httpResp, nil)
 	}
 
 	// Parse response
 	var resp models.ChatCompletionResponse
 	if err := json.Unmarshal(respBody, &resp); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal response: %w", err)
+		return nil, common.NewProviderError("groq", "failed to unmarshal response", err)
 	}
 
 	// Log response
@@ -150,16 +148,16 @@ func (p *Provider) GetBaseURL() string {
 // ValidateConfig validates the provider configuration
 func (p *Provider) ValidateConfig() error {
 	if p.config.APIKey == "" {
-		return fmt.Errorf("groq API key is required")
+		return common.NewConfigError("groq", "APIKey", "API key is required")
 	}
 	if p.config.BaseURL == "" {
-		return fmt.Errorf("groq base URL is required")
+		return common.NewConfigError("groq", "BaseURL", "base URL is required")
 	}
 	if p.config.Model == "" {
-		return fmt.Errorf("groq model is required")
+		return common.NewConfigError("groq", "Model", "model is required")
 	}
 	if p.config.MaxTokens <= 0 {
-		return fmt.Errorf("groq max tokens must be greater than 0")
+		return common.NewConfigError("groq", "MaxTokens", "max tokens must be greater than 0")
 	}
 	return nil
 }
@@ -198,7 +196,7 @@ func (p *Provider) HealthCheck(ctx context.Context) error {
 
 	_, err := p.CreateChatCompletion(ctx, req)
 	if err != nil {
-		return fmt.Errorf("groq health check failed: %w", err)
+		return common.NewProviderError("groq", "health check failed", err)
 	}
 
 	return nil
