@@ -94,6 +94,7 @@ func TestErrorScenarios(t *testing.T) {
 			// Create mock server
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(tt.statusCode)
+				//nolint:errcheck // Error is intentionally ignored in test server
 				_, _ = w.Write([]byte(tt.responseBody))
 			}))
 			defer server.Close()
@@ -164,6 +165,7 @@ func TestNetworkTimeoutScenarios(t *testing.T) {
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				time.Sleep(tt.serverDelay)
 				w.WriteHeader(http.StatusOK)
+				//nolint:errcheck // Error is intentionally ignored in test server
 				_, _ = w.Write([]byte(`{"test": "response"}`))
 			}))
 			defer server.Close()
@@ -180,6 +182,7 @@ func TestNetworkTimeoutScenarios(t *testing.T) {
 
 			resp, err := client.Do(req)
 			if resp != nil {
+				//nolint:errcheck // Error is intentionally ignored
 				defer func() { _ = resp.Body.Close() }()
 			}
 
@@ -336,6 +339,7 @@ func TestConcurrentErrorScenarios(t *testing.T) {
 			w.WriteHeader(http.StatusInternalServerError)
 		default:
 			w.WriteHeader(http.StatusOK)
+			//nolint:errcheck // Error is intentionally ignored in test server
 			_, _ = w.Write([]byte(`{"test": "success"}`))
 		}
 	}))
@@ -359,6 +363,7 @@ func TestConcurrentErrorScenarios(t *testing.T) {
 
 				resp, err := client.Do(req)
 				if resp != nil {
+					//nolint:errcheck // Error is intentionally ignored
 					_ = resp.Body.Close()
 				}
 				errorChan <- err
