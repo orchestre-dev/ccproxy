@@ -67,3 +67,5 @@ coverage.html
 
 # Air (hot reload) temporary files
 tmp/
+.claude/
+.temp/
