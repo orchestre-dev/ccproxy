@@ -179,3 +179,25 @@ func getFinishReason(resp models.ChatCompletionResponse) string {
 	}
 	return "unknown"
 }
+
+// HealthCheck performs a health check on the Groq provider
+func (p *Provider) HealthCheck(ctx context.Context) error {
+	// Simple health check by making a minimal request
+	req := &models.ChatCompletionRequest{
+		Model: p.config.Model,
+		Messages: []models.ChatMessage{
+			{
+				Role:    "user",
+				Content: "health check",
+			},
+		},
+		MaxTokens: &[]int{1}[0],
+	}
+	
+	_, err := p.CreateChatCompletion(ctx, req)
+	if err != nil {
+		return fmt.Errorf("groq health check failed: %w", err)
+	}
+	
+	return nil
+}

@@ -292,3 +292,8 @@ func (m *mockProvider) ValidateConfig() error {
 func (m *mockProvider) GetBaseURL() string {
 	return m.baseURL
 }
+
+// HealthCheck method to satisfy the Provider interface
+func (m *mockProvider) HealthCheck(ctx context.Context) error {
+	return nil
+}

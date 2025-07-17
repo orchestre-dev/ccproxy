@@ -26,6 +26,9 @@ type Provider interface {
 
 	// GetBaseURL returns the API base URL for this provider
 	GetBaseURL() string
+
+	// HealthCheck performs a health check on the provider
+	HealthCheck(ctx context.Context) error
 }
 
 // Type represents the available provider types
