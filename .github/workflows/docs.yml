@@ -39,7 +39,7 @@ jobs:
         working-directory: docs
 
       - name: Build documentation
-        run: npm run docs:build
+        run: npm run build
         working-directory: docs
 
       - name: Upload artifact
