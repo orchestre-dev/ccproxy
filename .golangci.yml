@@ -58,6 +58,10 @@ linters-settings:
           - $gostd
           - ccproxy
           - github.com/gin-gonic/gin
+          - github.com/spf13/viper
+          - github.com/sirupsen/logrus
+          - github.com/stretchr/testify
+          - github.com/google/generative-ai-go
 
   revive:
     rules:
@@ -74,7 +78,7 @@ linters:
     - dogsled
     - dupl
     - errcheck
-    - exportloopref
+    - copyloopvar
     - exhaustive
     - gci
     - gochecknoinits
@@ -87,7 +91,7 @@ linters:
     - gofumpt
     - goheader
     - goimports
-    - gomnd
+    - mnd
     - gomodguard
     - goprintffuncname
     - gosec
@@ -114,7 +118,7 @@ issues:
   exclude-rules:
     - path: _test\.go
       linters:
-        - gomnd
+        - mnd
         - lll
         - dupl
         - gosec
