@@ -210,64 +210,66 @@ func setDefaults() {
 }
 
 // bindEnvVars binds environment variables to config keys
+//
+//nolint:errcheck // viper.BindEnv errors are non-critical for configuration binding
 func bindEnvVars() {
 	viper.AutomaticEnv()
 
 	// Provider selection
-	_ = viper.BindEnv("provider", "PROVIDER")
+	viper.BindEnv("provider", "PROVIDER")
 
 	// Server environment variables
-	_ = viper.BindEnv("server.host", "SERVER_HOST")
-	_ = viper.BindEnv("server.port", "SERVER_PORT", "PORT")
-	_ = viper.BindEnv("server.environment", "SERVER_ENVIRONMENT", "ENV", "ENVIRONMENT")
+	viper.BindEnv("server.host", "SERVER_HOST")
+	viper.BindEnv("server.port", "SERVER_PORT", "PORT")
+	viper.BindEnv("server.environment", "SERVER_ENVIRONMENT", "ENV", "ENVIRONMENT")
 
 	// Groq environment variables
-	_ = viper.BindEnv("providers.groq.api_key", "GROQ_API_KEY")
-	_ = viper.BindEnv("providers.groq.base_url", "GROQ_BASE_URL")
-	_ = viper.BindEnv("providers.groq.model", "GROQ_MODEL")
-	_ = viper.BindEnv("providers.groq.max_tokens", "GROQ_MAX_TOKENS")
+	viper.BindEnv("providers.groq.api_key", "GROQ_API_KEY")
+	viper.BindEnv("providers.groq.base_url", "GROQ_BASE_URL")
+	viper.BindEnv("providers.groq.model", "GROQ_MODEL")
+	viper.BindEnv("providers.groq.max_tokens", "GROQ_MAX_TOKENS")
 
 	// OpenRouter environment variables
-	_ = viper.BindEnv("providers.openrouter.api_key", "OPENROUTER_API_KEY")
-	_ = viper.BindEnv("providers.openrouter.base_url", "OPENROUTER_BASE_URL")
-	_ = viper.BindEnv("providers.openrouter.model", "OPENROUTER_MODEL")
-	_ = viper.BindEnv("providers.openrouter.max_tokens", "OPENROUTER_MAX_TOKENS")
-	_ = viper.BindEnv("providers.openrouter.site_url", "OPENROUTER_SITE_URL")
-	_ = viper.BindEnv("providers.openrouter.site_name", "OPENROUTER_SITE_NAME")
+	viper.BindEnv("providers.openrouter.api_key", "OPENROUTER_API_KEY")
+	viper.BindEnv("providers.openrouter.base_url", "OPENROUTER_BASE_URL")
+	viper.BindEnv("providers.openrouter.model", "OPENROUTER_MODEL")
+	viper.BindEnv("providers.openrouter.max_tokens", "OPENROUTER_MAX_TOKENS")
+	viper.BindEnv("providers.openrouter.site_url", "OPENROUTER_SITE_URL")
+	viper.BindEnv("providers.openrouter.site_name", "OPENROUTER_SITE_NAME")
 
 	// OpenAI environment variables
-	_ = viper.BindEnv("providers.openai.api_key", "OPENAI_API_KEY")
-	_ = viper.BindEnv("providers.openai.base_url", "OPENAI_BASE_URL")
-	_ = viper.BindEnv("providers.openai.model", "OPENAI_MODEL")
-	_ = viper.BindEnv("providers.openai.max_tokens", "OPENAI_MAX_TOKENS")
+	viper.BindEnv("providers.openai.api_key", "OPENAI_API_KEY")
+	viper.BindEnv("providers.openai.base_url", "OPENAI_BASE_URL")
+	viper.BindEnv("providers.openai.model", "OPENAI_MODEL")
+	viper.BindEnv("providers.openai.max_tokens", "OPENAI_MAX_TOKENS")
 
 	// XAI environment variables
-	_ = viper.BindEnv("providers.xai.api_key", "XAI_API_KEY")
-	_ = viper.BindEnv("providers.xai.base_url", "XAI_BASE_URL")
-	_ = viper.BindEnv("providers.xai.model", "XAI_MODEL")
-	_ = viper.BindEnv("providers.xai.max_tokens", "XAI_MAX_TOKENS")
+	viper.BindEnv("providers.xai.api_key", "XAI_API_KEY")
+	viper.BindEnv("providers.xai.base_url", "XAI_BASE_URL")
+	viper.BindEnv("providers.xai.model", "XAI_MODEL")
+	viper.BindEnv("providers.xai.max_tokens", "XAI_MAX_TOKENS")
 
 	// Gemini environment variables
-	_ = viper.BindEnv("providers.gemini.api_key", "GEMINI_API_KEY", "GOOGLE_API_KEY")
-	_ = viper.BindEnv("providers.gemini.base_url", "GEMINI_BASE_URL")
-	_ = viper.BindEnv("providers.gemini.model", "GEMINI_MODEL")
-	_ = viper.BindEnv("providers.gemini.max_tokens", "GEMINI_MAX_TOKENS")
+	viper.BindEnv("providers.gemini.api_key", "GEMINI_API_KEY", "GOOGLE_API_KEY")
+	viper.BindEnv("providers.gemini.base_url", "GEMINI_BASE_URL")
+	viper.BindEnv("providers.gemini.model", "GEMINI_MODEL")
+	viper.BindEnv("providers.gemini.max_tokens", "GEMINI_MAX_TOKENS")
 
 	// Mistral environment variables
-	_ = viper.BindEnv("providers.mistral.api_key", "MISTRAL_API_KEY")
-	_ = viper.BindEnv("providers.mistral.base_url", "MISTRAL_BASE_URL")
-	_ = viper.BindEnv("providers.mistral.model", "MISTRAL_MODEL")
-	_ = viper.BindEnv("providers.mistral.max_tokens", "MISTRAL_MAX_TOKENS")
+	viper.BindEnv("providers.mistral.api_key", "MISTRAL_API_KEY")
+	viper.BindEnv("providers.mistral.base_url", "MISTRAL_BASE_URL")
+	viper.BindEnv("providers.mistral.model", "MISTRAL_MODEL")
+	viper.BindEnv("providers.mistral.max_tokens", "MISTRAL_MAX_TOKENS")
 
 	// Ollama environment variables
-	_ = viper.BindEnv("providers.ollama.api_key", "OLLAMA_API_KEY")
-	_ = viper.BindEnv("providers.ollama.base_url", "OLLAMA_BASE_URL")
-	_ = viper.BindEnv("providers.ollama.model", "OLLAMA_MODEL")
-	_ = viper.BindEnv("providers.ollama.max_tokens", "OLLAMA_MAX_TOKENS")
+	viper.BindEnv("providers.ollama.api_key", "OLLAMA_API_KEY")
+	viper.BindEnv("providers.ollama.base_url", "OLLAMA_BASE_URL")
+	viper.BindEnv("providers.ollama.model", "OLLAMA_MODEL")
+	viper.BindEnv("providers.ollama.max_tokens", "OLLAMA_MAX_TOKENS")
 
 	// Logging environment variables
-	_ = viper.BindEnv("logging.level", "LOG_LEVEL")
-	_ = viper.BindEnv("logging.format", "LOG_FORMAT")
+	viper.BindEnv("logging.level", "LOG_LEVEL")
+	viper.BindEnv("logging.format", "LOG_FORMAT")
 }
 
 // validate validates required configuration

@@ -83,7 +83,11 @@ func (p *Provider) CreateChatCompletion(
 	if err != nil {
 		return nil, fmt.Errorf("failed to send request: %w", err)
 	}
-	defer httpResp.Body.Close()
+	defer func() {
+		if err := httpResp.Body.Close(); err != nil {
+			p.logger.WithError(err).Warn("Failed to close response body")
+		}
+	}()
 
 	duration := time.Since(start)
 

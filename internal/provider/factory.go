@@ -43,15 +43,15 @@ func (f *Factory) CreateProvider() (Provider, error) {
 	case ProviderTypeOpenRouter:
 		provider, err = openrouter.NewProvider(&f.config.Providers.OpenRouter, f.logger)
 	case ProviderTypeOpenAI:
-		provider = openai.NewProvider(&f.config.Providers.OpenAI, f.logger)
+		provider, err = openai.NewProvider(&f.config.Providers.OpenAI, f.logger)
 	case ProviderTypeXAI:
-		provider = xai.NewProvider(&f.config.Providers.XAI, f.logger)
+		provider, err = xai.NewProvider(&f.config.Providers.XAI, f.logger)
 	case ProviderTypeGemini:
-		provider = gemini.NewProvider(&f.config.Providers.Gemini, f.logger)
+		provider, err = gemini.NewProvider(&f.config.Providers.Gemini, f.logger)
 	case ProviderTypeMistral:
-		provider = mistral.NewProvider(&f.config.Providers.Mistral, f.logger)
+		provider, err = mistral.NewProvider(&f.config.Providers.Mistral, f.logger)
 	case ProviderTypeOllama:
-		provider = ollama.NewProvider(&f.config.Providers.Ollama, f.logger)
+		provider, err = ollama.NewProvider(&f.config.Providers.Ollama, f.logger)
 	default:
 		return nil, fmt.Errorf("unsupported provider: %s", f.config.Provider)
 	}

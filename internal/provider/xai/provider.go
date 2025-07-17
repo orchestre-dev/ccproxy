@@ -23,14 +23,18 @@ type Provider struct {
 }
 
 // NewProvider creates a new XAI provider instance
-func NewProvider(cfg *config.XAIConfig, logger *logger.Logger) *Provider {
+func NewProvider(cfg *config.XAIConfig, logger *logger.Logger) (*Provider, error) {
+	if cfg == nil {
+		return nil, fmt.Errorf("xai config cannot be nil")
+	}
+	
 	return &Provider{
 		httpClient: &http.Client{
 			Timeout: cfg.Timeout,
 		},
 		config: cfg,
 		logger: logger,
-	}
+	}, nil
 }
 
 // CreateChatCompletion sends a chat completion request to XAI API
@@ -79,7 +83,11 @@ func (p *Provider) CreateChatCompletion(
 	if err != nil {
 		return nil, fmt.Errorf("failed to send request: %w", err)
 	}
-	defer httpResp.Body.Close()
+	defer func() {
+		if err := httpResp.Body.Close(); err != nil {
+			p.logger.WithError(err).Warn("Failed to close response body")
+		}
+	}()
 
 	duration := time.Since(start)
 
