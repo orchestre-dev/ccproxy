@@ -6,6 +6,7 @@ import (
 	"ccproxy/internal/models"
 )
 
+//nolint:gocognit // Test function needs comprehensive test cases
 func TestConvertAnthropicToOpenAI(t *testing.T) {
 	tests := []struct {
 		input    *models.MessagesRequest
@@ -199,6 +200,7 @@ func TestConvertAnthropicToOpenAI(t *testing.T) {
 	}
 }
 
+//nolint:gocognit,gocyclo // Test function needs comprehensive test cases
 func TestConvertOpenAIToAnthropic(t *testing.T) {
 	tests := []struct {
 		input        *models.ChatCompletionResponse

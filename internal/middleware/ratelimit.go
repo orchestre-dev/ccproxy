@@ -13,17 +13,17 @@ import (
 
 // RateLimiter represents a rate limiter for a specific client
 type RateLimiter struct {
-	mu        sync.RWMutex
 	clients   map[string]*ClientLimiter
-	window    time.Duration
 	lastReset time.Time
+	window    time.Duration
+	mu        sync.RWMutex
 	requests  int
 }
 
 // ClientLimiter tracks requests for a specific client
 type ClientLimiter struct {
-	mu        sync.RWMutex
 	resetTime time.Time
+	mu        sync.RWMutex
 	count     int
 }
 
