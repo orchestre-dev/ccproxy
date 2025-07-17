@@ -78,10 +78,10 @@ func (l *Logger) APILog(action string, details map[string]interface{}, requestID
 		"request_id": requestID,
 		"type":       "api_action",
 	}
-	
+
 	for k, v := range details {
 		fields[k] = v
 	}
-	
+
 	l.WithFields(fields).Info("API action")
 }

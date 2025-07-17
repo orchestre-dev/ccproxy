@@ -2,12 +2,12 @@ package models
 
 // ChatCompletionRequest represents an OpenAI chat completion request
 type ChatCompletionRequest struct {
-	Model       string                 `json:"model"`
-	Messages    []ChatMessage          `json:"messages"`
-	MaxTokens   *int                   `json:"max_tokens,omitempty"`
-	Temperature *float64               `json:"temperature,omitempty"`
-	Tools       []ChatCompletionTool   `json:"tools,omitempty"`
-	ToolChoice  any                    `json:"tool_choice,omitempty"`
+	Model       string               `json:"model"`
+	Messages    []ChatMessage        `json:"messages"`
+	MaxTokens   *int                 `json:"max_tokens,omitempty"`
+	Temperature *float64             `json:"temperature,omitempty"`
+	Tools       []ChatCompletionTool `json:"tools,omitempty"`
+	ToolChoice  any                  `json:"tool_choice,omitempty"`
 }
 
 // ChatCompletionResponse represents an OpenAI chat completion response

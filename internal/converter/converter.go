@@ -109,7 +109,7 @@ func convertMessages(messages []models.Message) ([]models.ChatMessage, error) {
 					toolInfo := fmt.Sprintf("[Tool Use: %s] %s", block.Name, mustMarshalJSON(block.Input))
 					parts = append(parts, toolInfo)
 				case "tool_result":
-					result := fmt.Sprintf("<tool_result>%s</tool_result>", mustMarshalJSON(block))
+					result := fmt.Sprintf("<tool_result>%s</tool_result>", mustMarshalJSON(block.Content))
 					parts = append(parts, result)
 				}
 			}

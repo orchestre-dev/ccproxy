@@ -4,25 +4,25 @@ import "encoding/json"
 
 // MessagesRequest represents an Anthropic API messages request
 type MessagesRequest struct {
-	Model       string     `json:"model"`
-	Messages    []Message  `json:"messages"`
-	MaxTokens   *int       `json:"max_tokens,omitempty"`
-	Temperature *float64   `json:"temperature,omitempty"`
-	Stream      *bool      `json:"stream,omitempty"`
-	Tools       []Tool     `json:"tools,omitempty"`
-	ToolChoice  any        `json:"tool_choice,omitempty"`
+	Model       string    `json:"model"`
+	Messages    []Message `json:"messages"`
+	MaxTokens   *int      `json:"max_tokens,omitempty"`
+	Temperature *float64  `json:"temperature,omitempty"`
+	Stream      *bool     `json:"stream,omitempty"`
+	Tools       []Tool    `json:"tools,omitempty"`
+	ToolChoice  any       `json:"tool_choice,omitempty"`
 }
 
 // MessagesResponse represents an Anthropic API messages response
 type MessagesResponse struct {
-	ID           string      `json:"id"`
-	Type         string      `json:"type"`
-	Role         string      `json:"role"`
-	Model        string      `json:"model"`
-	Content      []Content   `json:"content"`
-	StopReason   string      `json:"stop_reason"`
-	StopSequence *string     `json:"stop_sequence"`
-	Usage        Usage       `json:"usage"`
+	ID           string    `json:"id"`
+	Type         string    `json:"type"`
+	Role         string    `json:"role"`
+	Model        string    `json:"model"`
+	Content      []Content `json:"content"`
+	StopReason   string    `json:"stop_reason"`
+	StopSequence *string   `json:"stop_sequence"`
+	Usage        Usage     `json:"usage"`
 }
 
 // Message represents a conversation message
@@ -38,6 +38,7 @@ type Content struct {
 	ID        string                 `json:"id,omitempty"`
 	Name      string                 `json:"name,omitempty"`
 	Input     map[string]interface{} `json:"input,omitempty"`
+	Content   interface{}            `json:"content,omitempty"` // For tool_result blocks
 	ToolUseID string                 `json:"tool_use_id,omitempty"`
 }
 

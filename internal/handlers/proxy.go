@@ -4,9 +4,9 @@ import (
 	"context"
 	"net/http"
 
-	"ccproxy/internal/provider"
 	"ccproxy/internal/converter"
 	"ccproxy/internal/models"
+	"ccproxy/internal/provider"
 	"ccproxy/pkg/logger"
 
 	"github.com/gin-gonic/gin"
@@ -33,13 +33,13 @@ func RegisterRoutes(router *gin.Engine, provider provider.Provider, logger *logg
 
 	// Health check endpoint
 	router.GET("/", handler.HealthCheck)
-	
+
 	// Main proxy endpoint
 	router.POST("/v1/messages", handler.ProxyMessages)
-	
+
 	// Additional health endpoint
 	router.GET("/health", handler.DetailedHealthCheck)
-	
+
 	// Provider status endpoint
 	router.GET("/status", handler.ProviderStatus)
 }
@@ -47,7 +47,7 @@ func RegisterRoutes(router *gin.Engine, provider provider.Provider, logger *logg
 // HealthCheck handles the root health check endpoint
 func (h *Handler) HealthCheck(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
-		"message": "CCProxy Multi-Provider Anthropic API is alive 💡",
+		"message":  "CCProxy Multi-Provider Anthropic API is alive 💡",
 		"provider": h.provider.GetName(),
 	})
 }
@@ -64,20 +64,20 @@ func (h *Handler) DetailedHealthCheck(c *gin.Context) {
 // ProviderStatus provides information about the current provider
 func (h *Handler) ProviderStatus(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
-		"provider":    h.provider.GetName(),
-		"model":       h.provider.GetModel(),
-		"base_url":    h.provider.GetBaseURL(),
-		"max_tokens":  h.provider.GetMaxTokens(),
-		"status":      "active",
-		"service":     "ccproxy",
-		"version":     "1.0.0",
+		"provider":   h.provider.GetName(),
+		"model":      h.provider.GetModel(),
+		"base_url":   h.provider.GetBaseURL(),
+		"max_tokens": h.provider.GetMaxTokens(),
+		"status":     "active",
+		"service":    "ccproxy",
+		"version":    "1.0.0",
 	})
 }
 
 // ProxyMessages handles the main proxy endpoint for messages
 func (h *Handler) ProxyMessages(c *gin.Context) {
 	requestID := getRequestIDFromContext(c)
-	
+
 	// Parse request
 	var req models.MessagesRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
