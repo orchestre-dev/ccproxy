@@ -3,6 +3,7 @@ package handlers
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -11,6 +12,7 @@ import (
 	"ccproxy/internal/converter"
 	"ccproxy/internal/models"
 	"ccproxy/internal/provider"
+	"ccproxy/internal/provider/common"
 	"ccproxy/pkg/logger"
 )
 
@@ -55,6 +57,19 @@ func (h *Handler) HealthCheck(c *gin.Context) {
 
 // DetailedHealthCheck provides more detailed health information
 func (h *Handler) DetailedHealthCheck(c *gin.Context) {
+	// Check provider health
+	err := h.provider.HealthCheck(c.Request.Context())
+	if err != nil {
+		h.logger.WithError(err).Error("Provider health check failed")
+		c.JSON(http.StatusServiceUnavailable, gin.H{
+			"status":  "unhealthy",
+			"service": "ccproxy",
+			"version": "1.0.0",
+			"error":   err.Error(),
+		})
+		return
+	}
+	
 	c.JSON(http.StatusOK, gin.H{
 		"status":  "healthy",
 		"service": "ccproxy",
@@ -90,6 +105,16 @@ func (h *Handler) ProxyMessages(c *gin.Context) {
 		return
 	}
 
+	// Basic validation
+	if len(req.Messages) == 0 {
+		h.logger.WithRequestID(requestID).Error("No messages provided in request")
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":      "Messages array cannot be empty",
+			"request_id": requestID,
+		})
+		return
+	}
+
 	// Log incoming request
 	h.logger.APILog("anthropic_request", map[string]interface{}{
 		"model":      req.Model,
@@ -119,8 +144,24 @@ func (h *Handler) ProxyMessages(c *gin.Context) {
 	openaiResp, err := h.provider.CreateChatCompletion(ctx, openaiReq)
 	if err != nil {
 		h.logger.WithRequestID(requestID).WithError(err).Errorf("Failed to call %s API", h.provider.GetName())
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error":      "Failed to process request",
+		
+		// Check if it's a ProviderError with a specific status code
+		statusCode := http.StatusInternalServerError
+		errorMessage := "Failed to process request"
+		
+		var providerErr *common.ProviderError
+		if errors.As(err, &providerErr) {
+			if providerErr.Code != 0 {
+				statusCode = providerErr.Code
+			}
+			// For client errors, provide more specific messages
+			if statusCode == http.StatusBadRequest || statusCode == http.StatusUnauthorized || statusCode == http.StatusForbidden {
+				errorMessage = providerErr.Message
+			}
+		}
+		
+		c.JSON(statusCode, gin.H{
+			"error":      errorMessage,
 			"request_id": requestID,
 		})
 		return
