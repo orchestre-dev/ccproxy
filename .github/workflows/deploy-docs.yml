@@ -1,0 +1,120 @@
+name: Deploy Documentation to Cloudflare Pages
+
+on:
+  push:
+    branches: [main]
+    paths: ['docs/**', '.github/workflows/deploy-docs.yml']
+  pull_request:
+    branches: [main]
+    paths: ['docs/**']
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '18'
+  CLOUDFLARE_PROJECT_NAME: 'ccproxy'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Build Documentation
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: 'docs/package-lock.json'
+
+      - name: Install dependencies
+        run: |
+          cd docs
+          npm ci
+
+      - name: Build VitePress site
+        env:
+          GA_MEASUREMENT_ID: ${{ secrets.GA_MEASUREMENT_ID }}
+        run: |
+          cd docs
+          npm run build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: documentation-build
+          path: docs/.vitepress/dist/
+          retention-days: 1
+
+  deploy-preview:
+    runs-on: ubuntu-latest
+    name: Deploy Preview (PR)
+    needs: build
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: documentation-build
+          path: docs/.vitepress/dist/
+
+      - name: Deploy to Cloudflare Pages (Preview)
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: ${{ env.CLOUDFLARE_PROJECT_NAME }}
+          directory: docs/.vitepress/dist
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+
+  deploy-production:
+    runs-on: ubuntu-latest
+    name: Deploy Production
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment:
+      name: production
+      url: https://ccproxy.orchestre.dev
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: documentation-build
+          path: docs/.vitepress/dist/
+
+      - name: Deploy to Cloudflare Pages (Production)
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: ${{ env.CLOUDFLARE_PROJECT_NAME }}
+          directory: docs/.vitepress/dist
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Post deployment notification
+        if: success()
+        run: |
+          echo "✅ Documentation successfully deployed to https://ccproxy.orchestre.dev"
+          echo "🔗 Preview the deployment at: https://ccproxy.orchestre.dev"
+
+  notify-failure:
+    runs-on: ubuntu-latest
+    name: Notify on Failure
+    needs: [build, deploy-production]
+    if: failure()
+    
+    steps:
+      - name: Deployment failed notification
+        run: |
+          echo "❌ Documentation deployment failed"
+          echo "Please check the workflow logs for details"
