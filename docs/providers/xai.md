@@ -65,32 +65,47 @@ export XAI_BASE_URL=https://api.x.ai/v1
 
 ## Available Models
 
-| Model | Context | Speed | Best For | Cost/1M tokens |
-|-------|---------|-------|----------|----------------|
-| **grok-beta** | 128K | ⚡⚡ | General use (default) | $5.00/$15.00 |
-| **grok-2-latest** | 128K | ⚡⚡ | Latest features | $5.00/$15.00 |
-| **grok-2-public** | 128K | ⚡⚡ | Stable version | $5.00/$15.00 |
+XAI provides access to Grok models with unique real-time capabilities:
+
+- **Grok Series** - Advanced models with real-time information access
+- **Latest Versions** - Continuously updated with new features
+- **Specialized Variants** - Models optimized for different use cases
+
+**🔧 Critical for Claude Code**: You must select models that support **tool calling** or **function calling** capabilities, as Claude Code requires these features to operate correctly.
 
 ### Model Capabilities
 
-All Grok models include:
+Grok models typically include:
 - **Real-time information**: Current events and news
 - **X/Twitter integration**: Access to X platform data
 - **Web search**: Built-in internet browsing
-- **Vision capabilities**: Image understanding
+- **Vision capabilities**: Image understanding (model dependent)
 - **Function calling**: Tool use support
+
+### Model Selection Guidelines
+
+When choosing XAI models:
+
+1. **Verify Tool Support**: Ensure the model supports function calling
+2. **Check Current Availability**: XAI's model lineup evolves rapidly
+3. **Consider Real-time Needs**: Leverage Grok's unique real-time capabilities
+4. **Review Context Limits**: Different models have different context windows
+
+For current model availability, capabilities, and pricing, visit [XAI's official console](https://console.x.ai).
 
 ## Pricing
 
-### Current Pricing
-- **Input tokens**: $5.00 per 1M tokens
-- **Output tokens**: $15.00 per 1M tokens
-- **No free tier** currently available
+### Current Pricing Structure
+- Pay-as-you-use model with competitive rates
+- No free tier currently available
+- Pricing reflects the unique real-time capabilities
 
 ### Beta Pricing Notes
 - Pricing may change as models move out of beta
-- Current rates are competitive for the real-time capabilities
-- Monitor [console.x.ai](https://console.x.ai) for updates
+- Rates are competitive for the real-time capabilities offered
+- Enterprise pricing available for high-volume usage
+
+For current, accurate pricing information, visit [XAI's official console](https://console.x.ai).
 
 ## Configuration Examples
 

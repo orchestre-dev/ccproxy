@@ -1,7 +1,7 @@
 ---
 title: OpenRouter with Claude Code - 100+ AI Models via CCProxy
-description: Access 100+ AI models including Claude, GPT-4, Llama, and Mistral with Claude Code through CCProxy and OpenRouter. Perfect for model experimentation and cost optimization with unified API access.
-keywords: OpenRouter, Claude Code, CCProxy, 100+ AI models, model fallbacks, Claude 3.5, GPT-4, Llama, model comparison, unified AI API
+description: Access 100+ AI models including Kimi K2, Claude, GPT-4, Llama, and Mistral with Claude Code through CCProxy and OpenRouter. Major supporter of Kimi K2 with reliable access and competitive pricing.
+keywords: OpenRouter, Claude Code, CCProxy, Kimi K2, 100+ AI models, model fallbacks, Claude 3.5, GPT-4, Llama, model comparison, unified AI API
 ---
 
 # OpenRouter Provider
@@ -21,16 +21,17 @@ keywords: OpenRouter, Claude Code, CCProxy, 100+ AI models, model fallbacks, Cla
   </button>
 </div>
 
-**OpenRouter unlocks the full AI ecosystem** by providing access to 100+ different AI models through a single API. When combined with **Claude Code and CCProxy**, OpenRouter becomes the ultimate platform for AI experimentation, allowing you to find the perfect model for each development task.
+**OpenRouter unlocks the full AI ecosystem** by providing access to 100+ different AI models through a single API. As a **major supporter of Kimi K2**, OpenRouter offers reliable access to Moonshot AI's breakthrough model alongside Claude, GPT-4, and many others. When combined with **Claude Code and CCProxy**, OpenRouter becomes the ultimate platform for AI experimentation, allowing you to find the perfect model for each development task.
 
 ## 🎯 Why Choose OpenRouter for Claude Code?
 
+- ⚡ **Kimi K2 access**: Major supporter offering reliable Kimi K2 with 128k context window
 - 🎯 **100+ models**: Access to all major AI models through familiar Claude Code interface
 - 🔄 **Model fallbacks**: Automatic failover between models for maximum reliability
 - 📊 **Usage analytics**: Detailed tracking and monitoring integrated with CCProxy
 - 💰 **Cost optimization**: Compare and choose the most cost-effective models for each task
 - 🧪 **Perfect for experimentation**: Test different models without changing your Claude Code workflow
-- ⚡ **Unified API**: Single integration for Claude 3.5, GPT-4, Llama, Mistral, and more
+- ⚡ **Unified API**: Single integration for Kimi K2, Claude 3.5, GPT-4, Llama, Mistral, and more
 
 ## Setup
 
@@ -54,7 +55,7 @@ export OPENROUTER_API_KEY=sk-or-v1-your_openrouter_api_key_here
 
 ```bash
 # Custom model (default: anthropic/claude-3.5-sonnet)
-export OPENROUTER_MODEL=openai/gpt-4o
+export OPENROUTER_MODEL=moonshotai/kimi-k2-instruct
 
 # Custom max tokens (default: 16384)
 export OPENROUTER_MAX_TOKENS=8192
@@ -71,50 +72,44 @@ export OPENROUTER_SITE_NAME="Your App Name"
 
 ## Available Models
 
-OpenRouter offers 100+ models across different categories:
+OpenRouter provides access to 100+ AI models from leading providers including:
 
-### Top Claude Models
-| Model | Context | Speed | Cost/1M tokens |
-|-------|---------|-------|----------------|
-| **anthropic/claude-3.5-sonnet** | 200K | ⚡⚡ | $3.00/$15.00 |
-| **anthropic/claude-3-opus** | 200K | ⚡ | $15.00/$75.00 |
-| **anthropic/claude-3-haiku** | 200K | ⚡⚡⚡ | $0.25/$1.25 |
+- **Anthropic** - Claude series with advanced reasoning
+- **OpenAI** - GPT-4 series and reasoning models
+- **Meta** - Llama models for open-source applications  
+- **Google** - Gemini models with multimodal capabilities
+- **Mistral** - European privacy-focused models
+- **Moonshot AI** - Advanced language models
+- **Many others** - Including specialized coding and reasoning models
 
-### Top OpenAI Models
-| Model | Context | Speed | Cost/1M tokens |
-|-------|---------|-------|----------------|
-| **openai/gpt-4o** | 128K | ⚡⚡ | $2.50/$10.00 |
-| **openai/gpt-4o-mini** | 128K | ⚡⚡⚡ | $0.15/$0.60 |
-| **openai/o1-preview** | 32K | ⚡ | $15.00/$60.00 |
+**🔧 Critical for Claude Code**: You must select models that support **tool calling** or **function calling** capabilities, as Claude Code requires these features to operate correctly.
 
-### Top Open Source Models
-| Model | Context | Speed | Cost/1M tokens |
-|-------|---------|-------|----------------|
-| **meta-llama/llama-3.1-405b-instruct** | 32K | ⚡ | $2.70/$2.70 |
-| **qwen/qwen-2.5-72b-instruct** | 32K | ⚡⚡ | $0.40/$1.20 |
-| **mistralai/mistral-large** | 128K | ⚡⚡ | $2.00/$6.00 |
+### Model Selection Guidelines
 
-### Specialized Models
-| Model | Specialty | Context | Cost/1M tokens |
-|-------|-----------|---------|----------------|
-| **deepseek/deepseek-coder** | Coding | 128K | $0.14/$0.28 |
-| **perplexity/llama-3.1-sonar-large-128k-online** | Web Search | 128K | $5.00/$5.00 |
-| **anthropic/claude-3-sonnet:beta** | Latest Beta | 200K | $3.00/$15.00 |
+When choosing models on OpenRouter:
+
+1. **Verify Tool Support**: Ensure the model supports function calling
+2. **Check Availability**: Model availability changes frequently
+3. **Review Capabilities**: Different models excel at different tasks
+4. **Consider Cost**: Pricing varies significantly between models
+
+For current model availability, capabilities, and pricing, visit [OpenRouter's official models page](https://openrouter.ai/models).
 
 ## Pricing
 
 OpenRouter offers competitive pricing with transparent costs:
 
 ### Free Tier
-- $5 free credits for new users
-- No monthly fees
+- Free credits for new users
+- No monthly fees  
 - Pay-as-you-use pricing
 
 ### Cost Structure
-- **Input tokens**: $0.06 - $15.00 per 1M tokens
-- **Output tokens**: $0.06 - $75.00 per 1M tokens
-- **No minimum spend**
-- **Volume discounts** available
+- Competitive per-token pricing across all models
+- No minimum spend required
+- Volume discounts available
+
+For current, accurate pricing information, visit [OpenRouter's official pricing page](https://openrouter.ai/models).
 
 ## Configuration Examples
 

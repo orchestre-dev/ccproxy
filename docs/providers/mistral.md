@@ -65,53 +65,39 @@ export MISTRAL_BASE_URL=https://api.mistral.ai/v1
 
 ## Available Models
 
-### Current Models
+Mistral AI provides access to various model families:
 
-| Model | Context | Speed | Best For | Cost/1M tokens |
-|-------|---------|-------|----------|----------------|
-| **mistral-large-latest** | 128K | ⚡⚡ | Complex tasks (default) | $2.00/$6.00 |
-| **mistral-small-latest** | 128K | ⚡⚡⚡ | Fast responses | $0.20/$0.60 |
-| **codestral-latest** | 32K | ⚡⚡ | Code generation | $0.25/$0.75 |
-| **mistral-medium-latest** | 32K | ⚡⚡ | Balanced performance | $0.70/$2.10 |
+- **Mistral Large Series** - Most capable models for complex reasoning
+- **Mistral Small Series** - Fast and cost-effective models
+- **Codestral Series** - Specialized models for code generation
+- **Mixtral Series** - Mixture-of-experts models for specialized tasks
+- **Open Source Models** - Community models with various capabilities
 
-### Specialized Models
+**🔧 Critical for Claude Code**: You must select models that support **tool calling** or **function calling** capabilities, as Claude Code requires these features to operate correctly.
 
-| Model | Specialty | Context | Cost/1M tokens |
-|-------|-----------|---------|----------------|
-| **codestral-2405** | Code & Tech | 32K | $0.25/$0.75 |
-| **mistral-7b-instruct** | Lightweight | 32K | $0.25/$0.25 |
-| **mixtral-8x7b-instruct** | Multi-expert | 32K | $0.70/$0.70 |
-| **mixtral-8x22b-instruct** | Large multi-expert | 64K | $2.00/$6.00 |
+### Model Selection Guidelines
 
-### Model Performance
+When choosing Mistral models:
 
-```mermaid
-graph TB
-    A[Speed] --> B[mistral-small-latest]
-    A --> C[mistral-7b-instruct]
-    D[Quality] --> E[mistral-large-latest]
-    D --> F[mixtral-8x22b-instruct]
-    G[Code] --> H[codestral-latest]
-    G --> I[codestral-2405]
-```
+1. **Verify Tool Support**: Ensure the model supports function calling
+2. **Check Current Availability**: Mistral's model lineup evolves frequently
+3. **Consider Language Needs**: Mistral excels at multilingual tasks
+4. **Review Context Requirements**: Different models have different context windows
+5. **Evaluate Code vs Text**: Use Codestral for programming tasks
+
+For current model availability, capabilities, and pricing, visit [Mistral's official console](https://console.mistral.ai).
 
 ## Pricing
 
-### No Free Tier
-Mistral AI operates on a pay-as-you-use model with no free tier.
-
 ### Pricing Structure
+Mistral AI operates on a pay-as-you-use model:
 
-| Model | Input | Output |
-|-------|-------|--------|
-| **mistral-large-latest** | $2.00 | $6.00 |
-| **mistral-small-latest** | $0.20 | $0.60 |
-| **mistral-medium-latest** | $0.70 | $2.10 |
-| **codestral-latest** | $0.25 | $0.75 |
-| **mixtral-8x7b-instruct** | $0.70 | $0.70 |
-| **mixtral-8x22b-instruct** | $2.00 | $6.00 |
+- No free tier currently available
+- Competitive per-token pricing across model families
+- Enterprise pricing available for high-volume usage
+- Transparent cost structure with no hidden fees
 
-*Prices per 1M tokens, subject to change*
+For current, accurate pricing information, visit [Mistral's official console](https://console.mistral.ai).
 
 ## Configuration Examples
 

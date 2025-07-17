@@ -75,17 +75,17 @@ graph TB
 
 ### Cost Comparison
 
-| Provider | Input (1M tokens) | Output (1M tokens) | Free Tier |
-|----------|-------------------|-------------------|-----------|
-| **Groq** | $0.05 - $0.27 | $0.27 - $0.27 | ✅ Generous |
-| **OpenRouter** | $0.06 - $5.00 | $0.06 - $15.00 | ✅ Limited |
-| **OpenAI** | $0.15 - $10.00 | $0.60 - $30.00 | ✅ Limited |
-| **XAI** | $5.00 | $15.00 | ❌ |
-| **Gemini** | $0.075 - $1.25 | $0.30 - $5.00 | ✅ Generous |
-| **Mistral** | $0.25 - $2.00 | $0.25 - $6.00 | ❌ |
-| **Ollama** | $0.00 | $0.00 | ✅ Unlimited |
+| Provider | Free Tier | Pricing Model | Best For |
+|----------|-----------|---------------|----------|
+| **Groq** | ✅ Generous | Pay-per-use | Speed & development |
+| **OpenRouter** | ✅ Limited | Pay-per-use | Model variety |
+| **OpenAI** | ✅ Limited | Pay-per-use | Enterprise reliability |
+| **XAI** | ❌ | Pay-per-use | Real-time data |
+| **Gemini** | ✅ Generous | Pay-per-use | Multimodal tasks |
+| **Mistral** | ❌ | Pay-per-use | European compliance |
+| **Ollama** | ✅ Unlimited | Local/Free | Privacy & control |
 
-*Prices are approximate and may vary by model and usage patterns.*
+For current pricing information, visit each provider's official pricing page.
 
 ### Model Capabilities
 
@@ -100,6 +100,10 @@ graph TB
 | **Ollama** | ✅ | ✅ | ✅ | ✅* | ✅ |
 
 *Depends on specific model
+
+## Important: Tool Calling Requirement
+
+**⚠️ Critical for Claude Code Users**: You must select models that support **tool calling** or **function calling** capabilities, as Claude Code requires these features to operate correctly. When choosing models from any provider, verify they support function calling.
 
 ## Provider Selection Guide
 
@@ -144,6 +148,17 @@ graph TB
 - 🌐 Offline capabilities
 - 💸 Zero ongoing costs
 - 🎛️ Full control over your models
+
+## Model Selection Guidelines
+
+When selecting models from any provider:
+
+1. **Verify Tool Calling Support**: Ensure the model supports function calling/tool use
+2. **Check Current Availability**: Model availability changes frequently
+3. **Review Pricing**: Visit the provider's official pricing page for current rates
+4. **Test Performance**: Different models excel at different tasks
+
+For current model lists, capabilities, and pricing, always check the provider's official documentation.
 
 ## Getting Started
 

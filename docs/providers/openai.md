@@ -68,58 +68,40 @@ export OPENAI_ORGANIZATION=org-your_org_id_here
 
 ## Available Models
 
-### GPT-4 Models (Recommended)
+OpenAI provides access to various model families:
 
-| Model | Context | Speed | Best For | Cost/1M tokens |
-|-------|---------|-------|----------|----------------|
-| **gpt-4o** | 128K | ⚡⚡ | All-purpose (default) | $2.50/$10.00 |
-| **gpt-4o-mini** | 128K | ⚡⚡⚡ | Fast responses | $0.15/$0.60 |
-| **gpt-4-turbo** | 128K | ⚡⚡ | Complex tasks | $10.00/$30.00 |
-| **gpt-4** | 8K | ⚡ | Premium quality | $30.00/$60.00 |
+- **GPT-4 Series** - Latest and most capable models with multimodal support
+- **GPT-3.5 Series** - Cost-effective models for simpler tasks
+- **o1 Series** - Advanced reasoning models for complex problem-solving
+- **Specialized Models** - Fine-tuned models for specific use cases
 
-### GPT-3.5 Models (Legacy)
+**🔧 Critical for Claude Code**: You must select models that support **tool calling** or **function calling** capabilities, as Claude Code requires these features to operate correctly.
 
-| Model | Context | Speed | Best For | Cost/1M tokens |
-|-------|---------|-------|----------|----------------|
-| **gpt-3.5-turbo** | 16K | ⚡⚡⚡ | Simple tasks | $0.50/$1.50 |
+### Model Selection Guidelines
 
-### Reasoning Models
+When choosing OpenAI models:
 
-| Model | Context | Speed | Best For | Cost/1M tokens |
-|-------|---------|-------|----------|----------------|
-| **o1-preview** | 32K | ⚡ | Complex reasoning | $15.00/$60.00 |
-| **o1-mini** | 32K | ⚡⚡ | Fast reasoning | $3.00/$12.00 |
+1. **Verify Tool Support**: Ensure the model supports function calling
+2. **Check Current Availability**: OpenAI's model lineup evolves frequently
+3. **Consider Cost vs Performance**: Balance quality needs with budget
+4. **Review Context Limits**: Different models have different context windows
+5. **Test Capabilities**: Some models excel at specific tasks
 
-### Model Capabilities
-
-```mermaid
-graph TB
-    A[Speed] --> B[gpt-4o-mini]
-    A --> C[gpt-3.5-turbo]
-    D[Quality] --> E[gpt-4o]
-    D --> F[gpt-4-turbo]
-    G[Reasoning] --> H[o1-preview]
-    G --> I[o1-mini]
-```
+For current model availability, capabilities, and pricing, visit [OpenAI's official models page](https://platform.openai.com/docs/models).
 
 ## Pricing
 
 ### Free Tier
-- $5 free credits for new users
-- Expires after 3 months
+- Free credits for new users
+- Limited time availability
+- Perfect for testing and development
 
 ### Pay-as-you-go Pricing
+- Competitive per-token pricing
+- No minimum spend required
+- Volume discounts available for enterprise
 
-| Model | Input | Output |
-|-------|-------|--------|
-| **gpt-4o** | $2.50 | $10.00 |
-| **gpt-4o-mini** | $0.15 | $0.60 |
-| **gpt-4-turbo** | $10.00 | $30.00 |
-| **gpt-4** | $30.00 | $60.00 |
-| **o1-preview** | $15.00 | $60.00 |
-| **o1-mini** | $3.00 | $12.00 |
-
-*Prices per 1M tokens, subject to change*
+For current, accurate pricing information, visit [OpenAI's official pricing page](https://openai.com/pricing).
 
 ## Configuration Examples
 

@@ -94,31 +94,26 @@ export OLLAMA_MAX_TOKENS=8192
 
 Ollama supports 50+ models across different categories:
 
-### Popular General Purpose Models
+- **Llama Series** - Meta's open-source models with excellent general performance
+- **Code-Specialized Models** - Models optimized for programming tasks
+- **Vision Models** - Models that can process both text and images
+- **Multilingual Models** - Models optimized for non-English languages
+- **Lightweight Models** - Smaller models for resource-constrained environments
+- **Embedding Models** - Models for text embeddings and similarity
 
-| Model | Size | Speed | Best For | Download |
-|-------|------|-------|----------|----------|
-| **llama3.2** | 3B | ⚡⚡⚡ | General use (recommended) | `ollama pull llama3.2` |
-| **llama3.1** | 8B/70B | ⚡⚡ | High quality responses | `ollama pull llama3.1` |
-| **mistral** | 7B | ⚡⚡⚡ | Fast and efficient | `ollama pull mistral` |
-| **phi3** | 3.8B | ⚡⚡⚡ | Lightweight and fast | `ollama pull phi3` |
+**🔧 Critical for Claude Code**: You must select models that support **tool calling** or **function calling** capabilities, as Claude Code requires these features to operate correctly.
 
-### Code-Specialized Models
+### Model Selection Guidelines
 
-| Model | Size | Best For | Download |
-|-------|------|----------|----------|
-| **codellama** | 7B/13B/34B | Code generation | `ollama pull codellama` |
-| **deepseek-coder** | 6.7B/33B | Advanced coding | `ollama pull deepseek-coder` |
-| **codeqwen** | 7B | Qwen-based coding | `ollama pull codeqwen` |
+When choosing Ollama models:
 
-### Specialized Models
+1. **Verify Tool Support**: Ensure the model supports function calling
+2. **Check Hardware Requirements**: Match model size to your available RAM/GPU
+3. **Consider Use Case**: Choose specialized models for specific tasks
+4. **Test Performance**: Different models balance speed vs quality differently
+5. **Review Context Limits**: Different models have different context windows
 
-| Model | Size | Specialty | Download |
-|-------|------|-----------|----------|
-| **llava** | 7B/13B | Vision + text | `ollama pull llava` |
-| **gemma2** | 2B/9B/27B | Google's Gemma | `ollama pull gemma2` |
-| **qwen2.5** | 7B/14B/32B | Multilingual | `ollama pull qwen2.5` |
-| **nomic-embed-text** | 137M | Text embeddings | `ollama pull nomic-embed-text` |
+For current model availability and installation commands, visit [Ollama's official library](https://ollama.ai/library).
 
 ### Model Size Guide
 

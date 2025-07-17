@@ -71,50 +71,41 @@ export GEMINI_BASE_URL=https://generativelanguage.googleapis.com
 
 ## Available Models
 
-### Current Models
+Google provides access to various Gemini model families:
 
-| Model | Context | Speed | Best For | Cost/1M tokens |
-|-------|---------|-------|----------|----------------|
-| **gemini-1.5-flash** | 1M | ⚡⚡⚡ | Fast responses (default) | $0.075/$0.30 |
-| **gemini-1.5-pro** | 2M | ⚡⚡ | Complex tasks | $1.25/$5.00 |
-| **gemini-1.0-pro** | 32K | ⚡⚡ | General use | $0.50/$1.50 |
+- **Gemini 1.5 Series** - Latest production models with long context windows
+- **Gemini 2.0 Series** - Cutting-edge experimental models
+- **Gemini 1.0 Series** - Stable models for general use
+- **Experimental Models** - Preview versions with latest features
 
-### Experimental Models
+**🔧 Critical for Claude Code**: You must select models that support **tool calling** or **function calling** capabilities, as Claude Code requires these features to operate correctly.
 
-| Model | Context | Speed | Best For | Cost/1M tokens |
-|-------|---------|-------|----------|----------------|
-| **gemini-2.0-flash-exp** | 1M | ⚡⚡⚡ | Latest features | $0.075/$0.30 |
-| **gemini-exp-1206** | 2M | ⚡⚡ | Experimental | Varies |
+### Model Selection Guidelines
 
-### Model Capabilities
+When choosing Gemini models:
 
-```mermaid
-graph TB
-    A[Speed] --> B[gemini-1.5-flash]
-    A --> C[gemini-2.0-flash-exp]
-    D[Quality] --> E[gemini-1.5-pro]
-    D --> F[gemini-exp-1206]
-    G[Long Context] --> H[gemini-1.5-pro: 2M tokens]
-    G --> I[gemini-1.5-flash: 1M tokens]
-```
+1. **Verify Tool Support**: Ensure the model supports function calling
+2. **Check Current Availability**: Google's model lineup evolves frequently
+3. **Consider Context Needs**: Gemini offers very long context windows (up to 2M tokens)
+4. **Review Multimodal Needs**: Some models excel at vision and document analysis
+5. **Test Performance**: Different models balance speed vs quality differently
+
+For current model availability, capabilities, and pricing, visit [Google AI Studio](https://aistudio.google.com).
 
 ## Pricing
 
 ### Free Tier
 Google AI Studio offers a generous free tier:
-- **15 requests per minute**
-- **1 million tokens per day**
-- **1,500 requests per day**
+- High request limits for development and testing
+- Generous daily token allowances
+- Perfect for getting started
 
 ### Paid Usage
+- Competitive per-token pricing
+- Pay-as-you-use model
+- Volume discounts available
 
-| Model | Input | Output | Context |
-|-------|-------|--------|---------|
-| **gemini-1.5-flash** | $0.075 | $0.30 | 1M tokens |
-| **gemini-1.5-pro** | $1.25 | $5.00 | 2M tokens |
-| **gemini-1.0-pro** | $0.50 | $1.50 | 32K tokens |
-
-*Prices per 1M tokens, subject to change*
+For current, accurate pricing information, visit [Google AI Studio](https://aistudio.google.com).
 
 ## Configuration Examples
 
