@@ -55,7 +55,7 @@ func NewHTTPError(provider string, resp *http.Response, original error) *Provide
 			Retryable: false,
 		}
 	}
-	
+
 	retryable := isRetryableHTTPError(resp.StatusCode)
 
 	return &ProviderError{

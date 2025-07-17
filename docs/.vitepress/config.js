@@ -1,9 +1,13 @@
 import { defineConfig } from 'vitepress'
+import { loadEnv } from 'vite'
+
+// Load environment variables
+const env = loadEnv('', process.cwd(), '')
 
 export default defineConfig({
-  title: 'CCProxy',
+  title: env.VITE_APP_TITLE || 'CCProxy',
   description: 'Universal AI proxy supporting Claude Code, Groq Kimi K2, OpenAI, Gemini, Mistral, XAI Grok, and Ollama. Seamless integration with any AI provider through a unified API.',
-  base: '/',
+  base: process.env.BASE_URL || '/',
   ignoreDeadLinks: true,
   cleanUrls: true,
   
@@ -38,13 +42,13 @@ export default defineConfig({
     ['meta', { name: 'msapplication-config', content: '/browserconfig.xml' }],
     
     // Google Analytics - Configure with GA_MEASUREMENT_ID environment variable
-    ...(process.env.GA_MEASUREMENT_ID ? [
-      ['script', { async: true, src: `https://www.googletagmanager.com/gtag/js?id=${process.env.GA_MEASUREMENT_ID}` }],
+    ...(env.GA_MEASUREMENT_ID ? [
+      ['script', { async: true, src: `https://www.googletagmanager.com/gtag/js?id=${env.GA_MEASUREMENT_ID}` }],
       ['script', {}, `
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
-        gtag('config', '${process.env.GA_MEASUREMENT_ID}', {
+        gtag('config', '${env.GA_MEASUREMENT_ID}', {
           anonymize_ip: true,
           cookie_flags: 'SameSite=None;Secure',
           allow_google_signals: false,

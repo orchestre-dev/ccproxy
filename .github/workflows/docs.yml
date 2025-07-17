@@ -39,6 +39,8 @@ jobs:
         working-directory: docs
 
       - name: Build documentation
+        env:
+          GA_MEASUREMENT_ID: ${{ secrets.GA_MEASUREMENT_ID }}
         run: |
           echo "Starting clean build process..."
           npm run build

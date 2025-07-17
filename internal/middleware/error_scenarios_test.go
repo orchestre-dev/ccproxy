@@ -2,6 +2,7 @@
 package middleware
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -34,7 +35,7 @@ func TestCORSErrorScenarios(t *testing.T) {
 		{
 			name:           "Invalid Production Origin",
 			origin:         "https://malicious-site.com",
-			environment:    "production", 
+			environment:    "production",
 			expectedStatus: http.StatusOK,
 			shouldAllow:    false,
 		},
@@ -81,7 +82,10 @@ func TestCORSErrorScenarios(t *testing.T) {
 			})
 
 			// Create request
-			req, _ := http.NewRequest("GET", "/test", nil)
+			req, err := http.NewRequestWithContext(context.Background(), "GET", "/test", nil)
+			if err != nil {
+				t.Fatalf("Failed to create request: %v", err)
+			}
 			if tt.origin != "" {
 				req.Header.Set("Origin", tt.origin)
 			}
@@ -131,7 +135,10 @@ func TestLoggingErrorScenarios(t *testing.T) {
 		{
 			name: "Normal Request",
 			setupRequest: func() *http.Request {
-				req, _ := http.NewRequest("GET", "/test", nil)
+				req, err := http.NewRequestWithContext(context.Background(), "GET", "/test", nil)
+				if err != nil {
+					panic(err)
+				}
 				return req
 			},
 			expectLogs:     true,
@@ -140,7 +147,10 @@ func TestLoggingErrorScenarios(t *testing.T) {
 		{
 			name: "Request with Large Headers",
 			setupRequest: func() *http.Request {
-				req, _ := http.NewRequest("GET", "/test", nil)
+				req, err := http.NewRequestWithContext(context.Background(), "GET", "/test", nil)
+				if err != nil {
+					panic(err)
+				}
 				// Add very large header
 				req.Header.Set("X-Large-Header", strings.Repeat("x", 8192))
 				return req
@@ -151,7 +161,10 @@ func TestLoggingErrorScenarios(t *testing.T) {
 		{
 			name: "Request with Special Characters",
 			setupRequest: func() *http.Request {
-				req, _ := http.NewRequest("GET", "/test?param=特殊文字", nil)
+				req, err := http.NewRequestWithContext(context.Background(), "GET", "/test?param=特殊文字", nil)
+				if err != nil {
+					panic(err)
+				}
 				req.Header.Set("User-Agent", "TestAgent/1.0 (特殊文字)")
 				return req
 			},
@@ -161,7 +174,10 @@ func TestLoggingErrorScenarios(t *testing.T) {
 		{
 			name: "Invalid HTTP Method",
 			setupRequest: func() *http.Request {
-				req, _ := http.NewRequest("INVALID", "/test", nil)
+				req, err := http.NewRequestWithContext(context.Background(), "INVALID", "/test", nil)
+				if err != nil {
+					panic(err)
+				}
 				return req
 			},
 			expectLogs:     true,
@@ -189,7 +205,7 @@ func TestLoggingErrorScenarios(t *testing.T) {
 				t.Errorf("Expected status %d but got %d", tt.expectedStatus, w.Code)
 			}
 
-			// Note: In a real test, you'd capture log output and verify it
+			// In a real test, you'd capture log output and verify it
 			// For now, we just verify the middleware doesn't crash
 		})
 	}
@@ -199,7 +215,7 @@ func TestRecoveryErrorScenarios(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
 	mockLogger := logger.New(config.LoggingConfig{
-		Level:  "error", 
+		Level:  "error",
 		Format: "json",
 	})
 
@@ -235,7 +251,9 @@ func TestRecoveryErrorScenarios(t *testing.T) {
 			name: "Type Assertion Panic",
 			handler: func(c *gin.Context) {
 				var i interface{} = "string"
-				_ = i.(int) // This will panic
+				// This will panic - intentionally not checking the ok value
+				v := i.(int)
+				_ = v
 			},
 			expectPanic: true,
 		},
@@ -255,7 +273,10 @@ func TestRecoveryErrorScenarios(t *testing.T) {
 			router.Use(Recovery(mockLogger))
 			router.GET("/test", tt.handler)
 
-			req, _ := http.NewRequest("GET", "/test", nil)
+			req, err := http.NewRequestWithContext(context.Background(), "GET", "/test", nil)
+			if err != nil {
+				t.Fatalf("Failed to create request: %v", err)
+			}
 			w := httptest.NewRecorder()
 
 			// Execute request
@@ -281,7 +302,7 @@ func TestMiddlewareChainErrorScenarios(t *testing.T) {
 
 	mockLogger := logger.New(config.LoggingConfig{
 		Level:  "info",
-		Format: "json", 
+		Format: "json",
 	})
 
 	t.Run("Full Middleware Chain with Errors", func(t *testing.T) {
@@ -307,9 +328,9 @@ func TestMiddlewareChainErrorScenarios(t *testing.T) {
 			origin  string
 		}{
 			{
-				name:   "Normal Request",
+				name:    "Normal Request",
 				headers: map[string]string{},
-				origin: "http://localhost:3000",
+				origin:  "http://localhost:3000",
 			},
 			{
 				name: "Request with Panic",
@@ -319,9 +340,9 @@ func TestMiddlewareChainErrorScenarios(t *testing.T) {
 				origin: "http://localhost:3000",
 			},
 			{
-				name:   "CORS Preflight",
+				name:    "CORS Preflight",
 				headers: map[string]string{},
-				origin: "https://unknown-origin.com",
+				origin:  "https://unknown-origin.com",
 			},
 		}
 
@@ -330,7 +351,10 @@ func TestMiddlewareChainErrorScenarios(t *testing.T) {
 				// Set development environment for CORS
 				t.Setenv("SERVER_ENVIRONMENT", "development")
 
-				req, _ := http.NewRequest("POST", "/test", nil)
+				req, err := http.NewRequestWithContext(context.Background(), "POST", "/test", nil)
+				if err != nil {
+					t.Fatalf("Failed to create request: %v", err)
+				}
 				if scenario.origin != "" {
 					req.Header.Set("Origin", scenario.origin)
 				}
@@ -360,7 +384,7 @@ func TestEdgeCaseErrorScenarios(t *testing.T) {
 
 	t.Run("Concurrent CORS Requests", func(t *testing.T) {
 		t.Setenv("SERVER_ENVIRONMENT", "production")
-		
+
 		router := gin.New()
 		router.Use(CORS())
 		router.GET("/test", func(c *gin.Context) {
@@ -373,14 +397,17 @@ func TestEdgeCaseErrorScenarios(t *testing.T) {
 		results := make(chan int, numRequests)
 
 		for i := 0; i < numRequests; i++ {
-			go func(reqNum int) {
-				req, _ := http.NewRequest("GET", "/test", nil)
+			go func() {
+				req, err := http.NewRequestWithContext(context.Background(), "GET", "/test", nil)
+				if err != nil {
+					panic(err)
+				}
 				req.Header.Set("Origin", "https://ccproxy.orchestre.dev")
 
 				w := httptest.NewRecorder()
 				router.ServeHTTP(w, req)
 				results <- w.Code
-			}(i)
+			}()
 		}
 
 		// Collect results
@@ -392,7 +419,7 @@ func TestEdgeCaseErrorScenarios(t *testing.T) {
 		}
 
 		if successCount != numRequests {
-			t.Errorf("Expected all %d requests to succeed, but only %d did", 
+			t.Errorf("Expected all %d requests to succeed, but only %d did",
 				numRequests, successCount)
 		}
 	})

@@ -59,29 +59,29 @@ func CreateRequestMetrics(req *models.ChatCompletionRequest) map[string]interfac
 		"model":    req.Model,
 		"messages": len(req.Messages),
 	}
-	
+
 	if req.MaxTokens != nil {
 		metrics["max_tokens"] = *req.MaxTokens
 	}
-	
+
 	if req.Tools != nil {
 		metrics["tools"] = len(req.Tools)
 	}
-	
+
 	return metrics
 }
 
 // CreateResponseMetrics creates standard response metrics for logging
 func CreateResponseMetrics(resp models.ChatCompletionResponse, durationMs int64) map[string]interface{} {
 	metrics := map[string]interface{}{
-		"duration_ms":  durationMs,
+		"duration_ms":   durationMs,
 		"finish_reason": GetFinishReasonFromResponse(resp),
 	}
-	
+
 	// Add usage metrics if available
 	metrics["prompt_tokens"] = resp.Usage.PromptTokens
 	metrics["completion_tokens"] = resp.Usage.CompletionTokens
 	metrics["total_tokens"] = resp.Usage.TotalTokens
-	
+
 	return metrics
 }

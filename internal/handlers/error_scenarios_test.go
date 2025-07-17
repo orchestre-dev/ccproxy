@@ -24,21 +24,21 @@ import (
 
 // MockErrorProvider implements provider.Provider for error testing
 type MockErrorProvider struct {
-	name           string
-	model          string
-	maxTokens      int
-	baseURL        string
-	errorMode      string
-	errorDelay     time.Duration
-	requestCount   int32
-	healthyAfter   int32
+	name         string
+	model        string
+	maxTokens    int
+	baseURL      string
+	errorMode    string
+	errorDelay   time.Duration
+	requestCount int32
+	healthyAfter int32
 }
 
-func (m *MockErrorProvider) GetName() string         { return m.name }
-func (m *MockErrorProvider) GetModel() string       { return m.model }
-func (m *MockErrorProvider) GetMaxTokens() int      { return m.maxTokens }
-func (m *MockErrorProvider) GetBaseURL() string     { return m.baseURL }
-func (m *MockErrorProvider) ValidateConfig() error  { return nil }
+func (m *MockErrorProvider) GetName() string       { return m.name }
+func (m *MockErrorProvider) GetModel() string      { return m.model }
+func (m *MockErrorProvider) GetMaxTokens() int     { return m.maxTokens }
+func (m *MockErrorProvider) GetBaseURL() string    { return m.baseURL }
+func (m *MockErrorProvider) ValidateConfig() error { return nil }
 
 func (m *MockErrorProvider) CreateChatCompletion(ctx context.Context, req *models.ChatCompletionRequest) (*models.ChatCompletionResponse, error) {
 	count := atomic.AddInt32(&m.requestCount, 1)
@@ -48,7 +48,7 @@ func (m *MockErrorProvider) CreateChatCompletion(ctx context.Context, req *model
 		select {
 		case <-time.After(m.errorDelay):
 		case <-ctx.Done():
-			return nil, common.NewProviderError(m.name, "request cancelled", ctx.Err())
+			return nil, common.NewProviderError(m.name, "request canceled", ctx.Err())
 		}
 	}
 
@@ -228,12 +228,18 @@ func TestProxyMessagesErrorScenarios(t *testing.T) {
 			if str, ok := tt.requestBody.(string); ok {
 				bodyReader = bytes.NewReader([]byte(str))
 			} else {
-				bodyBytes, _ := json.Marshal(tt.requestBody)
+				bodyBytes, err := json.Marshal(tt.requestBody)
+				if err != nil {
+					t.Fatalf("Failed to marshal request body: %v", err)
+				}
 				bodyReader = bytes.NewReader(bodyBytes)
 			}
 
 			// Create request
-			req, _ := http.NewRequest("POST", "/v1/messages", bodyReader)
+			req, err := http.NewRequestWithContext(context.Background(), "POST", "/v1/messages", bodyReader)
+			if err != nil {
+				t.Fatalf("Failed to create request: %v", err)
+			}
 			req.Header.Set("Content-Type", "application/json")
 
 			// Record response
@@ -289,11 +295,14 @@ func TestHealthCheckErrorScenarios(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			handler := NewHandler(tt.provider, mockLogger)
-			
+
 			router := gin.New()
 			router.GET("/health", handler.DetailedHealthCheck)
 
-			req, _ := http.NewRequest("GET", "/health", nil)
+			req, err := http.NewRequestWithContext(context.Background(), "GET", "/health", nil)
+			if err != nil {
+				t.Fatalf("Failed to create request: %v", err)
+			}
 			w := httptest.NewRecorder()
 			router.ServeHTTP(w, req)
 
@@ -342,7 +351,7 @@ func TestLargeRequestErrorScenarios(t *testing.T) {
 		{
 			name:           "Extremely Large Message",
 			messageContent: strings.Repeat("x", 1024*1024), // 1MB message
-			expectedStatus: http.StatusOK, // Handler doesn't have size limits configured
+			expectedStatus: http.StatusOK,                  // Handler doesn't have size limits configured
 		},
 	}
 
@@ -362,14 +371,20 @@ func TestLargeRequestErrorScenarios(t *testing.T) {
 				MaxTokens: &[]int{100}[0],
 			}
 
-			bodyBytes, _ := json.Marshal(requestBody)
-			req, _ := http.NewRequest("POST", "/v1/messages", bytes.NewReader(bodyBytes))
+			bodyBytes, err := json.Marshal(requestBody)
+			if err != nil {
+				t.Fatalf("Failed to marshal request body: %v", err)
+			}
+			req, err := http.NewRequestWithContext(context.Background(), "POST", "/v1/messages", bytes.NewReader(bodyBytes))
+			if err != nil {
+				t.Fatalf("Failed to create request: %v", err)
+			}
 			req.Header.Set("Content-Type", "application/json")
 
 			w := httptest.NewRecorder()
 			router.ServeHTTP(w, req)
 
-			// Note: Actual status may vary based on server configuration
+			// Actual status may vary based on server configuration
 			// This test mainly ensures the handler doesn't crash
 			if w.Code == 0 {
 				t.Error("Expected some HTTP status code")
@@ -387,7 +402,7 @@ func TestConcurrentRequestErrorScenarios(t *testing.T) {
 	// Test concurrent requests with intermittent provider failures
 	provider := &MockErrorProvider{
 		name:         "test",
-		model:        "test-model", 
+		model:        "test-model",
 		maxTokens:    1000,
 		errorMode:    "intermittent",
 		healthyAfter: 10, // First 10 requests fail, then succeed
@@ -403,7 +418,7 @@ func TestConcurrentRequestErrorScenarios(t *testing.T) {
 
 	// Launch concurrent requests
 	for i := 0; i < numGoroutines; i++ {
-		go func(goroutineID int) {
+		go func() {
 			for j := 0; j < requestsPerGoroutine; j++ {
 				requestBody := models.MessagesRequest{
 					Model: "test-model",
@@ -413,15 +428,25 @@ func TestConcurrentRequestErrorScenarios(t *testing.T) {
 					MaxTokens: &[]int{100}[0],
 				}
 
-				bodyBytes, _ := json.Marshal(requestBody)
-				req, _ := http.NewRequest("POST", "/v1/messages", bytes.NewReader(bodyBytes))
+				bodyBytes, err := json.Marshal(requestBody)
+				if err != nil {
+					// Can't use t.Fatalf in a goroutine
+					results <- http.StatusInternalServerError
+					continue
+				}
+				req, err := http.NewRequestWithContext(context.Background(), "POST", "/v1/messages", bytes.NewReader(bodyBytes))
+				if err != nil {
+					// Can't use t.Fatalf in a goroutine
+					results <- http.StatusInternalServerError
+					continue
+				}
 				req.Header.Set("Content-Type", "application/json")
 
 				w := httptest.NewRecorder()
 				router.ServeHTTP(w, req)
 				results <- w.Code
 			}
-		}(i)
+		}()
 	}
 
 	// Collect results
@@ -490,17 +515,21 @@ func TestRequestTimeoutScenarios(t *testing.T) {
 				MaxTokens: &[]int{100}[0],
 			}
 
-			bodyBytes, _ := json.Marshal(requestBody)
-			req, _ := http.NewRequest("POST", "/v1/messages", bytes.NewReader(bodyBytes))
-			req.Header.Set("Content-Type", "application/json")
-
-			// Set request timeout
+			bodyBytes, err := json.Marshal(requestBody)
+			if err != nil {
+				t.Fatalf("Failed to marshal request body: %v", err)
+			}
 			ctx, cancel := context.WithTimeout(context.Background(), tt.contextTimeout)
 			defer cancel()
-			req = req.WithContext(ctx)
+			
+			req, err := http.NewRequestWithContext(ctx, "POST", "/v1/messages", bytes.NewReader(bodyBytes))
+			if err != nil {
+				t.Fatalf("Failed to create request: %v", err)
+			}
+			req.Header.Set("Content-Type", "application/json")
 
 			w := httptest.NewRecorder()
-			
+
 			start := time.Now()
 			router.ServeHTTP(w, req)
 			duration := time.Since(start)
@@ -514,11 +543,9 @@ func TestRequestTimeoutScenarios(t *testing.T) {
 				if w.Code == http.StatusOK {
 					t.Error("Expected error status due to timeout")
 				}
-			} else {
+			} else if w.Code != http.StatusOK {
 				// Should complete successfully
-				if w.Code != http.StatusOK {
-					t.Errorf("Expected successful response but got status %d", w.Code)
-				}
+				t.Errorf("Expected successful response but got status %d", w.Code)
 			}
 
 			t.Logf("Timeout test '%s' took %v, status: %d", tt.name, duration, w.Code)
@@ -549,7 +576,7 @@ func TestMalformedRequestScenarios(t *testing.T) {
 		},
 		{
 			name:        "Invalid JSON",
-			contentType: "application/json", 
+			contentType: "application/json",
 			body:        `{"invalid": json`,
 			expectError: true,
 		},
@@ -575,7 +602,10 @@ func TestMalformedRequestScenarios(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			req, _ := http.NewRequest("POST", "/v1/messages", strings.NewReader(tt.body))
+			req, err := http.NewRequestWithContext(context.Background(), "POST", "/v1/messages", strings.NewReader(tt.body))
+			if err != nil {
+				t.Fatalf("Failed to create request: %v", err)
+			}
 			if tt.contentType != "" {
 				req.Header.Set("Content-Type", tt.contentType)
 			}

@@ -69,7 +69,7 @@ func (h *Handler) DetailedHealthCheck(c *gin.Context) {
 		})
 		return
 	}
-	
+
 	c.JSON(http.StatusOK, gin.H{
 		"status":  "healthy",
 		"service": "ccproxy",
@@ -144,22 +144,24 @@ func (h *Handler) ProxyMessages(c *gin.Context) {
 	openaiResp, err := h.provider.CreateChatCompletion(ctx, openaiReq)
 	if err != nil {
 		h.logger.WithRequestID(requestID).WithError(err).Errorf("Failed to call %s API", h.provider.GetName())
-		
+
 		// Check if it's a ProviderError with a specific status code
 		statusCode := http.StatusInternalServerError
 		errorMessage := "Failed to process request"
-		
+
 		var providerErr *common.ProviderError
 		if errors.As(err, &providerErr) {
 			if providerErr.Code != 0 {
 				statusCode = providerErr.Code
 			}
 			// For client errors, provide more specific messages
-			if statusCode == http.StatusBadRequest || statusCode == http.StatusUnauthorized || statusCode == http.StatusForbidden {
+			if statusCode == http.StatusBadRequest || 
+				statusCode == http.StatusUnauthorized || 
+				statusCode == http.StatusForbidden {
 				errorMessage = providerErr.Message
 			}
 		}
-		
+
 		c.JSON(statusCode, gin.H{
 			"error":      errorMessage,
 			"request_id": requestID,

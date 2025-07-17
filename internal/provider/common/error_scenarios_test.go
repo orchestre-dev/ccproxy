@@ -16,12 +16,12 @@ import (
 // TestErrorScenarios provides comprehensive error scenario testing
 func TestErrorScenarios(t *testing.T) {
 	tests := []struct {
-		name           string
-		statusCode     int
-		responseBody   string
-		expectedError  string
-		shouldRetry    bool
-		errorType      string
+		name          string
+		statusCode    int
+		responseBody  string
+		expectedError string
+		shouldRetry   bool
+		errorType     string
 	}{
 		{
 			name:          "Unauthorized - Invalid API Key",
@@ -94,7 +94,7 @@ func TestErrorScenarios(t *testing.T) {
 			// Create mock server
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(tt.statusCode)
-				w.Write([]byte(tt.responseBody))
+				_, _ = w.Write([]byte(tt.responseBody))
 			}))
 			defer server.Close()
 
@@ -133,10 +133,10 @@ func TestErrorScenarios(t *testing.T) {
 // TestNetworkTimeoutScenarios tests various network timeout scenarios
 func TestNetworkTimeoutScenarios(t *testing.T) {
 	tests := []struct {
-		name           string
-		serverDelay    time.Duration
-		clientTimeout  time.Duration
-		expectTimeout  bool
+		name          string
+		serverDelay   time.Duration
+		clientTimeout time.Duration
+		expectTimeout bool
 	}{
 		{
 			name:          "Fast Response - No Timeout",
@@ -164,7 +164,7 @@ func TestNetworkTimeoutScenarios(t *testing.T) {
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				time.Sleep(tt.serverDelay)
 				w.WriteHeader(http.StatusOK)
-				w.Write([]byte(`{"test": "response"}`))
+				_, _ = w.Write([]byte(`{"test": "response"}`))
 			}))
 			defer server.Close()
 
@@ -178,7 +178,10 @@ func TestNetworkTimeoutScenarios(t *testing.T) {
 				t.Fatalf("Failed to create request: %v", err)
 			}
 
-			_, err = client.Do(req)
+			resp, err := client.Do(req)
+			if resp != nil {
+				defer func() { _ = resp.Body.Close() }()
+			}
 
 			if tt.expectTimeout {
 				if err == nil {
@@ -211,7 +214,7 @@ func TestConfigurationErrors(t *testing.T) {
 		},
 		{
 			name:        "Missing Base URL",
-			provider:    "groq", 
+			provider:    "groq",
 			field:       "GROQ_BASE_URL",
 			message:     "base URL is required",
 			expectError: true,
@@ -308,10 +311,8 @@ func TestMalformedResponseScenarios(t *testing.T) {
 				var providerErr *ProviderError
 				if !errors.As(err, &providerErr) {
 					t.Errorf("Expected ProviderError but got %T", err)
-				} else {
-					if providerErr.Provider != "test_provider" {
-						t.Errorf("Expected provider 'test_provider' but got '%s'", providerErr.Provider)
-					}
+				} else if providerErr.Provider != "test_provider" {
+					t.Errorf("Expected provider 'test_provider' but got '%s'", providerErr.Provider)
 				}
 			}
 		})
@@ -335,7 +336,7 @@ func TestConcurrentErrorScenarios(t *testing.T) {
 			w.WriteHeader(http.StatusInternalServerError)
 		default:
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`{"test": "success"}`))
+			_, _ = w.Write([]byte(`{"test": "success"}`))
 		}
 	}))
 	defer server.Close()
@@ -345,21 +346,24 @@ func TestConcurrentErrorScenarios(t *testing.T) {
 
 	// Launch concurrent requests
 	for i := 0; i < numGoroutines; i++ {
-		go func(goroutineID int) {
+		go func() {
 			for j := 0; j < numRequestsPerGoroutine; j++ {
 				errorType := []string{"success", "rate_limit", "server_error", "timeout"}[j%4]
 				url := server.URL + "?error_type=" + errorType
 
-				req, err := http.NewRequest("GET", url, nil)
+				req, err := http.NewRequestWithContext(context.Background(), "GET", url, nil)
 				if err != nil {
 					errorChan <- err
 					continue
 				}
 
-				_, err = client.Do(req)
+				resp, err := client.Do(req)
+				if resp != nil {
+					_ = resp.Body.Close()
+				}
 				errorChan <- err
 			}
-		}(i)
+		}()
 	}
 
 	// Collect errors
@@ -379,7 +383,7 @@ func TestConcurrentErrorScenarios(t *testing.T) {
 		}
 	}
 
-	t.Logf("Concurrent test results: %d errors, %d timeouts, %d successes", 
+	t.Logf("Concurrent test results: %d errors, %d timeouts, %d successes",
 		errorCount, timeoutCount, successCount)
 
 	// Verify we got a mix of results as expected

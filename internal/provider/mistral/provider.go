@@ -30,8 +30,8 @@ func NewProvider(cfg *config.MistralConfig, logger *logger.Logger) (*Provider, e
 
 	return &Provider{
 		httpClient: common.NewConfiguredHTTPClient(cfg.Timeout),
-		config: cfg,
-		logger: logger,
+		config:     cfg,
+		logger:     logger,
 	}, nil
 }
 

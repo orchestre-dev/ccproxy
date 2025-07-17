@@ -146,7 +146,6 @@ func (p *Provider) GetBaseURL() string {
 	return p.config.BaseURL
 }
 
-
 // HealthCheck performs a health check on the openai provider
 func (p *Provider) HealthCheck(ctx context.Context) error {
 	// Simple health check by making a minimal request

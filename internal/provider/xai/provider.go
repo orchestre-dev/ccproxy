@@ -30,8 +30,8 @@ func NewProvider(cfg *config.XAIConfig, logger *logger.Logger) (*Provider, error
 
 	return &Provider{
 		httpClient: common.NewConfiguredHTTPClient(cfg.Timeout),
-		config: cfg,
-		logger: logger,
+		config:     cfg,
+		logger:     logger,
 	}, nil
 }
 

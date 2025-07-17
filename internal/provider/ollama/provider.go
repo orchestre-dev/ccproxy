@@ -30,8 +30,8 @@ func NewProvider(cfg *config.OllamaConfig, logger *logger.Logger) (*Provider, er
 
 	return &Provider{
 		httpClient: common.NewConfiguredHTTPClient(cfg.Timeout),
-		config: cfg,
-		logger: logger,
+		config:     cfg,
+		logger:     logger,
 	}, nil
 }
 

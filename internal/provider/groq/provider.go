@@ -30,8 +30,8 @@ func NewProvider(cfg *config.GroqConfig, logger *logger.Logger) (*Provider, erro
 
 	return &Provider{
 		httpClient: common.NewConfiguredHTTPClient(cfg.Timeout),
-		config: cfg,
-		logger: logger,
+		config:     cfg,
+		logger:     logger,
 	}, nil
 }
 
