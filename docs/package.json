@@ -11,12 +11,7 @@
     "deploy:local": "../scripts/deploy-local.sh"
   },
   "devDependencies": {
-    "vitepress": "^0.1.1"
+    "vitepress": "^1.6.3"
   },
-  "type": "module",
-  "dependencies": {
-    "@algolia/client-search": "^5.33.0",
-    "local-search": "^1.1.2",
-    "vitepress-plugin-search": "^0.0.3"
-  }
+  "type": "module"
 }
