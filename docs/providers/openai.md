@@ -1,0 +1,425 @@
+# OpenAI Provider
+
+OpenAI is the industry standard for AI models, offering the most mature ecosystem and reliable performance for production applications.
+
+## Why Choose OpenAI?
+
+- 🏭 **Industry standard**: Most mature and reliable AI models
+- 🛠️ **Rich ecosystem**: Extensive tooling and integrations
+- 👁️ **Advanced vision**: Best-in-class image understanding
+- 🎯 **Proven reliability**: Battle-tested in production
+
+## Setup
+
+### 1. Get an API Key
+
+1. Visit [platform.openai.com](https://platform.openai.com)
+2. Sign up for an account
+3. Navigate to the API Keys section
+4. Generate a new API key
+
+### 2. Configure CCProxy
+
+Set the following environment variables:
+
+```bash
+export PROVIDER=openai
+export OPENAI_API_KEY=sk-your_openai_api_key_here
+```
+
+### 3. Optional Configuration
+
+```bash
+# Custom model (default: gpt-4o)
+export OPENAI_MODEL=gpt-4o-mini
+
+# Custom max tokens (default: 16384)
+export OPENAI_MAX_TOKENS=8192
+
+# Custom base URL (default: https://api.openai.com/v1)
+export OPENAI_BASE_URL=https://api.openai.com/v1
+
+# Organization ID (optional)
+export OPENAI_ORGANIZATION=org-your_org_id_here
+```
+
+## Available Models
+
+### GPT-4 Models (Recommended)
+
+| Model | Context | Speed | Best For | Cost/1M tokens |
+|-------|---------|-------|----------|----------------|
+| **gpt-4o** | 128K | ⚡⚡ | All-purpose (default) | $2.50/$10.00 |
+| **gpt-4o-mini** | 128K | ⚡⚡⚡ | Fast responses | $0.15/$0.60 |
+| **gpt-4-turbo** | 128K | ⚡⚡ | Complex tasks | $10.00/$30.00 |
+| **gpt-4** | 8K | ⚡ | Premium quality | $30.00/$60.00 |
+
+### GPT-3.5 Models (Legacy)
+
+| Model | Context | Speed | Best For | Cost/1M tokens |
+|-------|---------|-------|----------|----------------|
+| **gpt-3.5-turbo** | 16K | ⚡⚡⚡ | Simple tasks | $0.50/$1.50 |
+
+### Reasoning Models
+
+| Model | Context | Speed | Best For | Cost/1M tokens |
+|-------|---------|-------|----------|----------------|
+| **o1-preview** | 32K | ⚡ | Complex reasoning | $15.00/$60.00 |
+| **o1-mini** | 32K | ⚡⚡ | Fast reasoning | $3.00/$12.00 |
+
+### Model Capabilities
+
+```mermaid
+graph TB
+    A[Speed] --> B[gpt-4o-mini]
+    A --> C[gpt-3.5-turbo]
+    D[Quality] --> E[gpt-4o]
+    D --> F[gpt-4-turbo]
+    G[Reasoning] --> H[o1-preview]
+    G --> I[o1-mini]
+```
+
+## Pricing
+
+### Free Tier
+- $5 free credits for new users
+- Expires after 3 months
+
+### Pay-as-you-go Pricing
+
+| Model | Input | Output |
+|-------|-------|--------|
+| **gpt-4o** | $2.50 | $10.00 |
+| **gpt-4o-mini** | $0.15 | $0.60 |
+| **gpt-4-turbo** | $10.00 | $30.00 |
+| **gpt-4** | $30.00 | $60.00 |
+| **o1-preview** | $15.00 | $60.00 |
+| **o1-mini** | $3.00 | $12.00 |
+
+*Prices per 1M tokens, subject to change*
+
+## Configuration Examples
+
+### Basic Setup
+
+```bash
+# .env file
+PROVIDER=openai
+OPENAI_API_KEY=sk-your_api_key_here
+```
+
+### High-Performance Setup
+
+```bash
+# For maximum speed
+PROVIDER=openai
+OPENAI_API_KEY=sk-your_api_key_here
+OPENAI_MODEL=gpt-4o-mini
+OPENAI_MAX_TOKENS=4096
+```
+
+### Quality-Focused Setup
+
+```bash
+# For best quality
+PROVIDER=openai
+OPENAI_API_KEY=sk-your_api_key_here
+OPENAI_MODEL=gpt-4o
+OPENAI_MAX_TOKENS=16384
+```
+
+### Reasoning-Focused Setup
+
+```bash
+# For complex reasoning tasks
+PROVIDER=openai
+OPENAI_API_KEY=sk-your_api_key_here
+OPENAI_MODEL=o1-preview
+OPENAI_MAX_TOKENS=8192
+```
+
+## Usage with Claude Code
+
+Once configured, use Claude Code normally:
+
+```bash
+# Set CCProxy as the API endpoint
+export ANTHROPIC_BASE_URL=http://localhost:7187
+export ANTHROPIC_API_KEY=NOT_NEEDED
+
+# Use Claude Code
+claude "Write a Python script to analyze CSV data"
+```
+
+## Features
+
+### ✅ Fully Supported
+- Text generation
+- Function calling
+- Tool use
+- Streaming responses
+- Vision/image input
+- JSON mode
+- Custom temperature/top_p
+- Structured outputs
+- Reasoning models
+
+### ⚠️ Model Dependent
+- Real-time data access (none)
+- File uploads (vision models only)
+- Code execution (none)
+
+## Advanced Features
+
+### Vision Capabilities
+
+Use GPT-4o or GPT-4-turbo with images:
+
+```bash
+# Configure for vision tasks
+export OPENAI_MODEL=gpt-4o
+```
+
+### JSON Mode
+
+Force JSON responses:
+
+```bash
+# Enable JSON mode in requests
+# (handled automatically by CCProxy when tools are used)
+```
+
+### Function Calling
+
+OpenAI has the most robust function calling:
+
+```bash
+# All models support function calling
+# No additional configuration needed
+```
+
+## Performance Tips
+
+### 1. Choose the Right Model
+
+```bash
+# For development/testing
+export OPENAI_MODEL=gpt-4o-mini
+
+# For production
+export OPENAI_MODEL=gpt-4o
+
+# For complex reasoning
+export OPENAI_MODEL=o1-preview
+```
+
+### 2. Optimize Token Usage
+
+```bash
+# Set appropriate limits
+export OPENAI_MAX_TOKENS=2048
+
+# Use shorter prompts when possible
+```
+
+### 3. Handle Rate Limits
+
+OpenAI has different rate limits per model:
+
+| Model | Requests/min | Tokens/min |
+|-------|--------------|------------|
+| **gpt-4o** | 10,000 | 30,000,000 |
+| **gpt-4o-mini** | 30,000 | 200,000,000 |
+| **gpt-4-turbo** | 10,000 | 2,000,000 |
+| **o1-preview** | 20 | 20,000 |
+
+## Troubleshooting
+
+### Rate Limit Errors
+
+```json
+{
+  "error": {
+    "message": "Rate limit exceeded",
+    "type": "rate_limit_error"
+  }
+}
+```
+
+**Solution**: Implement exponential backoff or upgrade to higher tier.
+
+### Authentication Errors
+
+```json
+{
+  "error": {
+    "message": "Incorrect API key provided",
+    "type": "invalid_request_error"
+  }
+}
+```
+
+**Solution**: Verify your API key is correct and active.
+
+### Model Access Errors
+
+```json
+{
+  "error": {
+    "message": "The model does not exist",
+    "type": "invalid_request_error"
+  }
+}
+```
+
+**Solution**: Check if you have access to the model. Some models require specific tier access.
+
+### Content Policy Violations
+
+```json
+{
+  "error": {
+    "message": "Your request was rejected as a result of our safety system",
+    "type": "invalid_request_error"
+  }
+}
+```
+
+**Solution**: Modify your prompt to comply with OpenAI's usage policies.
+
+### Insufficient Quota
+
+```json
+{
+  "error": {
+    "message": "You exceeded your current quota",
+    "type": "insufficient_quota"
+  }
+}
+```
+
+**Solution**: Add credits to your OpenAI account or upgrade your plan.
+
+## Usage Monitoring
+
+### View Usage
+
+```bash
+# Check OpenAI usage
+curl https://api.openai.com/v1/usage \
+  -H "Authorization: Bearer $OPENAI_API_KEY"
+
+# Monitor CCProxy logs
+tail -f ccproxy.log
+
+# Check status
+curl http://localhost:7187/status
+```
+
+### Cost Management
+
+```bash
+# Set usage limits in OpenAI dashboard
+# Monitor spending regularly
+# Use gpt-4o-mini for development
+```
+
+## Best Practices
+
+### 1. Model Selection
+
+- **Development**: Use `gpt-4o-mini` for cost efficiency
+- **Production**: Use `gpt-4o` for reliability
+- **Complex reasoning**: Use `o1-preview` for difficult problems
+
+### 2. Prompt Engineering
+
+```bash
+# Use clear, specific prompts
+# Include examples when needed
+# Structure complex requests
+```
+
+### 3. Error Handling
+
+```bash
+# Implement retry logic
+# Handle rate limits gracefully
+# Monitor for content policy issues
+```
+
+### 4. Security
+
+```bash
+# Never log API keys
+# Use environment variables
+# Rotate keys regularly
+```
+
+## Integration Examples
+
+### Python SDK
+
+```python
+import openai
+
+# Point to CCProxy
+client = openai.OpenAI(
+    api_key="NOT_NEEDED",
+    base_url="http://localhost:7187"
+)
+
+response = client.chat.completions.create(
+    model="claude-3-sonnet",  # Will be mapped to OpenAI model
+    messages=[{"role": "user", "content": "Hello!"}],
+    max_tokens=100
+)
+```
+
+### Node.js SDK
+
+```javascript
+import OpenAI from 'openai';
+
+const client = new OpenAI({
+    apiKey: 'NOT_NEEDED',
+    baseURL: 'http://localhost:7187'
+});
+
+const response = await client.chat.completions.create({
+    model: 'claude-3-sonnet',
+    messages: [{ role: 'user', content: 'Hello!' }],
+    max_tokens: 100
+});
+```
+
+## Monitoring and Analytics
+
+### OpenAI Dashboard
+
+Monitor usage at [platform.openai.com/usage](https://platform.openai.com/usage):
+
+- Request counts
+- Token usage
+- Cost breakdown
+- Error rates
+
+### CCProxy Monitoring
+
+```bash
+# Real-time logs
+tail -f ccproxy.log | grep openai
+
+# Status endpoint
+curl http://localhost:7187/status
+
+# Health check
+curl http://localhost:7187/health
+```
+
+## Next Steps
+
+- Explore [function calling](/guide/function-calling) with OpenAI
+- Learn about [vision capabilities](/guide/vision)
+- Set up [usage monitoring](/guide/monitoring) for cost control
+- Compare with [other providers](/providers/) for specific use cases
