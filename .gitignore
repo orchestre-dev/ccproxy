@@ -69,3 +69,4 @@ coverage.html
 tmp/
 .claude/
 .temp/
+node_modules/
