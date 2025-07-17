@@ -1,3 +1,4 @@
+// Package ollama implements the Ollama provider for CCProxy.
 package ollama
 
 import (
@@ -33,7 +34,10 @@ func NewProvider(cfg *config.OllamaConfig, logger *logger.Logger) *Provider {
 }
 
 // CreateChatCompletion sends a chat completion request to Ollama API
-func (p *Provider) CreateChatCompletion(ctx context.Context, req *models.ChatCompletionRequest) (*models.ChatCompletionResponse, error) {
+func (p *Provider) CreateChatCompletion(
+	ctx context.Context,
+	req *models.ChatCompletionRequest,
+) (*models.ChatCompletionResponse, error) {
 	// Apply max tokens limit if configured
 	if p.config.MaxTokens > 0 {
 		if req.MaxTokens == nil || *req.MaxTokens > p.config.MaxTokens {
@@ -54,7 +58,8 @@ func (p *Provider) CreateChatCompletion(ctx context.Context, req *models.ChatCom
 	}
 
 	// Create HTTP request - Ollama uses OpenAI-compatible endpoints
-	httpReq, err := http.NewRequestWithContext(ctx, "POST", p.config.BaseURL+"/v1/chat/completions", bytes.NewReader(reqBody))
+	httpReq, err := http.NewRequestWithContext(
+		ctx, "POST", p.config.BaseURL+"/v1/chat/completions", bytes.NewReader(reqBody))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}

@@ -2,22 +2,22 @@ package models
 
 // ChatCompletionRequest represents an OpenAI chat completion request
 type ChatCompletionRequest struct {
-	Model       string               `json:"model"`
-	Messages    []ChatMessage        `json:"messages"`
+	ToolChoice  any                  `json:"tool_choice,omitempty"`
 	MaxTokens   *int                 `json:"max_tokens,omitempty"`
 	Temperature *float64             `json:"temperature,omitempty"`
+	Model       string               `json:"model"`
+	Messages    []ChatMessage        `json:"messages"`
 	Tools       []ChatCompletionTool `json:"tools,omitempty"`
-	ToolChoice  any                  `json:"tool_choice,omitempty"`
 }
 
 // ChatCompletionResponse represents an OpenAI chat completion response
 type ChatCompletionResponse struct {
 	ID      string                 `json:"id"`
 	Object  string                 `json:"object"`
-	Created int64                  `json:"created"`
 	Model   string                 `json:"model"`
 	Choices []ChatCompletionChoice `json:"choices"`
 	Usage   ChatCompletionUsage    `json:"usage"`
+	Created int64                  `json:"created"`
 }
 
 // ChatMessage represents a message in the chat completion
@@ -29,22 +29,22 @@ type ChatMessage struct {
 
 // ChatCompletionChoice represents a choice in the response
 type ChatCompletionChoice struct {
-	Index        int         `json:"index"`
-	Message      ChatMessage `json:"message"`
 	FinishReason string      `json:"finish_reason"`
+	Message      ChatMessage `json:"message"`
+	Index        int         `json:"index"`
 }
 
 // ChatCompletionTool represents a tool definition in OpenAI format
 type ChatCompletionTool struct {
-	Type     string                     `json:"type"`
 	Function ChatCompletionToolFunction `json:"function"`
+	Type     string                     `json:"type"`
 }
 
 // ChatCompletionToolFunction represents a function tool
 type ChatCompletionToolFunction struct {
+	Parameters  map[string]interface{} `json:"parameters"`
 	Name        string                 `json:"name"`
 	Description string                 `json:"description"`
-	Parameters  map[string]interface{} `json:"parameters"`
 }
 
 // ToolCall represents a tool call in a message

@@ -22,7 +22,6 @@ func TestNewProvider(t *testing.T) {
 	log := logger.New(config.LoggingConfig{Level: "info", Format: "json"})
 
 	provider, err := NewProvider(cfg, log)
-
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
 	}
@@ -104,7 +103,6 @@ func TestProvider_CreateChatCompletion_Success(t *testing.T) {
 
 	ctx := context.Background()
 	resp, err := provider.CreateChatCompletion(ctx, req)
-
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
 	}
@@ -203,7 +201,6 @@ func TestProvider_CreateChatCompletion_WithTools(t *testing.T) {
 
 	ctx := context.Background()
 	resp, err := provider.CreateChatCompletion(ctx, req)
-
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
 	}

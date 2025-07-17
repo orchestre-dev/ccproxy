@@ -3,9 +3,9 @@ package middleware
 import (
 	"net/http"
 
-	"ccproxy/pkg/logger"
-
 	"github.com/gin-gonic/gin"
+
+	"ccproxy/pkg/logger"
 )
 
 // Recovery returns a gin.HandlerFunc for panic recovery

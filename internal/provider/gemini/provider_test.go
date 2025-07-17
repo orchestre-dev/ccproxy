@@ -97,7 +97,6 @@ func TestProvider_CreateChatCompletion_Success(t *testing.T) {
 
 	ctx := context.Background()
 	resp, err := provider.CreateChatCompletion(ctx, req)
-
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
 	}
@@ -192,7 +191,6 @@ func TestProvider_CreateChatCompletion_WithTools(t *testing.T) {
 
 	ctx := context.Background()
 	resp, err := provider.CreateChatCompletion(ctx, req)
-
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
 	}

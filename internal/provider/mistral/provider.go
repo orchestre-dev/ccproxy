@@ -1,3 +1,4 @@
+// Package mistral implements the Mistral provider for CCProxy.
 package mistral
 
 import (
@@ -33,7 +34,10 @@ func NewProvider(cfg *config.MistralConfig, logger *logger.Logger) *Provider {
 }
 
 // CreateChatCompletion sends a chat completion request to Mistral AI API
-func (p *Provider) CreateChatCompletion(ctx context.Context, req *models.ChatCompletionRequest) (*models.ChatCompletionResponse, error) {
+func (p *Provider) CreateChatCompletion(
+	ctx context.Context,
+	req *models.ChatCompletionRequest,
+) (*models.ChatCompletionResponse, error) {
 	// Apply max tokens limit
 	if req.MaxTokens == nil || *req.MaxTokens > p.config.MaxTokens {
 		if req.MaxTokens != nil && *req.MaxTokens > p.config.MaxTokens {

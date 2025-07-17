@@ -1,9 +1,10 @@
+// Package logger provides structured logging functionality for CCProxy
 package logger
 
 import (
-	"ccproxy/internal/config"
-
 	"github.com/sirupsen/logrus"
+
+	"ccproxy/internal/config"
 )
 
 // Logger wraps logrus.Logger with additional functionality

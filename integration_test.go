@@ -2,19 +2,20 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
 
+	"github.com/gin-gonic/gin"
+
 	"ccproxy/internal/config"
 	"ccproxy/internal/handlers"
 	"ccproxy/internal/models"
 	"ccproxy/internal/provider"
 	"ccproxy/pkg/logger"
-
-	"github.com/gin-gonic/gin"
 )
 
 func TestIntegrationAnthropicProxy(t *testing.T) {
@@ -44,7 +45,10 @@ func TestIntegrationAnthropicProxy(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(response)
+		if err := json.NewEncoder(w).Encode(response); err != nil {
+			t.Logf("Failed to encode response: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+		}
 	}))
 	defer mockServer.Close()
 
@@ -101,7 +105,8 @@ func TestIntegrationAnthropicProxy(t *testing.T) {
 	}
 
 	// Create HTTP request
-	req, err := http.NewRequest("POST", "/v1/messages", bytes.NewReader(requestBody))
+	ctx := context.Background()
+	req, err := http.NewRequestWithContext(ctx, "POST", "/v1/messages", bytes.NewReader(requestBody))
 	if err != nil {
 		t.Fatalf("Failed to create request: %v", err)
 	}
@@ -188,7 +193,10 @@ func TestIntegrationAnthropicProxyWithTools(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(response)
+		if err := json.NewEncoder(w).Encode(response); err != nil {
+			t.Logf("Failed to encode response: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+		}
 	}))
 	defer mockServer.Close()
 
@@ -266,7 +274,8 @@ func TestIntegrationAnthropicProxyWithTools(t *testing.T) {
 	}
 
 	// Create HTTP request
-	req, err := http.NewRequest("POST", "/v1/messages", bytes.NewReader(requestBody))
+	ctx := context.Background()
+	req, err := http.NewRequestWithContext(ctx, "POST", "/v1/messages", bytes.NewReader(requestBody))
 	if err != nil {
 		t.Fatalf("Failed to create request: %v", err)
 	}
@@ -329,9 +338,9 @@ func TestProviderFactoryAllProviders(t *testing.T) {
 	})
 
 	providers := []struct {
+		config   func() *config.Config
 		name     string
 		provider string
-		config   func() *config.Config
 	}{
 		{
 			name:     "Groq",

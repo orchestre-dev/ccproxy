@@ -4,31 +4,31 @@ import "encoding/json"
 
 // MessagesRequest represents an Anthropic API messages request
 type MessagesRequest struct {
-	Model       string    `json:"model"`
-	Messages    []Message `json:"messages"`
+	ToolChoice  any       `json:"tool_choice,omitempty"`
 	MaxTokens   *int      `json:"max_tokens,omitempty"`
 	Temperature *float64  `json:"temperature,omitempty"`
 	Stream      *bool     `json:"stream,omitempty"`
+	Model       string    `json:"model"`
+	Messages    []Message `json:"messages"`
 	Tools       []Tool    `json:"tools,omitempty"`
-	ToolChoice  any       `json:"tool_choice,omitempty"`
 }
 
 // MessagesResponse represents an Anthropic API messages response
 type MessagesResponse struct {
+	StopSequence *string   `json:"stop_sequence"`
 	ID           string    `json:"id"`
 	Type         string    `json:"type"`
 	Role         string    `json:"role"`
 	Model        string    `json:"model"`
-	Content      []Content `json:"content"`
 	StopReason   string    `json:"stop_reason"`
-	StopSequence *string   `json:"stop_sequence"`
+	Content      []Content `json:"content"`
 	Usage        Usage     `json:"usage"`
 }
 
 // Message represents a conversation message
 type Message struct {
+	Content any    `json:"content"`
 	Role    string `json:"role"`
-	Content any    `json:"content"` // Can be string or []Content
 }
 
 // Content represents a content block in a message
@@ -44,9 +44,9 @@ type Content struct {
 
 // Tool represents a tool definition
 type Tool struct {
-	Name        string                 `json:"name"`
 	Description *string                `json:"description,omitempty"`
 	InputSchema map[string]interface{} `json:"input_schema"`
+	Name        string                 `json:"name"`
 }
 
 // Usage represents token usage information
@@ -59,8 +59,8 @@ type Usage struct {
 func (m *Message) UnmarshalJSON(data []byte) error {
 	type Alias Message
 	aux := &struct {
-		Content json.RawMessage `json:"content"`
 		*Alias
+		Content json.RawMessage `json:"content"`
 	}{
 		Alias: (*Alias)(m),
 	}

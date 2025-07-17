@@ -4,13 +4,13 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+
 	"ccproxy/internal/converter"
 	"ccproxy/internal/models"
 	"ccproxy/internal/provider"
 	"ccproxy/pkg/logger"
-
-	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
 // Handler holds dependencies for request handlers

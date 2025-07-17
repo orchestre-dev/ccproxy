@@ -278,6 +278,7 @@ func collectConfiguration(provider *ProviderSetup) map[string]string {
 	return config
 }
 
+//nolint:gocyclo // Function is straightforward despite complexity from error handling
 func generateEnvFile(provider *ProviderSetup, config map[string]string) error {
 	file, err := os.Create(".env")
 	if err != nil {

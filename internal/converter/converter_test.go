@@ -8,9 +8,9 @@ import (
 
 func TestConvertAnthropicToOpenAI(t *testing.T) {
 	tests := []struct {
-		name     string
 		input    *models.MessagesRequest
 		expected *models.ChatCompletionRequest
+		name     string
 	}{
 		{
 			name: "simple text message",
@@ -201,11 +201,11 @@ func TestConvertAnthropicToOpenAI(t *testing.T) {
 
 func TestConvertOpenAIToAnthropic(t *testing.T) {
 	tests := []struct {
-		name         string
 		input        *models.ChatCompletionResponse
+		expected     *models.MessagesResponse
+		name         string
 		requestID    string
 		providerName string
-		expected     *models.MessagesResponse
 	}{
 		{
 			name: "simple text response",

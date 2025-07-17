@@ -3,10 +3,10 @@ package middleware
 import (
 	"time"
 
-	"ccproxy/pkg/logger"
-
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+
+	"ccproxy/pkg/logger"
 )
 
 // Logger returns a gin.HandlerFunc for request logging

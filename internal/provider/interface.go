@@ -1,3 +1,4 @@
+// Package provider defines the interface and types for AI provider implementations
 package provider
 
 import (
@@ -27,23 +28,30 @@ type Provider interface {
 	GetBaseURL() string
 }
 
-// ProviderType represents the available provider types
-type ProviderType string
+// Type represents the available provider types
+type Type string
 
+// Provider type constants
 const (
-	ProviderTypeGroq       ProviderType = "groq"
-	ProviderTypeOpenRouter ProviderType = "openrouter"
-	ProviderTypeOpenAI     ProviderType = "openai"
-	ProviderTypeXAI        ProviderType = "xai"
-	ProviderTypeGemini     ProviderType = "gemini"
-	ProviderTypeMistral    ProviderType = "mistral"
-	ProviderTypeOllama     ProviderType = "ollama"
+	ProviderTypeGroq       Type = "groq"
+	ProviderTypeOpenRouter Type = "openrouter"
+	ProviderTypeOpenAI     Type = "openai"
+	ProviderTypeXAI        Type = "xai"
+	ProviderTypeGemini     Type = "gemini"
+	ProviderTypeMistral    Type = "mistral"
+	ProviderTypeOllama     Type = "ollama"
 )
 
 // IsValidProviderType checks if the provider type is supported
 func IsValidProviderType(providerType string) bool {
-	switch ProviderType(providerType) {
-	case ProviderTypeGroq, ProviderTypeOpenRouter, ProviderTypeOpenAI, ProviderTypeXAI, ProviderTypeGemini, ProviderTypeMistral, ProviderTypeOllama:
+	switch Type(providerType) {
+	case ProviderTypeGroq,
+		ProviderTypeOpenRouter,
+		ProviderTypeOpenAI,
+		ProviderTypeXAI,
+		ProviderTypeGemini,
+		ProviderTypeMistral,
+		ProviderTypeOllama:
 		return true
 	default:
 		return false

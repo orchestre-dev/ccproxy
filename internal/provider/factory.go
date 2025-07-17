@@ -37,7 +37,7 @@ func (f *Factory) CreateProvider() (Provider, error) {
 	var provider Provider
 	var err error
 
-	switch ProviderType(f.config.Provider) {
+	switch Type(f.config.Provider) {
 	case ProviderTypeGroq:
 		provider, err = groq.NewProvider(&f.config.Providers.Groq, f.logger)
 	case ProviderTypeOpenRouter:

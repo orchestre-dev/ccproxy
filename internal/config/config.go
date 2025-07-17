@@ -1,3 +1,4 @@
+// Package config provides configuration management for CCProxy
 package config
 
 import (
@@ -9,10 +10,10 @@ import (
 
 // Config holds all configuration for the application
 type Config struct {
-	Provider  string          `mapstructure:"provider"`
-	Server    ServerConfig    `mapstructure:"server"`
-	Providers ProvidersConfig `mapstructure:"providers"`
 	Logging   LoggingConfig   `mapstructure:"logging"`
+	Provider  string          `mapstructure:"provider"`
+	Providers ProvidersConfig `mapstructure:"providers"`
+	Server    ServerConfig    `mapstructure:"server"`
 }
 
 // ServerConfig holds server-related configuration
@@ -50,10 +51,10 @@ type OpenRouterConfig struct {
 	APIKey    string        `mapstructure:"api_key"`
 	BaseURL   string        `mapstructure:"base_url"`
 	Model     string        `mapstructure:"model"`
-	MaxTokens int           `mapstructure:"max_tokens"`
-	Timeout   time.Duration `mapstructure:"timeout"`
 	SiteURL   string        `mapstructure:"site_url"`
 	SiteName  string        `mapstructure:"site_name"`
+	MaxTokens int           `mapstructure:"max_tokens"`
+	Timeout   time.Duration `mapstructure:"timeout"`
 }
 
 // OpenAIConfig holds OpenAI API configuration
@@ -331,8 +332,7 @@ func validateOpenAIConfig(config *OpenAIConfig) {
 	}
 
 	if config.MaxTokens > 128000 {
-		log.Printf("Warning: OPENAI_MAX_TOKENS (%d) exceeds GPT-4o context limit (128000)", config.MaxTokens)
-	}
+		log.Printf("Warning: OPENAI_MAX_TOKENS (%d) exceeds GPT-4o context limit (128000)", config.MaxTokens)	}
 }
 
 // validateXAIConfig validates XAI-specific configuration
@@ -346,8 +346,7 @@ func validateXAIConfig(config *XAIConfig) {
 	}
 
 	if config.MaxTokens > 128000 {
-		log.Printf("Warning: XAI_MAX_TOKENS (%d) exceeds Grok context limit (128000)", config.MaxTokens)
-	}
+		log.Printf("Warning: XAI_MAX_TOKENS (%d) exceeds Grok context limit (128000)", config.MaxTokens)	}
 }
 
 // validateGeminiConfig validates Gemini-specific configuration
@@ -361,8 +360,7 @@ func validateGeminiConfig(config *GeminiConfig) {
 	}
 
 	if config.MaxTokens > 32768 {
-		log.Printf("Warning: GEMINI_MAX_TOKENS (%d) exceeds Gemini context limit (32768)", config.MaxTokens)
-	}
+		log.Printf("Warning: GEMINI_MAX_TOKENS (%d) exceeds Gemini context limit (32768)", config.MaxTokens)	}
 }
 
 // validateMistralConfig validates Mistral-specific configuration
@@ -376,8 +374,7 @@ func validateMistralConfig(config *MistralConfig) {
 	}
 
 	if config.MaxTokens > 32768 {
-		log.Printf("Warning: MISTRAL_MAX_TOKENS (%d) exceeds Mistral context limit (32768)", config.MaxTokens)
-	}
+		log.Printf("Warning: MISTRAL_MAX_TOKENS (%d) exceeds Mistral context limit (32768)", config.MaxTokens)	}
 }
 
 // validateOllamaConfig validates Ollama-specific configuration
@@ -396,6 +393,5 @@ func validateOllamaConfig(config *OllamaConfig) {
 
 	// Note: Ollama models can have varying context limits, so we don't enforce a strict upper limit
 	if config.MaxTokens > 128000 {
-		log.Printf("Warning: OLLAMA_MAX_TOKENS (%d) is very large and may not be supported by all models", config.MaxTokens)
-	}
+		log.Printf("Warning: OLLAMA_MAX_TOKENS (%d) is very large and may not be supported by all models", config.MaxTokens)	}
 }

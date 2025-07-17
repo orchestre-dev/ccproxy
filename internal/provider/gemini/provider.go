@@ -1,3 +1,4 @@
+// Package gemini implements the Gemini provider for CCProxy.
 package gemini
 
 import (
@@ -33,7 +34,10 @@ func NewProvider(cfg *config.GeminiConfig, logger *logger.Logger) *Provider {
 }
 
 // CreateChatCompletion sends a chat completion request to Google Gemini API
-func (p *Provider) CreateChatCompletion(ctx context.Context, req *models.ChatCompletionRequest) (*models.ChatCompletionResponse, error) {
+func (p *Provider) CreateChatCompletion(
+	ctx context.Context,
+	req *models.ChatCompletionRequest,
+) (*models.ChatCompletionResponse, error) {
 	// Convert OpenAI format to Gemini format
 	geminiReq := p.convertToGeminiRequest(req)
 
@@ -141,9 +145,9 @@ func (p *Provider) GetBaseURL() string {
 
 // GeminiRequest represents the request format for Gemini API
 type GeminiRequest struct {
+	GenerationConfig *GeminiGenerationConfig `json:"generationConfig,omitempty"`
 	Contents         []GeminiContent         `json:"contents"`
 	Tools            []GeminiTool            `json:"tools,omitempty"`
-	GenerationConfig *GeminiGenerationConfig `json:"generationConfig,omitempty"`
 }
 
 // GeminiContent represents content in Gemini format
@@ -154,21 +158,21 @@ type GeminiContent struct {
 
 // GeminiPart represents a part of content
 type GeminiPart struct {
-	Text             string                  `json:"text,omitempty"`
 	FunctionCall     *GeminiFunctionCall     `json:"functionCall,omitempty"`
 	FunctionResponse *GeminiFunctionResponse `json:"functionResponse,omitempty"`
+	Text             string                  `json:"text,omitempty"`
 }
 
 // GeminiFunctionCall represents a function call in Gemini format
 type GeminiFunctionCall struct {
-	Name string                 `json:"name"`
 	Args map[string]interface{} `json:"args"`
+	Name string                 `json:"name"`
 }
 
 // GeminiFunctionResponse represents a function response in Gemini format
 type GeminiFunctionResponse struct {
-	Name     string                 `json:"name"`
 	Response map[string]interface{} `json:"response"`
+	Name     string                 `json:"name"`
 }
 
 // GeminiTool represents a tool in Gemini format
@@ -178,9 +182,9 @@ type GeminiTool struct {
 
 // GeminiFunctionDeclaration represents a function declaration
 type GeminiFunctionDeclaration struct {
+	Parameters  map[string]interface{} `json:"parameters"`
 	Name        string                 `json:"name"`
 	Description string                 `json:"description"`
-	Parameters  map[string]interface{} `json:"parameters"`
 }
 
 // GeminiGenerationConfig represents generation configuration
@@ -199,8 +203,8 @@ type GeminiResponse struct {
 
 // GeminiCandidate represents a candidate response
 type GeminiCandidate struct {
-	Content      GeminiContent `json:"content"`
 	FinishReason string        `json:"finishReason"`
+	Content      GeminiContent `json:"content"`
 	Index        int           `json:"index"`
 }
 

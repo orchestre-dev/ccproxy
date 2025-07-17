@@ -7,13 +7,13 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/gin-gonic/gin"
+
 	"ccproxy/internal/config"
 	"ccproxy/internal/handlers"
 	"ccproxy/internal/middleware"
 	"ccproxy/internal/provider"
 	"ccproxy/pkg/logger"
-
-	"github.com/gin-gonic/gin"
 )
 
 func main() {

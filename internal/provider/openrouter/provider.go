@@ -1,3 +1,4 @@
+// Package openrouter implements the OpenRouter provider for CCProxy.
 package openrouter
 
 import (
@@ -37,7 +38,10 @@ func NewProvider(cfg *config.OpenRouterConfig, logger *logger.Logger) (*Provider
 }
 
 // CreateChatCompletion sends a chat completion request to OpenRouter API
-func (p *Provider) CreateChatCompletion(ctx context.Context, req *models.ChatCompletionRequest) (*models.ChatCompletionResponse, error) {
+func (p *Provider) CreateChatCompletion(
+	ctx context.Context,
+	req *models.ChatCompletionRequest,
+) (*models.ChatCompletionResponse, error) {
 	// Apply max tokens limit if configured
 	if p.config.MaxTokens > 0 {
 		if req.MaxTokens == nil || *req.MaxTokens > p.config.MaxTokens {

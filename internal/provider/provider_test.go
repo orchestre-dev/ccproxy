@@ -245,8 +245,8 @@ func TestIsValidProviderType(t *testing.T) {
 type mockProvider struct {
 	name      string
 	model     string
-	maxTokens int
 	baseURL   string
+	maxTokens int
 }
 
 func (m *mockProvider) CreateChatCompletion(ctx context.Context, req *models.ChatCompletionRequest) (*models.ChatCompletionResponse, error) {

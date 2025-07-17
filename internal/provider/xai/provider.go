@@ -1,3 +1,4 @@
+// Package xai implements the XAI provider for CCProxy.
 package xai
 
 import (
@@ -33,7 +34,10 @@ func NewProvider(cfg *config.XAIConfig, logger *logger.Logger) *Provider {
 }
 
 // CreateChatCompletion sends a chat completion request to XAI API
-func (p *Provider) CreateChatCompletion(ctx context.Context, req *models.ChatCompletionRequest) (*models.ChatCompletionResponse, error) {
+func (p *Provider) CreateChatCompletion(
+	ctx context.Context,
+	req *models.ChatCompletionRequest,
+) (*models.ChatCompletionResponse, error) {
 	// Apply max tokens limit
 	if req.MaxTokens == nil || *req.MaxTokens > p.config.MaxTokens {
 		if req.MaxTokens != nil && *req.MaxTokens > p.config.MaxTokens {

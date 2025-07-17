@@ -37,7 +37,7 @@ func ConvertAnthropicToOpenAI(req *models.MessagesRequest) (*models.ChatCompleti
 }
 
 // ConvertOpenAIToAnthropic converts OpenAI response to Anthropic format
-func ConvertOpenAIToAnthropic(resp *models.ChatCompletionResponse, requestID string, providerName string) (*models.MessagesResponse, error) {
+func ConvertOpenAIToAnthropic(resp *models.ChatCompletionResponse, requestID, providerName string) (*models.MessagesResponse, error) {
 	if len(resp.Choices) == 0 {
 		return nil, fmt.Errorf("no choices in response")
 	}
