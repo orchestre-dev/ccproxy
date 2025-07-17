@@ -12,6 +12,11 @@ Welcome to the CCProxy blog! Here you'll find expert guides, tutorials, and insi
 
 ## Latest Posts
 
+### [Claude Code Reliability Challenges: Why We Built a Backup Solution](/blog/claude-code-reliability-challenges-solution)
+*July 17, 2025*
+
+How frequent rate limits and service outages led us to create CCProxy - a business continuity solution for Claude Code users. Learn from our experience maintaining productivity during service interruptions.
+
 ### [Unlocking Claude Code's Full Potential with Kimi K2: The Ultimate Performance Guide](/blog/kimi-k2-claude-code-ultimate-guide)
 *July 16, 2025*
 
@@ -53,14 +58,14 @@ CCProxy is a universal AI proxy that connects Claude Code to 7+ AI providers inc
 
 **[Get Started with CCProxy →](/guide/)**
 
-## Categories
+## Topics Covered
 
-- [Performance & Speed](/blog/tag/performance)
-- [Privacy & Security](/blog/tag/privacy)
-- [Vendor Lock-in](/blog/tag/vendor-lock-in)
-- [AI Providers](/blog/tag/providers)
-- [Claude Code Tips](/blog/tag/claude-code)
-- [Development Workflows](/blog/tag/workflows)
+- **Performance & Speed** - Ultra-fast inference with Groq and Kimi K2
+- **Privacy & Security** - Local models with Ollama and privacy-focused options
+- **Multi-Provider Flexibility** - Breaking free from single-vendor dependencies
+- **AI Provider Comparisons** - In-depth analysis of each provider's strengths
+- **Claude Code Tips** - Pro tips and best practices for maximum productivity
+- **Development Workflows** - Real-world integration patterns and solutions
 
 ## Subscribe
 
