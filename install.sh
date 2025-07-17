@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # CCProxy Installation Script
-# Usage: curl -sSL https://raw.githubusercontent.com/praneybehl/ccproxy/main/install.sh | bash
+# Usage: curl -sSL https://raw.githubusercontent.com/orchestre-dev/ccproxy/main/install.sh | bash
 
 set -e
 
@@ -13,7 +13,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuration
-REPO="praneybehl/ccproxy"
+REPO="orchestre-dev/ccproxy"
 BINARY_NAME="ccproxy"
 INSTALL_DIR="${INSTALL_DIR:-/usr/local/bin}"
 

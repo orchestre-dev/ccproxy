@@ -199,7 +199,7 @@ claude-code "Generate comprehensive unit tests for this authentication module"
     <div class="showcase-description">
       Join thousands of developers using Kimi K2 for AI-powered development.
     </div>
-    <a href="https://github.com/praneybehl/ccproxy/discussions" class="showcase-link">Join Discussion →</a>
+    <a href="https://github.com/orchestre-dev/ccproxy/discussions" class="showcase-link">Join Discussion →</a>
   </div>
 </div>
 

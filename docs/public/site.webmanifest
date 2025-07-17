@@ -1,6 +1,6 @@
 {
-  "name": "MyWebSite",
-  "short_name": "MySite",
+  "name": "CCProxy - Universal AI Proxy for Claude Code",
+  "short_name": "CCProxy",
   "icons": [
     {
       "src": "/web-app-manifest-192x192.png",

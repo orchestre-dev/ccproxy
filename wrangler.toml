@@ -1,0 +1,13 @@
+# Cloudflare Pages configuration for CCProxy documentation
+
+name = "ccproxy"
+compatibility_date = "2024-12-01"
+
+[env.production]
+# Production environment settings
+# The custom domain ccproxy.orchestre.dev should be configured in Cloudflare dashboard
+
+# Build settings are handled by Cloudflare Pages dashboard
+# Build command: npm run docs:build
+# Build output directory: docs/.vitepress/dist
+# Node.js version: 18.x

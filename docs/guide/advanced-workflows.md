@@ -168,8 +168,8 @@ ccproxy &
 
 ### Join the Advanced Developers Community
 
-- **[💬 Advanced Workflows Discussions](https://github.com/praneybehl/ccproxy/discussions)** - Share your production experiences
-- **[🚀 Integration Examples](https://github.com/praneybehl/ccproxy/tree/main/examples)** - Advanced configuration patterns
+- **[💬 Advanced Workflows Discussions](https://github.com/orchestre-dev/ccproxy/discussions)** - Share your production experiences
+- **[🚀 Integration Examples](https://github.com/orchestre-dev/ccproxy/tree/main/examples)** - Advanced configuration patterns
 - **[📖 Case Studies](https://orchestre.dev)** - Real-world success stories
 
 ### Getting Expert Help

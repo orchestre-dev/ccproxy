@@ -16,7 +16,7 @@ The fastest way to get started is using our installation script:
 
 ```bash
 # Install CCProxy with auto-detection
-curl -sSL https://raw.githubusercontent.com/praneybehl/ccproxy/main/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/orchestre-dev/ccproxy/main/install.sh | bash
 
 # Then configure your provider (see examples below)
 export PROVIDER=groq
@@ -347,5 +347,5 @@ curl -X POST http://localhost:7187/v1/messages \
 - 📖 [Installation Guide](/guide/installation)
 - 🚀 [Quick Start](/guide/quick-start)  
 - ⭐ [Kimi K2 Setup](/kimi-k2)
-- 💬 [Ask Questions](https://github.com/praneybehl/ccproxy/discussions) - Community support
-- 🐛 [Report Issues](https://github.com/praneybehl/ccproxy/issues) - Bug reports and feature requests
+- 💬 [Ask Questions](https://github.com/orchestre-dev/ccproxy/discussions) - Community support
+- 🐛 [Report Issues](https://github.com/orchestre-dev/ccproxy/issues) - Bug reports and feature requests

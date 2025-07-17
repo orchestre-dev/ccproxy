@@ -43,8 +43,8 @@ Thank you for your interest in contributing to CCProxy! We appreciate your help 
 ## 🐛 Bug Fixes
 
 ### Before You Start
-1. **Check existing issues** - Search [GitHub Issues](https://github.com/praneybehl/ccproxy/issues) to avoid duplicates
-2. **Create an issue** - Describe the bug using our [bug report template](https://github.com/praneybehl/ccproxy/issues/new?template=bug_report.md)
+1. **Check existing issues** - Search [GitHub Issues](https://github.com/orchestre-dev/ccproxy/issues) to avoid duplicates
+2. **Create an issue** - Describe the bug using our [bug report template](https://github.com/orchestre-dev/ccproxy/issues/new?template=bug_report.md)
 3. **Get approval** - Wait for maintainer acknowledgment before starting work
 
 ### Bug Fix Process
@@ -152,8 +152,8 @@ Fixes #123
 ## 🆘 Getting Help
 
 ### Communication Channels
-- **[GitHub Discussions](https://github.com/praneybehl/ccproxy/discussions)** - Questions and community support
-- **[GitHub Issues](https://github.com/praneybehl/ccproxy/issues)** - Bug reports and feature requests
+- **[GitHub Discussions](https://github.com/orchestre-dev/ccproxy/discussions)** - Questions and community support
+- **[GitHub Issues](https://github.com/orchestre-dev/ccproxy/issues)** - Bug reports and feature requests
 - **Pull Request comments** - Implementation-specific discussions
 
 ### Response Times
@@ -185,4 +185,4 @@ By contributing, you agree that your contributions will be licensed under the MI
 
 **Thank you for helping make CCProxy better!** 🚀
 
-For questions about contributing, please [start a discussion](https://github.com/praneybehl/ccproxy/discussions) or [open an issue](https://github.com/praneybehl/ccproxy/issues).
+For questions about contributing, please [start a discussion](https://github.com/orchestre-dev/ccproxy/discussions) or [open an issue](https://github.com/orchestre-dev/ccproxy/issues).

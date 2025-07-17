@@ -13,7 +13,7 @@ Get CCProxy running with Kimi K2 in under 2 minutes.
 ## 1. Install CCProxy
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/praneybehl/ccproxy/main/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/orchestre-dev/ccproxy/main/install.sh | bash
 ```
 
 ## 2. Start with Kimi K2
@@ -52,4 +52,4 @@ claude-code "Debug this error: TypeError: 'int' object is not subscriptable"
 
 **API key error?** Verify your provider API key is correct.
 
-**Need help?** [💬 GitHub Discussions](https://github.com/praneybehl/ccproxy/discussions) • [🐛 Report Issues](https://github.com/praneybehl/ccproxy/issues)
+**Need help?** [💬 GitHub Discussions](https://github.com/orchestre-dev/ccproxy/discussions) • [🐛 Report Issues](https://github.com/orchestre-dev/ccproxy/issues)

@@ -20,7 +20,7 @@ hero:
       link: /kimi-k2
     - theme: alt
       text: Share Feedback
-      link: https://github.com/praneybehl/ccproxy/discussions
+      link: https://github.com/orchestre-dev/ccproxy/discussions
 
 features:
   - icon: ⚡
@@ -77,7 +77,7 @@ features:
 
 ```bash
 # Install CCProxy with one command
-curl -sSL https://raw.githubusercontent.com/praneybehl/ccproxy/main/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/orchestre-dev/ccproxy/main/install.sh | bash
 
 # Configure and start (example with Groq + Kimi K2)
 export PROVIDER=groq GROQ_API_KEY=your_key
@@ -184,7 +184,7 @@ CCProxy gets you **fast, affordable AI access**. But what about **production-rea
 
 ## 💬 Community & Support
 
-- **[🗨️ GitHub Discussions](https://github.com/praneybehl/ccproxy/discussions)** - Ask questions, share tips, and connect with the community
-- **[🐛 Report Issues](https://github.com/praneybehl/ccproxy/issues)** - Found a bug? Let us know so we can fix it
-- **[✨ Feature Requests](https://github.com/praneybehl/ccproxy/issues/new?template=feature_request.md)** - Suggest new features and improvements
-- **[📖 Edit Documentation](https://github.com/praneybehl/ccproxy/tree/main/docs)** - Help improve our docs
+- **[🗨️ GitHub Discussions](https://github.com/orchestre-dev/ccproxy/discussions)** - Ask questions, share tips, and connect with the community
+- **[🐛 Report Issues](https://github.com/orchestre-dev/ccproxy/issues)** - Found a bug? Let us know so we can fix it
+- **[✨ Feature Requests](https://github.com/orchestre-dev/ccproxy/issues/new?template=feature_request.md)** - Suggest new features and improvements
+- **[📖 Edit Documentation](https://github.com/orchestre-dev/ccproxy/tree/main/docs)** - Help improve our docs

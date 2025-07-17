@@ -28,7 +28,7 @@ Install CCProxy on your system using the method that works best for you. CCProxy
 #### Option 1: Direct Download (Recommended)
 ```powershell
 # Download latest Windows binary
-Invoke-WebRequest -Uri "https://github.com/praneybehl/ccproxy/releases/latest/download/ccproxy-windows-amd64.exe" -OutFile "ccproxy.exe"
+Invoke-WebRequest -Uri "https://github.com/orchestre-dev/ccproxy/releases/latest/download/ccproxy-windows-amd64.exe" -OutFile "ccproxy.exe"
 
 # Make executable and run
 .\ccproxy.exe
@@ -37,7 +37,7 @@ Invoke-WebRequest -Uri "https://github.com/praneybehl/ccproxy/releases/latest/do
 #### Option 2: Using Scoop
 ```powershell
 # Add the ccproxy bucket (coming soon)
-scoop bucket add ccproxy https://github.com/praneybehl/ccproxy-scoop
+scoop bucket add ccproxy https://github.com/orchestre-dev/ccproxy-scoop
 scoop install ccproxy
 ```
 
@@ -48,7 +48,7 @@ choco install ccproxy
 ```
 
 #### Option 4: Manual Download
-1. Visit [CCProxy Releases](https://github.com/praneybehl/ccproxy/releases/latest)
+1. Visit [CCProxy Releases](https://github.com/orchestre-dev/ccproxy/releases/latest)
 2. Download `ccproxy-windows-amd64.exe`
 3. Place in your preferred directory
 4. Run from Command Prompt or PowerShell
@@ -62,11 +62,11 @@ choco install ccproxy
 #### Option 1: Direct Download (Recommended)
 ```bash
 # Download for Apple Silicon (M1/M2/M3)
-curl -L "https://github.com/praneybehl/ccproxy/releases/latest/download/ccproxy-darwin-arm64" -o ccproxy
+curl -L "https://github.com/orchestre-dev/ccproxy/releases/latest/download/ccproxy-darwin-arm64" -o ccproxy
 chmod +x ccproxy
 
 # For Intel Macs
-curl -L "https://github.com/praneybehl/ccproxy/releases/latest/download/ccproxy-darwin-amd64" -o ccproxy
+curl -L "https://github.com/orchestre-dev/ccproxy/releases/latest/download/ccproxy-darwin-amd64" -o ccproxy
 chmod +x ccproxy
 
 # Run CCProxy
@@ -76,18 +76,18 @@ chmod +x ccproxy
 #### Option 2: Using Homebrew
 ```bash
 # Add the ccproxy tap (coming soon)
-brew tap praneybehl/ccproxy
+brew tap orchestre-dev/ccproxy
 brew install ccproxy
 ```
 
 #### Option 3: One-Line Installer
 ```bash
 # Auto-detect architecture and install
-curl -sSL https://raw.githubusercontent.com/praneybehl/ccproxy/main/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/orchestre-dev/ccproxy/main/install.sh | bash
 ```
 
 #### Option 4: Manual Download
-1. Visit [CCProxy Releases](https://github.com/praneybehl/ccproxy/releases/latest)
+1. Visit [CCProxy Releases](https://github.com/orchestre-dev/ccproxy/releases/latest)
 2. Download `ccproxy-darwin-arm64` (Apple Silicon) or `ccproxy-darwin-amd64` (Intel)
 3. Make executable: `chmod +x ccproxy-*`
 4. Move to PATH: `sudo mv ccproxy-* /usr/local/bin/ccproxy`
@@ -101,11 +101,11 @@ curl -sSL https://raw.githubusercontent.com/praneybehl/ccproxy/main/install.sh |
 #### Option 1: Direct Download (Recommended)
 ```bash
 # For x86_64 systems
-curl -L "https://github.com/praneybehl/ccproxy/releases/latest/download/ccproxy-linux-amd64" -o ccproxy
+curl -L "https://github.com/orchestre-dev/ccproxy/releases/latest/download/ccproxy-linux-amd64" -o ccproxy
 chmod +x ccproxy
 
 # For ARM64 systems
-curl -L "https://github.com/praneybehl/ccproxy/releases/latest/download/ccproxy-linux-arm64" -o ccproxy
+curl -L "https://github.com/orchestre-dev/ccproxy/releases/latest/download/ccproxy-linux-arm64" -o ccproxy
 chmod +x ccproxy
 
 # Install system-wide
@@ -146,7 +146,7 @@ sudo snap install ccproxy
 #### Option 4: AppImage
 ```bash
 # Download and run AppImage (coming soon)
-curl -L "https://github.com/praneybehl/ccproxy/releases/latest/download/ccproxy-x86_64.AppImage" -o ccproxy.AppImage
+curl -L "https://github.com/orchestre-dev/ccproxy/releases/latest/download/ccproxy-x86_64.AppImage" -o ccproxy.AppImage
 chmod +x ccproxy.AppImage
 ./ccproxy.AppImage
 ```
@@ -164,7 +164,7 @@ docker run -p 7187:7187 \
   -e PROVIDER=groq \
   -e GROQ_API_KEY=your_api_key \
   -e GROQ_MODEL=moonshotai/kimi-k2-instruct \
-  praneybehl/ccproxy:latest
+  orchestre-dev/ccproxy:latest
 ```
 
 #### Option 2: Docker Compose
@@ -173,7 +173,7 @@ docker run -p 7187:7187 \
 version: '3.8'
 services:
   ccproxy:
-    image: praneybehl/ccproxy:latest
+    image: orchestre-dev/ccproxy:latest
     ports:
       - "7187:7187"
     environment:
@@ -207,7 +207,7 @@ spec:
     spec:
       containers:
       - name: ccproxy
-        image: praneybehl/ccproxy:latest
+        image: orchestre-dev/ccproxy:latest
         ports:
         - containerPort: 7187
         env:
@@ -228,7 +228,7 @@ For developers who want to build CCProxy from source:
 
 ```bash
 # Clone the repository
-git clone https://github.com/praneybehl/ccproxy.git
+git clone https://github.com/orchestre-dev/ccproxy.git
 cd ccproxy
 
 # Build for your platform
@@ -284,8 +284,8 @@ Ensure port 7187 is open in your firewall settings.
 ### Getting Help
 
 - 📖 [Documentation](/)
-- 💬 [Community Support](https://github.com/praneybehl/ccproxy/discussions) - Ask questions and get help
-- 🐛 [Report Issues](https://github.com/praneybehl/ccproxy/issues) - Bug reports and feature requests
+- 💬 [Community Support](https://github.com/orchestre-dev/ccproxy/discussions) - Ask questions and get help
+- 🐛 [Report Issues](https://github.com/orchestre-dev/ccproxy/issues) - Bug reports and feature requests
 - 🔧 [Configuration Guide](/guide/configuration)
 
 <script>

@@ -3,7 +3,17 @@ import { defineConfig } from 'vitepress'
 export default defineConfig({
   title: 'CCProxy',
   description: 'Universal AI proxy supporting Claude Code, Groq Kimi K2, OpenAI, Gemini, Mistral, XAI Grok, and Ollama. Seamless integration with any AI provider through a unified API.',
+  base: '/',
   ignoreDeadLinks: true,
+  
+  // Enable sitemap generation
+  sitemap: {
+    hostname: 'https://ccproxy.orchestre.dev',
+    transformItems: (items) => {
+      // Add custom logic for sitemap items if needed
+      return items.filter((item) => !item.url.includes('404'))
+    }
+  },
   
   head: [
     // SEO meta tags
@@ -12,18 +22,18 @@ export default defineConfig({
     ['meta', { property: 'og:title', content: 'CCProxy - Multi-Provider AI Proxy' }],
     ['meta', { property: 'og:description', content: 'Universal AI proxy supporting Claude Code with Kimi K2, OpenAI, Gemini, Mistral, XAI Grok, and Ollama providers.' }],
     ['meta', { property: 'og:type', content: 'website' }],
-    ['meta', { property: 'og:image', content: '/ccproxy_icon.png' }],
+    ['meta', { property: 'og:url', content: 'https://ccproxy.orchestre.dev' }],
+    ['meta', { property: 'og:image', content: 'https://ccproxy.orchestre.dev/ccproxy_icon.png' }],
     ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
     ['meta', { name: 'twitter:title', content: 'CCProxy - Multi-Provider AI Proxy' }],
     ['meta', { name: 'twitter:description', content: 'Universal AI proxy for Claude Code with Kimi K2, OpenAI, Gemini, and more providers.' }],
-    ['meta', { name: 'twitter:image', content: '/ccproxy_icon.png' }],
+    ['meta', { name: 'twitter:image', content: 'https://ccproxy.orchestre.dev/ccproxy_icon.png' }],
     
     // Favicons
     ['link', { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
-    ['link', { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/favicon-32x32.png' }],
-    ['link', { rel: 'icon', type: 'image/png', sizes: '16x16', href: '/favicon-16x16.png' }],
-    ['link', { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-icon-180x180.png' }],
-    ['link', { rel: 'manifest', href: '/manifest.json' }],
+    ['link', { rel: 'icon', type: 'image/png', sizes: '96x96', href: '/favicon-96x96.png' }],
+    ['link', { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png' }],
+    ['link', { rel: 'manifest', href: '/site.webmanifest' }],
     ['meta', { name: 'msapplication-config', content: '/browserconfig.xml' }]
   ],
 
@@ -61,10 +71,10 @@ export default defineConfig({
       { 
         text: 'Community', 
         items: [
-          { text: 'GitHub', link: 'https://github.com/praneybehl/ccproxy' },
-          { text: 'Discussions', link: 'https://github.com/praneybehl/ccproxy/discussions' },
-          { text: 'Issues & Bug Reports', link: 'https://github.com/praneybehl/ccproxy/issues' },
-          { text: 'Feature Requests', link: 'https://github.com/praneybehl/ccproxy/issues/new?template=feature_request.md' }
+          { text: 'GitHub', link: 'https://github.com/orchestre-dev/ccproxy' },
+          { text: 'Discussions', link: 'https://github.com/orchestre-dev/ccproxy/discussions' },
+          { text: 'Issues & Bug Reports', link: 'https://github.com/orchestre-dev/ccproxy/issues' },
+          { text: 'Feature Requests', link: 'https://github.com/orchestre-dev/ccproxy/issues/new?template=feature_request.md' }
         ]
       }
     ],
@@ -162,16 +172,16 @@ export default defineConfig({
     },
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/praneybehl/ccproxy' }
+      { icon: 'github', link: 'https://github.com/orchestre-dev/ccproxy' }
     ],
 
     footer: {
-      message: 'Released under the MIT License. <a href="https://github.com/praneybehl/ccproxy" target="_blank">⭐ GitHub</a> • <a href="https://github.com/praneybehl/ccproxy/discussions" target="_blank">💬 Join Discussions</a> • <a href="https://github.com/praneybehl/ccproxy/issues" target="_blank">🐛 Report Issues</a>',
+      message: 'Released under the MIT License. <a href="https://github.com/orchestre-dev/ccproxy" target="_blank">⭐ GitHub</a> • <a href="https://github.com/orchestre-dev/ccproxy/discussions" target="_blank">💬 Join Discussions</a> • <a href="https://github.com/orchestre-dev/ccproxy/issues" target="_blank">🐛 Report Issues</a>',
       copyright: 'Copyright © 2025 Praney Behl - Universal AI Proxy for Claude Code'
     },
 
     editLink: {
-      pattern: 'https://github.com/praneybehl/ccproxy/edit/main/docs/:path',
+      pattern: 'https://github.com/orchestre-dev/ccproxy/edit/main/docs/:path',
       text: 'Edit this page on GitHub'
     }
   },
