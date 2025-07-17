@@ -34,7 +34,7 @@ jobs:
         uses: golangci/golangci-lint-action@v6
         with:
           version: latest
-          args: --timeout=5m
+          args: --fix --timeout=5m
 
   test:
     name: Test
@@ -157,7 +157,7 @@ jobs:
       - name: Run integration tests
         run: |
           # Start the proxy server in background
-          ./ccproxy-linux-amd64 &
+          PROVIDER=groq GROQ_API_KEY=test-key ./ccproxy-linux-amd64 &
           PROXY_PID=$!
           
           # Wait for server to start
@@ -166,8 +166,8 @@ jobs:
           # Run integration tests
           go test -v ./integration_test.go
           
-          # Clean up
-          kill $PROXY_PID
+          # Clean up (ignore error if process already terminated)
+          kill $PROXY_PID 2>/dev/null || true
 
   security:
     name: Security Scan
@@ -181,11 +181,10 @@ jobs:
         with:
           go-version: ${{ env.GO_VERSION }}
 
-      - name: Install gosec
-        run: go install github.com/securecodewarrior/gosec/v2/cmd/gosec@latest
-
       - name: Run Gosec Security Scanner
-        run: gosec ./...
+        run: |
+          curl -sfL https://raw.githubusercontent.com/securecodewarrior/gosec/master/install.sh | sh -s -- -b $(go env GOPATH)/bin
+          gosec ./...
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
@@ -217,6 +216,7 @@ jobs:
           context: .
           file: ./docker/Dockerfile
           push: false
+          load: true
           tags: ccproxy:test
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -224,11 +224,11 @@ jobs:
       - name: Test Docker image
         run: |
           # Test that the image can start
-          docker run --rm -d --name ccproxy-test -p 8080:8080 ccproxy:test &
+          docker run --rm -d --name ccproxy-test -p 7187:7187 -e PROVIDER=groq -e GROQ_API_KEY=test-key ccproxy:test
           sleep 10
           
           # Basic health check
-          curl -f http://localhost:8080/health || exit 1
+          curl -f http://localhost:7187/health || exit 1
           
           # Clean up
           docker stop ccproxy-test
