@@ -65,13 +65,11 @@ jobs:
           path: docs/.vitepress/dist/
 
       - name: Deploy to Cloudflare Pages (Preview)
-        uses: cloudflare/pages-action@v1
+        uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: ${{ env.CLOUDFLARE_PROJECT_NAME }}
-          directory: docs/.vitepress/dist
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          command: pages deploy docs/.vitepress/dist --project-name=${{ env.CLOUDFLARE_PROJECT_NAME }}
 
   deploy-production:
     runs-on: ubuntu-latest
@@ -93,13 +91,11 @@ jobs:
           path: docs/.vitepress/dist/
 
       - name: Deploy to Cloudflare Pages (Production)
-        uses: cloudflare/pages-action@v1
+        uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: ${{ env.CLOUDFLARE_PROJECT_NAME }}
-          directory: docs/.vitepress/dist
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          command: pages deploy docs/.vitepress/dist --project-name=${{ env.CLOUDFLARE_PROJECT_NAME }} --compatibility-date=2024-01-01
 
       - name: Post deployment notification
         if: success()
