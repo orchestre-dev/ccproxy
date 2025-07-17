@@ -11,10 +11,10 @@ import (
 type ProviderSetup struct {
 	Name         string
 	DisplayName  string
-	RequiredEnv  []EnvVar
-	OptionalEnv  []EnvVar
 	Description  string
 	DefaultModel string
+	RequiredEnv  []EnvVar
+	OptionalEnv  []EnvVar
 }
 
 // EnvVar represents an environment variable
@@ -137,7 +137,7 @@ func main() {
 	if _, err := os.Stat(envPath); err == nil {
 		fmt.Printf("⚠️  Found existing %s file.\n", envPath)
 		if !askConfirmation("Do you want to backup and replace it?") {
-			fmt.Println("❌ Setup cancelled.")
+			fmt.Println("❌ Setup canceled.")
 			return
 		}
 

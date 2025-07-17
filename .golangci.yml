@@ -50,6 +50,14 @@ linters-settings:
       - standard
       - default
       - prefix(ccproxy)
+  
+  depguard:
+    rules:
+      main:
+        allow:
+          - $gostd
+          - ccproxy
+          - github.com/gin-gonic/gin
 
   revive:
     rules:
