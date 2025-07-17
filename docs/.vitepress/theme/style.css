@@ -1,0 +1,324 @@
+/* Custom VitePress theme styles */
+
+/* CCProxy brand colors - standardized electric blue */
+:root {
+  /* Light mode - accessible electric blue */
+  --vp-c-brand-1: #0066ff;
+  --vp-c-brand-2: #0052cc;
+  --vp-c-brand-3: #003d99;
+  --vp-c-brand-soft: rgba(0, 102, 255, 0.14);
+  --vp-c-brand-softer: rgba(0, 102, 255, 0.07);
+  --vp-c-brand-softest: rgba(0, 102, 255, 0.04);
+  
+  /* Button text colors for accessibility */
+  --vp-button-brand-text: #ffffff;
+  --vp-button-brand-bg: #0066ff;
+  --vp-button-brand-hover-bg: #0052cc;
+}
+
+.dark {
+  /* Dark mode - brighter electric blue for contrast */
+  --vp-c-brand-1: #00aaff;
+  --vp-c-brand-2: #0088cc;
+  --vp-c-brand-3: #006699;
+  --vp-c-brand-soft: rgba(0, 170, 255, 0.16);
+  --vp-c-brand-softer: rgba(0, 170, 255, 0.08);
+  --vp-c-brand-softest: rgba(0, 170, 255, 0.04);
+  
+  /* Button text colors for dark mode */
+  --vp-button-brand-text: #000000;
+  --vp-button-brand-bg: #00aaff;
+  --vp-button-brand-hover-bg: #0088cc;
+}
+
+/* Enhanced hero image glow effect with multi-layer approach */
+:root {
+  /* Light mode glow colors */
+  --hero-glow-primary: rgba(0, 102, 255, 0.5);
+  --hero-glow-secondary: rgba(0, 102, 255, 0.3);
+  --hero-glow-tertiary: rgba(0, 102, 255, 0.15);
+  
+  /* Light mode hover glow colors (doubled intensity) */
+  --hero-glow-primary-hover: rgba(0, 102, 255, 1.0);
+  --hero-glow-secondary-hover: rgba(0, 102, 255, 0.6);
+  --hero-glow-tertiary-hover: rgba(0, 102, 255, 0.3);
+}
+
+.dark {
+  /* Dark mode glow colors */
+  --hero-glow-primary: rgba(0, 170, 255, 0.5);
+  --hero-glow-secondary: rgba(0, 170, 255, 0.3);
+  --hero-glow-tertiary: rgba(0, 170, 255, 0.15);
+  
+  /* Dark mode hover glow colors (doubled intensity) */
+  --hero-glow-primary-hover: rgba(0, 170, 255, 1.0);
+  --hero-glow-secondary-hover: rgba(0, 170, 255, 0.6);
+  --hero-glow-tertiary-hover: rgba(0, 170, 255, 0.3);
+}
+
+/* Enhanced multi-layer glow effect */
+.VPHero .VPImage {
+  filter: 
+    drop-shadow(0 0 30px var(--hero-glow-primary))
+    drop-shadow(0 0 60px var(--hero-glow-secondary))
+    drop-shadow(0 0 90px var(--hero-glow-tertiary));
+  transition: filter 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: filter;
+}
+
+.VPHero .VPImage:hover {
+  filter: 
+    drop-shadow(0 0 60px var(--hero-glow-primary-hover))
+    drop-shadow(0 0 120px var(--hero-glow-secondary-hover))
+    drop-shadow(0 0 180px var(--hero-glow-tertiary-hover));
+}
+
+/* Accessibility: Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .VPHero .VPImage {
+    transition: none;
+  }
+}
+
+/* High contrast mode fallback */
+@media (prefers-contrast: high) {
+  .VPHero .VPImage {
+    filter: drop-shadow(0 0 30px rgba(0, 102, 255, 0.8));
+  }
+  
+  .VPHero .VPImage:hover {
+    filter: drop-shadow(0 0 60px rgba(0, 102, 255, 1.0));
+  }
+}
+
+/* CCProxy title accent color */
+.VPHero .name {
+  background: linear-gradient(
+    120deg,
+    var(--vp-c-brand-1) 30%,
+    var(--vp-c-text-1)
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Showcase grid styling */
+.showcase-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+  margin: 40px 0;
+}
+
+/* Responsive grid for mobile */
+@media (max-width: 768px) {
+  .showcase-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+
+.showcase-item {
+  background: var(--vp-c-bg-soft);
+  border: 1px solid var(--vp-c-border);
+  border-radius: 12px;
+  padding: 24px;
+  transition: all 0.3s ease;
+}
+
+.showcase-item:hover {
+  border-color: var(--vp-c-brand-1);
+  box-shadow: 0 8px 32px var(--vp-c-brand-soft);
+  transform: translateY(-2px);
+}
+
+.showcase-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--vp-c-brand-1);
+}
+
+.showcase-description {
+  color: var(--vp-c-text-2);
+  line-height: 1.7;
+  margin-bottom: 16px;
+}
+
+.showcase-description strong {
+  color: var(--vp-c-text-1);
+  font-weight: 600;
+}
+
+/* Better spacing for showcase content */
+.showcase-description br + br {
+  line-height: 0.5;
+}
+
+.showcase-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--vp-c-brand-1);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.showcase-link:hover {
+  color: var(--vp-c-brand-2);
+}
+
+/* Operating System Detection */
+.os-specific {
+  display: none;
+}
+
+.os-specific.active {
+  display: block;
+}
+
+/* Download button styling */
+.download-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: var(--vp-c-brand-1);
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.download-btn:hover {
+  background: var(--vp-c-brand-2);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px var(--vp-c-brand-soft);
+}
+
+/* Override VitePress button styles for accessibility */
+.VPButton.brand {
+  background-color: var(--vp-button-brand-bg) !important;
+  color: var(--vp-button-brand-text) !important;
+  border-color: var(--vp-button-brand-bg) !important;
+  transition: all 0.3s ease !important;
+}
+
+.VPButton.brand:hover {
+  background-color: var(--vp-button-brand-hover-bg) !important;
+  border-color: var(--vp-c-brand-1) !important;
+  box-shadow: 0 12px 48px var(--vp-c-brand-soft) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* Enhanced button glow effects for all VitePress buttons */
+.VPButton {
+  transition: all 0.3s ease !important;
+}
+
+.VPButton:hover {
+  transform: translateY(-2px) !important;
+}
+
+.VPButton.alt:hover {
+  border-color: var(--vp-c-brand-1) !important;
+  box-shadow: 0 12px 48px rgba(255, 255, 255, 0.15) !important;
+}
+
+/* Enhanced feature boxes to match showcase card design */
+.VPFeatures .VPFeature {
+  background: var(--vp-c-bg-soft);
+  border: 1px solid var(--vp-c-border);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.VPFeatures .VPFeature:hover {
+  border-color: var(--vp-c-brand-1);
+  box-shadow: 0 8px 32px var(--vp-c-brand-soft);
+  transform: translateY(-2px);
+}
+
+/* Feature box title styling to match showcase cards */
+.VPFeatures .VPFeature .title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--vp-c-brand-1);
+}
+
+/* Feature box details styling to match showcase cards */
+.VPFeatures .VPFeature .details {
+  color: var(--vp-c-text-2);
+  line-height: 1.7;
+  margin-bottom: 16px;
+  font-size: 16px;
+}
+
+/* Quick Start OS-specific tabs */
+.quick-start-container {
+  margin: 24px 0;
+}
+
+.quick-start-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--vp-c-border);
+  padding-bottom: 8px;
+}
+
+.quick-start-tab {
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  color: var(--vp-c-text-2);
+  cursor: pointer;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: all 0.2s;
+  font-size: 14px;
+}
+
+.quick-start-tab:hover {
+  background: var(--vp-c-bg-soft);
+  color: var(--vp-c-text-1);
+}
+
+.quick-start-tab.active {
+  background: var(--vp-c-brand-1);
+  color: var(--vp-button-brand-text);
+}
+
+.quick-start-content {
+  display: none;
+}
+
+.quick-start-content.active {
+  display: block;
+}
+
+/* Fallback: show macOS by default */
+#quick-start-macos {
+  display: block;
+}
+
+/* Hide all when JavaScript loads */
+.js-loaded .quick-start-content {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .quick-start-tabs {
+    flex-wrap: wrap;
+  }
+  
+  .quick-start-tab {
+    flex: 1;
+    min-width: 80px;
+    text-align: center;
+  }
+}
