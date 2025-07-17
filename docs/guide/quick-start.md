@@ -1,175 +1,55 @@
+---
+title: Quick Start - Get CCProxy Running in 2 Minutes
+description: Get CCProxy running with Kimi K2 and Claude Code in under 2 minutes. Fast setup guide for immediate AI development productivity.
+keywords: CCProxy quick start, Kimi K2 setup, Claude Code integration, AI proxy setup
+---
+
 # Quick Start
 
-Get CCProxy running in under 5 minutes!
+<SocialShare />
 
-## Prerequisites
+Get CCProxy running with Kimi K2 in under 2 minutes.
 
-- An API key from your chosen provider (Groq, OpenAI, etc.)
-- Claude Code installed on your system
-
-## Step 1: Download CCProxy
-
-Choose your platform and download the latest release:
-
-::: code-group
-
-```bash [Linux (AMD64)]
-wget https://github.com/praneybehl/ccproxy/releases/latest/download/ccproxy-linux-amd64
-chmod +x ccproxy-linux-amd64
-sudo mv ccproxy-linux-amd64 /usr/local/bin/ccproxy
-```
-
-```bash [Linux (ARM64)]
-wget https://github.com/praneybehl/ccproxy/releases/latest/download/ccproxy-linux-arm64
-chmod +x ccproxy-linux-arm64
-sudo mv ccproxy-linux-arm64 /usr/local/bin/ccproxy
-```
-
-```bash [macOS (Intel)]
-wget https://github.com/praneybehl/ccproxy/releases/latest/download/ccproxy-darwin-amd64
-chmod +x ccproxy-darwin-amd64
-sudo mv ccproxy-darwin-amd64 /usr/local/bin/ccproxy
-```
-
-```bash [macOS (Apple Silicon)]
-wget https://github.com/praneybehl/ccproxy/releases/latest/download/ccproxy-darwin-arm64
-chmod +x ccproxy-darwin-arm64
-sudo mv ccproxy-darwin-arm64 /usr/local/bin/ccproxy
-```
-
-```powershell [Windows]
-# Download from GitHub releases
-# https://github.com/praneybehl/ccproxy/releases/latest/download/ccproxy-windows-amd64.exe
-```
-
-:::
-
-## Step 2: Choose Your Provider
-
-Pick one of the supported providers and get an API key:
-
-### Option A: Groq (Recommended for Speed)
-
-1. Visit [console.groq.com](https://console.groq.com)
-2. Sign up for a free account
-3. Generate an API key
-4. Note: Free tier includes generous limits
-
-### Option B: OpenAI
-
-1. Visit [platform.openai.com](https://platform.openai.com)
-2. Sign up and add billing information
-3. Generate an API key
-4. Note: Pay-per-use pricing
-
-### Option C: Other Providers
-
-See our [Provider Guide](/providers/) for setup instructions for Gemini, Mistral, XAI, OpenRouter, and Ollama.
-
-## Step 3: Configure Environment
-
-Create a `.env` file or set environment variables:
-
-::: code-group
-
-```bash [Groq]
-export PROVIDER=groq
-export GROQ_API_KEY=gsk_your_groq_api_key_here
-```
-
-```bash [OpenAI]
-export PROVIDER=openai
-export OPENAI_API_KEY=sk-your_openai_api_key_here
-```
-
-```bash [Gemini]
-export PROVIDER=gemini
-export GEMINI_API_KEY=your_gemini_api_key_here
-```
-
-```bash [Mistral]
-export PROVIDER=mistral
-export MISTRAL_API_KEY=your_mistral_api_key_here
-```
-
-:::
-
-## Step 4: Start CCProxy
+## 1. Install CCProxy
 
 ```bash
-ccproxy
+curl -sSL https://raw.githubusercontent.com/praneybehl/ccproxy/main/install.sh | bash
 ```
 
-You should see output like:
-```
-{"level":"info","msg":"Successfully initialized groq provider with model moonshotai/kimi-k2-instruct","time":"2025-01-17T10:30:00.000Z"}
-{"level":"info","msg":"Starting server on 0.0.0.0:7187","time":"2025-01-17T10:30:00.001Z"}
+## 2. Start with Kimi K2
+
+```bash
+export PROVIDER=groq GROQ_API_KEY=your_groq_api_key
+ccproxy &
 ```
 
-## Step 5: Configure Claude Code
-
-In a new terminal, set Claude Code to use CCProxy:
+## 3. Connect Claude Code
 
 ```bash
 export ANTHROPIC_BASE_URL=http://localhost:7187
-export ANTHROPIC_API_KEY=NOT_NEEDED
+claude-code "Write a Python function to reverse a string"
 ```
 
-## Step 6: Test It!
+## 🎉 Done!
 
-Now use Claude Code normally:
+Claude Code now uses your chosen AI provider. Try:
 
 ```bash
-claude "Hello! What model are you using?"
-```
-
-Claude Code will now use your chosen provider instead of Claude! 🎉
-
-## Verify It's Working
-
-Check the CCProxy logs - you should see requests being processed:
-
-```json
-{
-  "action": "anthropic_request",
-  "level": "info",
-  "messages": 1,
-  "model": "claude-3-sonnet",
-  "provider": "groq",
-  "time": "2025-01-17T10:30:01.000Z"
-}
-```
-
-You can also check the status endpoint:
-
-```bash
-curl http://localhost:7187/status
+claude-code "Explain this code and suggest improvements" < your-file.py
+claude-code "Create a REST API for user management"
+claude-code "Debug this error: TypeError: 'int' object is not subscriptable"
 ```
 
 ## Next Steps
 
-- [Explore different providers](/providers/) to find the best fit
-- [Learn about configuration](/guide/configuration) options
-- [Set up health monitoring](/guide/health-checks) for production use
-- [Deploy with Docker](/guide/docker) for scalability
+- **[Full Installation Guide](/guide/installation)** - Multiple installation methods
+- **[Configuration Guide](/guide/configuration)** - Advanced provider setup
+- **[Kimi K2 Guide](/kimi-k2)** - Optimize for ultra-fast development
 
 ## Troubleshooting
 
-### Port Already in Use
-```bash
-# Use a different port
-export SERVER_PORT=8080
-ccproxy
-```
+**Connection refused?** Check if CCProxy is running on port 7187.
 
-### API Key Issues
-- Verify your API key is correct
-- Check you have sufficient credits/quota
-- Ensure the provider environment variable matches your chosen provider
+**API key error?** Verify your provider API key is correct.
 
-### Connection Issues
-- Check your internet connection
-- Verify the provider's API is accessible
-- Try a different provider to isolate the issue
-
-Need more help? Check our [troubleshooting guide](/guide/troubleshooting) or open an issue on [GitHub](https://github.com/praneybehl/ccproxy/issues).
+**Need help?** [💬 GitHub Discussions](https://github.com/praneybehl/ccproxy/discussions) • [🐛 Report Issues](https://github.com/praneybehl/ccproxy/issues)
