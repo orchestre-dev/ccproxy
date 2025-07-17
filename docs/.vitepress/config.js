@@ -191,6 +191,7 @@ export default defineConfig({
         {
           text: 'Latest Posts',
           items: [
+            { text: 'Claude Code Reliability Challenges', link: '/blog/claude-code-reliability-challenges-solution' },
             { text: 'Kimi K2 + Claude Code Guide', link: '/blog/kimi-k2-claude-code-ultimate-guide' },
             { text: 'Groq + Claude Code Future', link: '/blog/groq-claude-code-future-ai-development' },
             { text: 'OpenAI Integration Guide', link: '/blog/openai-claude-code-integration' },
