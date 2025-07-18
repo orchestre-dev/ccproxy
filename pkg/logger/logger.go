@@ -12,8 +12,16 @@ type Logger struct {
 	*logrus.Logger
 }
 
-// New creates a new logger instance
-func New(config config.LoggingConfig) *Logger {
+// New creates a new logger instance with default configuration
+func New() *Logger {
+	return NewWithConfig(config.LoggingConfig{
+		Level:  "info",
+		Format: "json",
+	})
+}
+
+// NewWithConfig creates a new logger instance with the provided configuration
+func NewWithConfig(config config.LoggingConfig) *Logger {
 	logger := logrus.New()
 
 	// Set log level
