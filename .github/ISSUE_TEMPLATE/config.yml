@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: GitHub Discussions
+    url: https://github.com/praneybehl/ccproxy/discussions
+    about: Ask questions, share tips, and connect with the community
+  - name: Documentation
+    url: https://ccproxy.dev
+    about: Check our comprehensive documentation and guides
+  - name: Quick Start Guide
+    url: https://ccproxy.dev/guide/quick-start
+    about: Get up and running with CCProxy in under 2 minutes
