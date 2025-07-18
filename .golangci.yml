@@ -1,0 +1,141 @@
+run:
+  timeout: 5m
+  issues-exit-code: 1
+  tests: true
+  modules-download-mode: readonly
+
+output:
+  formats:
+    - format: colored-line-number
+  print-issued-lines: true
+  print-linter-name: true
+  sort-results: true
+
+linters-settings:
+  errcheck:
+    check-type-assertions: true
+    check-blank: true
+
+  govet:
+    enable-all: true
+
+  gocyclo:
+    min-complexity: 15
+
+  goconst:
+    min-len: 3
+    min-occurrences: 3
+
+  gofumpt:
+    extra-rules: true
+
+  gosec:
+    excludes:
+      - G204 # Subprocess launched with variable - we need this for execution
+    
+  misspell:
+    locale: US
+
+  lll:
+    line-length: 120
+
+  godox:
+    keywords:
+      - NOTE
+      - OPTIMIZE
+      - HACK
+
+  gci:
+    sections:
+      - standard
+      - default
+      - prefix(ccproxy)
+  
+  depguard:
+    rules:
+      main:
+        allow:
+          - $gostd
+          - ccproxy
+          - github.com/gin-gonic/gin
+          - github.com/spf13/viper
+          - github.com/sirupsen/logrus
+          - github.com/stretchr/testify
+          - github.com/google/generative-ai-go
+          - github.com/google/uuid
+
+  revive:
+    rules:
+      - name: exported
+        arguments:
+          - "checkPrivateReceivers"
+          - "sayRepetitiveInsteadOfStutters"
+
+linters:
+  disable-all: true
+  enable:
+    - bodyclose
+    - depguard
+    - dogsled
+    - dupl
+    - errcheck
+    - copyloopvar
+    - exhaustive
+    - gci
+    - gochecknoinits
+    - gocognit
+    - goconst
+    - gocritic
+    - gocyclo
+    - godox
+    - gofmt
+    - goheader
+    - goimports
+    - mnd
+    - gomodguard
+    - goprintffuncname
+    - gosec
+    - gosimple
+    - govet
+    - ineffassign
+    - lll
+    - makezero
+    - misspell
+    - nakedret
+    - nestif
+    - noctx
+    - nolintlint
+    - revive
+    - staticcheck
+    - stylecheck
+    - typecheck
+    - unconvert
+    - unparam
+    - unused
+    - whitespace
+
+issues:
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - mnd
+        - lll
+        - dupl
+        - gosec
+
+    - path: cmd/
+      linters:
+        - gochecknoinits
+
+    - linters:
+        - lll
+      source: "^//go:generate "
+
+  exclude-use-default: false
+  max-issues-per-linter: 0
+  max-same-issues: 0
+  new: false
+
+severity:
+  default-severity: error
+  case-sensitive: false

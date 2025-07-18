@@ -1,0 +1,1 @@
+Please thoroughly read through the Claude.md file and the README.md file of the project to build your context about this project.

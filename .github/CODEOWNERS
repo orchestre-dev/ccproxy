@@ -1,0 +1,27 @@
+# Global owners
+* @praneybehl
+
+# GitHub Actions workflows
+.github/workflows/ @praneybehl
+
+# Go source code
+*.go @praneybehl
+go.mod @praneybehl
+go.sum @praneybehl
+
+# Docker configuration
+docker/ @praneybehl
+Dockerfile @praneybehl
+docker-compose.yml @praneybehl
+
+# Build and deployment scripts
+scripts/ @praneybehl
+install.sh @praneybehl
+
+# Configuration files
+.golangci.yml @praneybehl
+.gitignore @praneybehl
+
+# Documentation
+docs/ @praneybehl
+*.md @praneybehl
