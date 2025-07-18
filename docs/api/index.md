@@ -21,6 +21,23 @@ CCProxy doesn't require authentication for the proxy functionality. The authenti
 | `/status` | GET | Provider status and configuration |
 | `/` | GET | Basic health check |
 
+## API Flow Diagram
+
+```mermaid
+sequenceDiagram
+    participant C as Client App
+    participant P as CCProxy
+    participant AI as AI Provider
+    
+    C->>P: POST /v1/messages
+    Note over P: Validate request format
+    P->>P: Select provider based on config
+    P->>AI: Transform & forward request
+    AI-->>P: Stream response
+    P-->>C: Stream transformed response
+    Note over C: Process AI response
+```
+
 ## Content Types
 
 All endpoints accept and return `application/json` unless otherwise specified.
