@@ -1,10 +1,11 @@
 import { defineConfig } from 'vitepress'
 import { loadEnv } from 'vite'
+import { withMermaid } from 'vitepress-plugin-mermaid'
 
 // Load environment variables
 const env = loadEnv('', process.cwd(), '')
 
-export default defineConfig({
+export default withMermaid(defineConfig({
   title: env.VITE_APP_TITLE || 'CCProxy',
   description: 'Universal AI proxy supporting Claude Code, Groq Kimi K2, OpenAI, Gemini, Mistral, XAI Grok, and Ollama. Seamless integration with any AI provider through a unified API.',
   base: process.env.BASE_URL || '/',
@@ -41,18 +42,32 @@ export default defineConfig({
     ['link', { rel: 'manifest', href: '/site.webmanifest' }],
     ['meta', { name: 'msapplication-config', content: '/browserconfig.xml' }],
     
-    // Google Analytics - Configure with GA_MEASUREMENT_ID environment variable
+    // Google Analytics with Consent Mode v2 - Configure with GA_MEASUREMENT_ID environment variable
     ...(env.GA_MEASUREMENT_ID ? [
       ['script', { async: true, src: `https://www.googletagmanager.com/gtag/js?id=${env.GA_MEASUREMENT_ID}` }],
       ['script', {}, `
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
+        
+        // Set default consent mode before GA initialization
+        gtag('consent', 'default', {
+          'analytics_storage': 'denied',
+          'ad_storage': 'denied',
+          'ad_user_data': 'denied',
+          'ad_personalization': 'denied',
+          'wait_for_update': 500
+        });
+        
         gtag('js', new Date());
+        
+        // Configure GA with privacy-focused settings
         gtag('config', '${env.GA_MEASUREMENT_ID}', {
           anonymize_ip: true,
           cookie_flags: 'SameSite=None;Secure',
           allow_google_signals: false,
-          allow_ad_personalization_signals: false
+          allow_ad_personalization_signals: false,
+          ads_data_redaction: true,
+          url_passthrough: true
         });
       `]
     ] : [])
@@ -165,6 +180,7 @@ export default defineConfig({
           text: 'API Reference',
           items: [
             { text: 'Overview', link: '/api/' },
+            { text: 'Architecture', link: '/api/architecture' },
             { text: 'Messages Endpoint', link: '/api/messages' },
             { text: 'Health Endpoints', link: '/api/health' },
             { text: 'Status Endpoint', link: '/api/status' }
@@ -244,5 +260,11 @@ export default defineConfig({
       dark: 'github-dark'
     },
     lineNumbers: true
+  },
+
+  // Mermaid configuration
+  mermaid: {
+    theme: 'default',
+    darkTheme: 'dark'
   }
-})
+}))
