@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/musistudio/ccproxy/internal/config"
+	"github.com/musistudio/ccproxy/internal/proxy"
 	"github.com/musistudio/ccproxy/internal/utils"
 )
 
@@ -52,6 +53,21 @@ type Service struct {
 func NewService(configService *config.Service) *Service {
 	ctx, cancel := context.WithCancel(context.Background())
 	
+	// Create HTTP client with proxy support
+	cfg := configService.Get()
+	var proxyConfig *proxy.Config
+	if cfg.ProxyURL != "" {
+		proxyConfig, _ = proxy.NewConfig(cfg.ProxyURL)
+	} else {
+		proxyConfig = proxy.GetProxyFromEnvironment()
+	}
+	
+	httpClient, err := proxy.CreateHTTPClient(proxyConfig, 10*time.Second)
+	if err != nil {
+		// Fallback to simple client
+		httpClient = &http.Client{Timeout: 10 * time.Second}
+	}
+	
 	return &Service{
 		config:       configService,
 		providers:    make(map[string]*config.Provider),
@@ -59,9 +75,7 @@ func NewService(configService *config.Service) *Service {
 		stats:        make(map[string]*ProviderStats),
 		healthCtx:    ctx,
 		healthCancel: cancel,
-		httpClient: &http.Client{
-			Timeout: 10 * time.Second,
-		},
+		httpClient:   httpClient,
 	}
 }
 

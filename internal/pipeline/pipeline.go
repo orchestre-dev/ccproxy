@@ -13,6 +13,7 @@ import (
 
 	"github.com/musistudio/ccproxy/internal/config"
 	"github.com/musistudio/ccproxy/internal/providers"
+	"github.com/musistudio/ccproxy/internal/proxy"
 	"github.com/musistudio/ccproxy/internal/router"
 	"github.com/musistudio/ccproxy/internal/transformer"
 	"github.com/musistudio/ccproxy/internal/utils"
@@ -39,9 +40,32 @@ func NewPipeline(
 	// Default 60 minutes timeout
 	timeout := 60 * time.Minute
 
-	httpClient := &http.Client{
-		Timeout: timeout,
-		// TODO: Add proxy support when implementing Phase 8.21
+	// Create proxy configuration
+	var proxyConfig *proxy.Config
+	if cfg.ProxyURL != "" {
+		var err error
+		proxyConfig, err = proxy.NewConfig(cfg.ProxyURL)
+		if err != nil {
+			utils.GetLogger().Warnf("Invalid proxy configuration: %v", err)
+		}
+	} else {
+		// Try to get proxy from environment
+		proxyConfig = proxy.GetProxyFromEnvironment()
+	}
+
+	// Create HTTP client with proxy support
+	httpClient, err := proxy.CreateHTTPClient(proxyConfig, timeout)
+	if err != nil {
+		utils.GetLogger().Errorf("Failed to create HTTP client: %v", err)
+		// Fallback to simple client
+		httpClient = &http.Client{Timeout: timeout}
+	}
+
+	// Validate proxy if configured
+	if proxyConfig != nil {
+		if err := proxy.ValidateProxy(httpClient, ""); err != nil {
+			utils.GetLogger().Warnf("Proxy validation failed: %v", err)
+		}
 	}
 
 	return &Pipeline{
