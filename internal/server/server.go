@@ -33,6 +33,7 @@ func New(cfg *config.Config) (*Server, error) {
 	
 	// Add middleware
 	router.Use(gin.Recovery())
+	router.Use(corsMiddleware())
 	if cfg.Log {
 		router.Use(loggingMiddleware())
 	}
@@ -77,6 +78,11 @@ func (s *Server) Run() error {
 	}
 	
 	// Graceful shutdown
+	return s.Shutdown()
+}
+
+// Shutdown gracefully shuts down the server
+func (s *Server) Shutdown() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	
@@ -126,67 +132,47 @@ func (s *Server) handleHealth(c *gin.Context) {
 
 func (s *Server) handleMessages(c *gin.Context) {
 	// TODO: Implement message handling
-	c.JSON(http.StatusNotImplemented, gin.H{
-		"error": gin.H{
-			"message": "Not implemented yet",
-			"type":    "not_implemented",
-		},
-	})
+	NotImplemented(c, "Message handling not implemented yet")
 }
 
 func (s *Server) handleListProviders(c *gin.Context) {
 	// TODO: Implement provider listing
-	c.JSON(http.StatusOK, []interface{}{})
+	providers := s.config.Providers
+	c.JSON(http.StatusOK, providers)
 }
 
 func (s *Server) handleCreateProvider(c *gin.Context) {
 	// TODO: Implement provider creation
-	c.JSON(http.StatusNotImplemented, gin.H{
-		"error": gin.H{
-			"message": "Not implemented yet",
-			"type":    "not_implemented",
-		},
-	})
+	NotImplemented(c, "Provider creation not implemented yet")
 }
 
 func (s *Server) handleGetProvider(c *gin.Context) {
-	// TODO: Implement get provider
-	c.JSON(http.StatusNotFound, gin.H{
-		"error": gin.H{
-			"message": "Provider not found",
-			"type":    "not_found",
-		},
-	})
+	name := c.Param("name")
+	
+	// Find provider
+	for _, provider := range s.config.Providers {
+		if provider.Name == name {
+			c.JSON(http.StatusOK, provider)
+			return
+		}
+	}
+	
+	NotFound(c, fmt.Sprintf("Provider '%s' not found", name))
 }
 
 func (s *Server) handleUpdateProvider(c *gin.Context) {
 	// TODO: Implement provider update
-	c.JSON(http.StatusNotImplemented, gin.H{
-		"error": gin.H{
-			"message": "Not implemented yet",
-			"type":    "not_implemented",
-		},
-	})
+	NotImplemented(c, "Provider update not implemented yet")
 }
 
 func (s *Server) handleDeleteProvider(c *gin.Context) {
 	// TODO: Implement provider deletion
-	c.JSON(http.StatusNotImplemented, gin.H{
-		"error": gin.H{
-			"message": "Not implemented yet",
-			"type":    "not_implemented",
-		},
-	})
+	NotImplemented(c, "Provider deletion not implemented yet")
 }
 
 func (s *Server) handleToggleProvider(c *gin.Context) {
 	// TODO: Implement provider toggle
-	c.JSON(http.StatusNotImplemented, gin.H{
-		"error": gin.H{
-			"message": "Not implemented yet",
-			"type":    "not_implemented",
-		},
-	})
+	NotImplemented(c, "Provider toggle not implemented yet")
 }
 
 // loggingMiddleware creates a logging middleware
@@ -214,5 +200,24 @@ func loggingMiddleware() gin.HandlerFunc {
 		utils.LogResponse(c.Writer.Status(), latency.Seconds(), map[string]interface{}{
 			"size": c.Writer.Size(),
 		})
+	}
+}
+
+// corsMiddleware adds CORS headers
+func corsMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// Set CORS headers
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, PATCH")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type, Accept, Authorization, x-api-key")
+		c.Writer.Header().Set("Access-Control-Max-Age", "86400")
+		
+		// Handle preflight requests
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(http.StatusNoContent)
+			return
+		}
+		
+		c.Next()
 	}
 }
