@@ -2,6 +2,7 @@ package transformer
 
 import (
 	"context"
+	"net/http"
 	"testing"
 
 	"github.com/musistudio/ccproxy/internal/config"
@@ -254,5 +255,133 @@ func TestParseTransformerConfig(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestService_GetChainForProvider(t *testing.T) {
+	service := NewService()
+	
+	// Test getting chain that doesn't exist
+	_, err := service.GetChainForProvider("non-existent")
+	if err == nil {
+		t.Error("Expected error for non-existent provider")
+	}
+	
+	// Create and cache a chain
+	chain := NewTransformerChain()
+	chain.Add(NewMockTransformer("test"))
+	
+	// Manually add it to the cache
+	service.mu.Lock()
+	service.chains["provider:test-provider"] = chain
+	service.mu.Unlock()
+	
+	// Now get it
+	retrievedChain, err := service.GetChainForProvider("test-provider")
+	if err != nil {
+		t.Errorf("Failed to get cached chain: %v", err)
+	}
+	
+	if retrievedChain != chain {
+		t.Error("Retrieved chain doesn't match cached one")
+	}
+}
+
+func TestService_ApplyRequestTransformation(t *testing.T) {
+	service := NewService()
+	
+	// Register a transformer
+	trans := NewMockTransformer("test-trans")
+	service.Register(trans)
+	
+	// Create provider with transformer
+	provider := &config.Provider{
+		Name: "test-provider",
+		Transformers: []config.TransformerConfig{
+			{Name: "test-trans"},
+		},
+	}
+	
+	// Apply transformation
+	ctx := context.Background()
+	result, err := service.ApplyRequestTransformation(ctx, provider, "input")
+	if err != nil {
+		t.Fatalf("Failed to apply transformation: %v", err)
+	}
+	
+	// Mock transformer adds "-in" suffix
+	if result != "input-in" {
+		t.Errorf("Expected 'input-in', got '%v'", result)
+	}
+	
+	// Test with error case - non-existent transformer
+	errorProvider := &config.Provider{
+		Name: "error-provider",
+		Transformers: []config.TransformerConfig{
+			{Name: "non-existent"},
+		},
+	}
+	
+	_, err = service.ApplyRequestTransformation(ctx, errorProvider, "input")
+	if err == nil {
+		t.Error("Expected error for non-existent transformer")
+	}
+}
+
+func TestService_ApplyResponseTransformation(t *testing.T) {
+	service := NewService()
+	
+	// Register a transformer
+	trans := NewMockTransformer("test-trans")
+	service.Register(trans)
+	
+	// Create provider with transformer
+	provider := &config.Provider{
+		Name: "test-provider",
+		Transformers: []config.TransformerConfig{
+			{Name: "test-trans"},
+		},
+	}
+	
+	// Test with HTTP response
+	ctx := context.Background()
+	httpResp := &http.Response{
+		StatusCode: 200,
+		Body:       nil,
+	}
+	
+	resp := &Response{Response: httpResp}
+	result, err := service.ApplyResponseTransformation(ctx, provider, resp)
+	if err != nil {
+		t.Fatalf("Failed to apply transformation: %v", err)
+	}
+	
+	// Should return a Response type
+	if _, ok := result.(*Response); !ok {
+		t.Error("Expected Response type")
+	}
+	
+	// Test with non-HTTP response
+	result, err = service.ApplyResponseTransformation(ctx, provider, "non-http")
+	if err != nil {
+		t.Fatalf("Failed to apply transformation: %v", err)
+	}
+	
+	// Should return as-is
+	if result != "non-http" {
+		t.Errorf("Expected 'non-http', got '%v'", result)
+	}
+	
+	// Test error case
+	errorProvider := &config.Provider{
+		Name: "error-provider",
+		Transformers: []config.TransformerConfig{
+			{Name: "non-existent"},
+		},
+	}
+	
+	_, err = service.ApplyResponseTransformation(ctx, errorProvider, resp)
+	if err == nil {
+		t.Error("Expected error for non-existent transformer")
 	}
 }

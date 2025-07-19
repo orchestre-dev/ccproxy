@@ -2,6 +2,7 @@ package errors
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"runtime/debug"
 	"strings"
@@ -155,6 +156,11 @@ func convertToCCProxyError(err error) *CCProxyError {
 	errStr := err.Error()
 	errLower := strings.ToLower(errStr)
 	
+	// Check for specific error types
+	if err == io.EOF {
+		return New(ErrorTypeBadRequest, "Unexpected end of input")
+	}
+	
 	// Check for specific error patterns
 	switch {
 	case strings.Contains(errLower, "unauthorized"):
@@ -212,6 +218,12 @@ func WrapProviderError(err error, provider string) error {
 	// If it's already a CCProxyError with provider info, return as-is
 	if ccErr, ok := err.(*CCProxyError); ok && ccErr.Provider != "" {
 		return err
+	}
+	
+	// If it's a CCProxyError without provider, add provider info
+	if ccErr, ok := err.(*CCProxyError); ok {
+		ccErr.Provider = provider
+		return ccErr
 	}
 	
 	// Check for specific provider error patterns

@@ -226,6 +226,39 @@ func TestGeminiTransformer_TransformRequestIn(t *testing.T) {
 	}
 }
 
+func TestGeminiTransformer_TransformRequestOut(t *testing.T) {
+	transformer := NewGeminiTransformer()
+	ctx := context.Background()
+	
+	// Test that TransformRequestOut returns the request unchanged
+	testRequest := map[string]interface{}{
+		"test": "data",
+		"nested": map[string]interface{}{
+			"field": "value",
+		},
+	}
+	
+	result, err := transformer.TransformRequestOut(ctx, testRequest)
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+	
+	// Should return the same request (compare as maps)
+	resultMap, ok := result.(map[string]interface{})
+	if !ok || resultMap["test"] != "data" {
+		t.Error("Expected TransformRequestOut to return request unchanged")
+	}
+	
+	// Test with nil request
+	result, err = transformer.TransformRequestOut(ctx, nil)
+	if err != nil {
+		t.Errorf("Unexpected error with nil request: %v", err)
+	}
+	if result != nil {
+		t.Error("Expected nil result for nil request")
+	}
+}
+
 func TestGeminiTransformer_TransformResponseOut(t *testing.T) {
 	transformer := NewGeminiTransformer()
 	ctx := context.Background()
