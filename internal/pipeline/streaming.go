@@ -106,10 +106,11 @@ func (p *StreamingProcessor) ProcessStreamingResponse(
 		
 		// Write event
 		if err := writer.WriteEvent(event); err != nil {
-			// Client disconnected
+			// Client disconnected or context cancelled
 			if strings.Contains(err.Error(), "broken pipe") || 
-			   strings.Contains(err.Error(), "connection reset") {
-				utils.GetLogger().Info("Client disconnected during streaming")
+			   strings.Contains(err.Error(), "connection reset") ||
+			   strings.Contains(err.Error(), "writer is closed") {
+				utils.GetLogger().Info("Client disconnected or context cancelled during streaming")
 				return nil
 			}
 			return fmt.Errorf("error writing SSE event: %w", err)
@@ -147,6 +148,10 @@ func (p *StreamingProcessor) passThrough(
 		}
 		
 		if err := writer.WriteEvent(event); err != nil {
+			// Check for expected errors during cancellation
+			if strings.Contains(err.Error(), "writer is closed") {
+				return nil
+			}
 			return err
 		}
 		

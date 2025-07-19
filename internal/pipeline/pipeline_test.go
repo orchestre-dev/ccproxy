@@ -1,6 +1,7 @@
 package pipeline
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"io"
@@ -8,291 +9,780 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/musistudio/ccproxy/internal/config"
+	"github.com/musistudio/ccproxy/internal/errors"
+	"github.com/musistudio/ccproxy/internal/providers"
+	"github.com/musistudio/ccproxy/internal/transformer"
+	"github.com/musistudio/ccproxy/internal/utils"
 )
 
-// We'll implement proper mocks after fixing the interfaces
+// Mock provider service
+type mockProviderService struct {
+	providers map[string]*config.Provider
+	health    map[string]*providers.HealthStatus
+	stats     map[string]*providers.ProviderStats
+}
 
-func TestPipeline_ProcessRequest(t *testing.T) {
-	t.Skip("Skipping until mock interfaces are properly implemented")
-	// Create test server
-	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Echo back the request body
-		_, _ = io.ReadAll(r.Body)
-		
-		// Check headers
-		if auth := r.Header.Get("Authorization"); auth != "Bearer test-key" {
-			t.Errorf("Expected Authorization header, got %s", auth)
-		}
-		
-		// Return response
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"response": "test"}`))
-	}))
-	defer testServer.Close()
-
-	// Mock setup would go here
-
-	// Create config
-	cfg := &config.Config{}
-
-	// Create pipeline manually with mocks
-	p := &Pipeline{
-		config:     cfg,
-		httpClient: &http.Client{},
-	}
-	
-	// We need to inject mocks in a way that matches the expected interfaces
-	// For now, let's skip this test and come back to it after fixing the interfaces
-
-	// Create request context
-	reqCtx := &RequestContext{
-		Body: map[string]interface{}{
-			"model":    "test-model",
-			"messages": []interface{}{},
+func newMockProviderService() *mockProviderService {
+	return &mockProviderService{
+		providers: map[string]*config.Provider{
+			"test-provider": {
+				Name:       "test-provider",
+				APIBaseURL: "https://api.test.com",
+				APIKey:     "test-key",
+				Models:     []string{"test-model", "streaming-model"},
+				Enabled:    true,
+			},
+			"disabled-provider": {
+				Name:       "disabled-provider",
+				APIBaseURL: "https://api.disabled.com",
+				APIKey:     "disabled-key",
+				Models:     []string{"test-model"},
+				Enabled:    false,
+			},
 		},
-		Headers:     map[string]string{},
-		IsStreaming: false,
-	}
-
-	// Process request
-	ctx := context.Background()
-	respCtx, err := p.ProcessRequest(ctx, reqCtx)
-	if err != nil {
-		t.Fatalf("ProcessRequest failed: %v", err)
-	}
-
-	// Verify response
-	if respCtx.Provider != "test-provider" {
-		t.Errorf("Expected provider test-provider, got %s", respCtx.Provider)
-	}
-	if respCtx.Model != "test-model" {
-		t.Errorf("Expected model test-model, got %s", respCtx.Model)
-	}
-	if respCtx.Response.StatusCode != http.StatusOK {
-		t.Errorf("Expected status 200, got %d", respCtx.Response.StatusCode)
-	}
-	
-	// Read response body
-	body, _ := io.ReadAll(respCtx.Response.Body)
-	if !strings.Contains(string(body), "test") {
-		t.Errorf("Expected response to contain 'test', got %s", string(body))
+		health: map[string]*providers.HealthStatus{
+			"test-provider": {
+				Healthy:      true,
+				LastCheck:    time.Now(),
+				ResponseTime: 100 * time.Millisecond,
+			},
+			"disabled-provider": {
+				Healthy:      false,
+				LastCheck:    time.Now(),
+				ErrorMessage: "Provider disabled",
+			},
+		},
+		stats: map[string]*providers.ProviderStats{
+			"test-provider": {
+				TotalRequests:      100,
+				SuccessfulRequests: 95,
+				FailedRequests:     5,
+				AverageLatency:     150 * time.Millisecond,
+				LastUsed:           time.Now(),
+			},
+		},
 	}
 }
 
-func TestPipeline_BuildHTTPRequest(t *testing.T) {
-	cfg := &config.Config{}
-	p := NewPipeline(cfg, nil, nil, nil)
+func (m *mockProviderService) GetProvider(name string) (*config.Provider, error) {
+	if p, ok := m.providers[name]; ok {
+		return p, nil
+	}
+	return nil, errors.ErrNotFound("provider")
+}
 
+func (m *mockProviderService) SelectProvider(criteria providers.SelectionCriteria) (*config.Provider, error) {
+	for _, p := range m.providers {
+		if !p.Enabled {
+			continue
+		}
+		for _, model := range p.Models {
+			if model == criteria.Model {
+				return p, nil
+			}
+		}
+	}
+	return nil, errors.ErrNotFound("provider for model " + criteria.Model)
+}
+
+func (m *mockProviderService) RecordRequest(provider string, success bool, latency time.Duration) {
+	if stats, ok := m.stats[provider]; ok {
+		stats.TotalRequests++
+		if success {
+			stats.SuccessfulRequests++
+		} else {
+			stats.FailedRequests++
+		}
+		stats.LastUsed = time.Now()
+	}
+}
+
+// Mock transformer service
+type mockTransformerService struct {
+	transformers map[string]transformer.Transformer
+}
+
+func newMockTransformerService() *mockTransformerService {
+	return &mockTransformerService{
+		transformers: map[string]transformer.Transformer{
+			"test-provider": &mockTransformer{name: "test-provider"},
+		},
+	}
+}
+
+func (m *mockTransformerService) GetTransformer(provider string) (transformer.Transformer, error) {
+	if t, ok := m.transformers[provider]; ok {
+		return t, nil
+	}
+	return nil, errors.ErrNotFound("transformer for provider " + provider)
+}
+
+// Mock transformer
+type mockTransformer struct {
+	name                    string
+	transformRequestError   error
+	transformResponseError  error
+	transformStreamingError error
+	simulateStreamingData   bool
+}
+
+func (m *mockTransformer) TransformRequest(req *http.Request, provider *config.Provider) (*http.Request, error) {
+	if m.transformRequestError != nil {
+		return nil, m.transformRequestError
+	}
+	req.URL.Host = "transformed.api.com"
+	req.Header.Set("Authorization", "Bearer "+provider.APIKey)
+	return req, nil
+}
+
+func (m *mockTransformer) TransformResponse(resp *http.Response, provider *config.Provider) (*http.Response, error) {
+	if m.transformResponseError != nil {
+		return nil, m.transformResponseError
+	}
+	// Transform response body
+	body := `{"transformed": true, "provider": "` + provider.Name + `"}`
+	resp.Body = io.NopCloser(strings.NewReader(body))
+	resp.ContentLength = int64(len(body))
+	return resp, nil
+}
+
+func (m *mockTransformer) TransformStreamingResponse(ctx context.Context, reader io.Reader, writer io.Writer, provider *config.Provider) error {
+	if m.transformStreamingError != nil {
+		return m.transformStreamingError
+	}
+	
+	if m.simulateStreamingData {
+		// Simulate streaming data
+		events := []string{
+			"data: {\"chunk\": 1}\n\n",
+			"data: {\"chunk\": 2}\n\n",
+			"data: [DONE]\n\n",
+		}
+		
+		for _, event := range events {
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			default:
+				if _, err := writer.Write([]byte(event)); err != nil {
+					return err
+				}
+				time.Sleep(10 * time.Millisecond) // Simulate delay
+			}
+		}
+	}
+	
+	return nil
+}
+
+// Mock HTTP client transport
+type mockTransport struct {
+	response *http.Response
+	err      error
+}
+
+func (m *mockTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	if m.err != nil {
+		return nil, m.err
+	}
+	if m.response != nil {
+		return m.response, nil
+	}
+	// Default response
+	return &http.Response{
+		StatusCode: 200,
+		Header:     make(http.Header),
+		Body:       io.NopCloser(strings.NewReader(`{"message": "success"}`)),
+		Request:    req,
+	}, nil
+}
+
+func TestNewPipeline(t *testing.T) {
+	cfg := &config.Config{
+		Routes: map[string]config.Route{
+			"default": {Provider: "test-provider", Model: "test-model"},
+		},
+	}
+	
+	p := NewPipeline(cfg, nil, nil)
+	if p == nil {
+		t.Fatal("Expected pipeline to be created")
+	}
+	
+	if p.config != cfg {
+		t.Error("Expected config to be set")
+	}
+}
+
+func TestProcessRequest(t *testing.T) {
 	tests := []struct {
-		name        string
-		provider    *config.Provider
-		body        interface{}
-		isStreaming bool
-		wantURL     string
-		wantHeaders map[string]string
+		name           string
+		method         string
+		path           string
+		body           interface{}
+		headers        map[string]string
+		mockResponse   *http.Response
+		mockError      error
+		transformError error
+		expectedStatus int
+		expectedBody   string
+		checkResponse  func(t *testing.T, w *httptest.ResponseRecorder)
 	}{
 		{
-			name: "basic request",
-			provider: &config.Provider{
-				APIBaseURL: "https://api.example.com",
-				APIKey:     "test-key",
-			},
+			name:   "successful request",
+			method: "POST",
+			path:   "/v1/messages",
 			body: map[string]interface{}{
-				"model": "test",
+				"model":    "test-model",
+				"messages": []map[string]string{{"role": "user", "content": "Hello"}},
 			},
-			isStreaming: false,
-			wantURL:     "https://api.example.com/v1/messages",
-			wantHeaders: map[string]string{
-				"Authorization": "Bearer test-key",
-				"Content-Type":  "application/json",
-			},
-		},
-		{
-			name: "custom header",
-			provider: &config.Provider{
-				APIBaseURL: "https://api.example.com",
-				APIKey:     "test-key",
-				Transformers: []config.TransformerConfig{
-					{Name: "custom-header", Config: map[string]interface{}{"header": "X-API-Key"}},
-				},
-			},
-			body:        map[string]interface{}{},
-			isStreaming: false,
-			wantURL:     "https://api.example.com/v1/messages",
-			wantHeaders: map[string]string{
-				"Authorization": "Bearer test-key",
-				"Content-Type": "application/json",
+			expectedStatus: http.StatusOK,
+			checkResponse: func(t *testing.T, w *httptest.ResponseRecorder) {
+				var resp map[string]interface{}
+				if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
+					t.Errorf("Failed to unmarshal response: %v", err)
+				}
+				if resp["transformed"] != true {
+					t.Error("Expected transformed response")
+				}
 			},
 		},
 		{
-			name: "streaming request",
-			provider: &config.Provider{
-				APIBaseURL: "https://api.example.com",
-			},
-			body:        map[string]interface{}{},
-			isStreaming: true,
-			wantURL:     "https://api.example.com/v1/messages",
-			wantHeaders: map[string]string{
-				"Accept":       "text/event-stream",
-				"Content-Type": "application/json",
-			},
-		},
-		{
-			name: "gemini model action",
-			provider: &config.Provider{
-				APIBaseURL: "https://api.example.com",
-				Transformers: []config.TransformerConfig{
-					{Name: "gemini"},
-				},
-			},
+			name:   "missing model",
+			method: "POST",
+			path:   "/v1/messages",
 			body: map[string]interface{}{
-				"model": "gemini-pro",
+				"messages": []map[string]string{{"role": "user", "content": "Hello"}},
 			},
-			isStreaming: true,
-			wantURL:     "https://api.example.com/v1/messages",
-			wantHeaders: map[string]string{
-				"Accept":       "text/event-stream",
-				"Content-Type": "application/json",
+			expectedStatus: http.StatusBadRequest,
+			expectedBody:   "model is required",
+		},
+		{
+			name:   "invalid model",
+			method: "POST",
+			path:   "/v1/messages",
+			body: map[string]interface{}{
+				"model":    "invalid-model",
+				"messages": []map[string]string{{"role": "user", "content": "Hello"}},
+			},
+			expectedStatus: http.StatusNotFound,
+			expectedBody:   "provider for model invalid-model not found",
+		},
+		{
+			name:   "transform request error",
+			method: "POST",
+			path:   "/v1/messages",
+			body: map[string]interface{}{
+				"model":    "test-model",
+				"messages": []map[string]string{{"role": "user", "content": "Hello"}},
+			},
+			transformError: errors.New(errors.ErrorTypeInternal, "Transform failed"),
+			expectedStatus: http.StatusInternalServerError,
+			expectedBody:   "Transform failed",
+		},
+		{
+			name:   "provider error",
+			method: "POST",
+			path:   "/v1/messages",
+			body: map[string]interface{}{
+				"model":    "test-model",
+				"messages": []map[string]string{{"role": "user", "content": "Hello"}},
+			},
+			mockError:      errors.New(errors.ErrorTypeServiceUnavailable, "Provider unavailable"),
+			expectedStatus: http.StatusServiceUnavailable,
+			expectedBody:   "Provider unavailable",
+		},
+		{
+			name:   "rate limit response",
+			method: "POST",
+			path:   "/v1/messages",
+			body: map[string]interface{}{
+				"model":    "test-model",
+				"messages": []map[string]string{{"role": "user", "content": "Hello"}},
+			},
+			mockResponse: &http.Response{
+				StatusCode: 429,
+				Header:     http.Header{"Retry-After": []string{"60"}},
+				Body:       io.NopCloser(strings.NewReader(`{"error": {"message": "Rate limited"}}`)),
+			},
+			expectedStatus: http.StatusTooManyRequests,
+			checkResponse: func(t *testing.T, w *httptest.ResponseRecorder) {
+				if w.Header().Get("Retry-After") != "60" {
+					t.Error("Expected Retry-After header to be preserved")
+				}
 			},
 		},
 	}
-
+	
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ctx := context.Background()
-			req, err := p.buildHTTPRequest(ctx, tt.provider, tt.body, tt.isStreaming)
-			if err != nil {
-				t.Fatalf("buildHTTPRequest failed: %v", err)
+			// Set up test environment
+			gin.SetMode(gin.TestMode)
+			
+			cfg := &config.Config{
+				Routes: map[string]config.Route{
+					"default": {Provider: "test-provider", Model: "test-model"},
+				},
 			}
-
-			// Check URL
-			if req.URL.String() != tt.wantURL {
-				t.Errorf("Expected URL %s, got %s", tt.wantURL, req.URL.String())
+			
+			providerService := newMockProviderService()
+			transformerService := newMockTransformerService()
+			
+			// Configure mock transformer
+			if tt.transformError != nil {
+				mockTrans := transformerService.transformers["test-provider"].(*mockTransformer)
+				mockTrans.transformRequestError = tt.transformError
 			}
-
-			// Check headers
-			for header, want := range tt.wantHeaders {
-				if got := req.Header.Get(header); got != want {
-					t.Errorf("Expected header %s=%s, got %s", header, want, got)
-				}
+			
+			p := NewPipeline(cfg, providerService, transformerService)
+			
+			// Configure mock HTTP client
+			transport := &mockTransport{
+				response: tt.mockResponse,
+				err:      tt.mockError,
 			}
-
-			// Check method
-			if req.Method != "POST" {
-				t.Errorf("Expected POST method, got %s", req.Method)
+			p.httpClient.Transport = transport
+			
+			// Create request
+			var body io.Reader
+			if tt.body != nil {
+				bodyBytes, _ := json.Marshal(tt.body)
+				body = bytes.NewReader(bodyBytes)
 			}
-
+			
+			req := httptest.NewRequest(tt.method, tt.path, body)
+			req.Header.Set("Content-Type", "application/json")
+			for k, v := range tt.headers {
+				req.Header.Set(k, v)
+			}
+			
+			// Create response recorder
+			w := httptest.NewRecorder()
+			c, _ := gin.CreateTestContext(w)
+			c.Request = req
+			
+			// Process request
+			p.ProcessRequest(c)
+			
+			// Check status
+			if w.Code != tt.expectedStatus {
+				t.Errorf("Expected status %d, got %d", tt.expectedStatus, w.Code)
+			}
+			
 			// Check body
-			if req.Body != nil {
-				body, _ := io.ReadAll(req.Body)
-				var parsed interface{}
-				if err := json.Unmarshal(body, &parsed); err != nil {
-					t.Errorf("Failed to parse request body: %v", err)
+			if tt.expectedBody != "" && !strings.Contains(w.Body.String(), tt.expectedBody) {
+				t.Errorf("Expected body to contain %q, got %q", tt.expectedBody, w.Body.String())
+			}
+			
+			// Custom checks
+			if tt.checkResponse != nil {
+				tt.checkResponse(t, w)
+			}
+		})
+	}
+}
+
+func TestProcessStreamingRequest(t *testing.T) {
+	tests := []struct {
+		name              string
+		body              interface{}
+		simulateStreaming bool
+		streamingError    error
+		contextCancel     bool
+		expectedStatus    int
+		expectedEvents    []string
+	}{
+		{
+			name: "successful streaming",
+			body: map[string]interface{}{
+				"model":    "streaming-model",
+				"messages": []map[string]string{{"role": "user", "content": "Hello"}},
+				"stream":   true,
+			},
+			simulateStreaming: true,
+			expectedStatus:    http.StatusOK,
+			expectedEvents:    []string{"chunk\": 1", "chunk\": 2", "[DONE]"},
+		},
+		{
+			name: "streaming error",
+			body: map[string]interface{}{
+				"model":    "streaming-model",
+				"messages": []map[string]string{{"role": "user", "content": "Hello"}},
+				"stream":   true,
+			},
+			streamingError: errors.New(errors.ErrorTypeInternal, "Streaming failed"),
+			expectedStatus: http.StatusInternalServerError,
+		},
+		{
+			name: "context cancellation",
+			body: map[string]interface{}{
+				"model":    "streaming-model",
+				"messages": []map[string]string{{"role": "user", "content": "Hello"}},
+				"stream":   true,
+			},
+			simulateStreaming: true,
+			contextCancel:     true,
+			expectedStatus:    http.StatusOK,
+		},
+	}
+	
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gin.SetMode(gin.TestMode)
+			
+			cfg := &config.Config{
+				Routes: map[string]config.Route{
+					"default": {Provider: "test-provider", Model: "streaming-model"},
+				},
+			}
+			
+			providerService := newMockProviderService()
+			transformerService := newMockTransformerService()
+			
+			// Configure mock transformer
+			mockTrans := transformerService.transformers["test-provider"].(*mockTransformer)
+			mockTrans.simulateStreamingData = tt.simulateStreaming
+			mockTrans.transformStreamingError = tt.streamingError
+			
+			p := NewPipeline(cfg, providerService, transformerService)
+			
+			// Configure mock HTTP client for streaming response
+			streamingBody := `data: {"test": "stream"}\n\ndata: [DONE]\n\n`
+			transport := &mockTransport{
+				response: &http.Response{
+					StatusCode: 200,
+					Header: http.Header{
+						"Content-Type": []string{"text/event-stream"},
+					},
+					Body: io.NopCloser(strings.NewReader(streamingBody)),
+				},
+			}
+			p.httpClient.Transport = transport
+			
+			// Create request
+			bodyBytes, _ := json.Marshal(tt.body)
+			req := httptest.NewRequest("POST", "/v1/messages", bytes.NewReader(bodyBytes))
+			req.Header.Set("Content-Type", "application/json")
+			
+			// Create response recorder that supports flushing
+			w := &flushableResponseRecorder{
+				ResponseRecorder: httptest.NewRecorder(),
+				flushed:          false,
+			}
+			
+			c, _ := gin.CreateTestContext(w)
+			c.Request = req
+			
+			// Handle context cancellation
+			if tt.contextCancel {
+				ctx, cancel := context.WithCancel(context.Background())
+				c.Request = c.Request.WithContext(ctx)
+				go func() {
+					time.Sleep(50 * time.Millisecond)
+					cancel()
+				}()
+			}
+			
+			// Process request
+			p.ProcessRequest(c)
+			
+			// Check status
+			if w.Code != tt.expectedStatus {
+				t.Errorf("Expected status %d, got %d", tt.expectedStatus, w.Code)
+			}
+			
+			// Check streaming events
+			if tt.expectedEvents != nil && tt.streamingError == nil {
+				body := w.Body.String()
+				for _, event := range tt.expectedEvents {
+					if !strings.Contains(body, event) {
+						t.Errorf("Expected body to contain %q, got %q", event, body)
+					}
 				}
 			}
 		})
 	}
 }
 
-func TestStreamResponse(t *testing.T) {
-	// Create test SSE data
-	sseData := `data: {"test": "event1"}
+// flushableResponseRecorder implements http.Flusher
+type flushableResponseRecorder struct {
+	*httptest.ResponseRecorder
+	flushed bool
+}
 
-data: {"test": "event2"}
+func (f *flushableResponseRecorder) Flush() {
+	f.flushed = true
+}
 
-data: [DONE]
-
-`
-
-	// Create test response
-	resp := &http.Response{
-		StatusCode: 200,
-		Header:     make(http.Header),
-		Body:       io.NopCloser(strings.NewReader(sseData)),
+func TestExtractModel(t *testing.T) {
+	tests := []struct {
+		name          string
+		body          interface{}
+		expectedModel string
+		expectedError bool
+	}{
+		{
+			name:          "model in body",
+			body:          map[string]interface{}{"model": "test-model"},
+			expectedModel: "test-model",
+		},
+		{
+			name:          "missing model",
+			body:          map[string]interface{}{"messages": []string{"hello"}},
+			expectedError: true,
+		},
+		{
+			name:          "empty model",
+			body:          map[string]interface{}{"model": ""},
+			expectedError: true,
+		},
+		{
+			name:          "non-string model",
+			body:          map[string]interface{}{"model": 123},
+			expectedError: true,
+		},
+		{
+			name:          "nil body",
+			body:          nil,
+			expectedError: true,
+		},
 	}
-
-	// Create response writer
-	w := httptest.NewRecorder()
-
-	// Stream response
-	err := StreamResponse(w, resp)
-	if err != nil {
-		t.Fatalf("StreamResponse failed: %v", err)
-	}
-
-	// Check headers
-	if ct := w.Header().Get("Content-Type"); ct != "text/event-stream" {
-		t.Errorf("Expected Content-Type text/event-stream, got %s", ct)
-	}
-
-	// Check body
-	body := w.Body.String()
-	if !strings.Contains(body, "event1") || !strings.Contains(body, "event2") {
-		t.Errorf("Expected streaming data, got %s", body)
+	
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			model, err := extractModel(tt.body)
+			
+			if tt.expectedError {
+				if err == nil {
+					t.Error("Expected error but got none")
+				}
+			} else {
+				if err != nil {
+					t.Errorf("Unexpected error: %v", err)
+				}
+				if model != tt.expectedModel {
+					t.Errorf("Expected model %q, got %q", tt.expectedModel, model)
+				}
+			}
+		})
 	}
 }
 
-func TestCopyResponse(t *testing.T) {
-	// Create test response
-	resp := &http.Response{
-		StatusCode: 200,
-		Header:     make(http.Header),
-		Body:       io.NopCloser(strings.NewReader(`{"result": "test"}`)),
+func TestIsStreamingRequest(t *testing.T) {
+	tests := []struct {
+		name           string
+		body           interface{}
+		expectedStream bool
+	}{
+		{
+			name:           "streaming enabled",
+			body:           map[string]interface{}{"stream": true},
+			expectedStream: true,
+		},
+		{
+			name:           "streaming disabled",
+			body:           map[string]interface{}{"stream": false},
+			expectedStream: false,
+		},
+		{
+			name:           "no stream field",
+			body:           map[string]interface{}{"model": "test"},
+			expectedStream: false,
+		},
+		{
+			name:           "non-bool stream",
+			body:           map[string]interface{}{"stream": "true"},
+			expectedStream: false,
+		},
+		{
+			name:           "nil body",
+			body:           nil,
+			expectedStream: false,
+		},
 	}
-	resp.Header.Set("Content-Type", "application/json")
-	resp.Header.Set("X-Custom", "value")
-
-	// Create response writer
-	w := httptest.NewRecorder()
-
-	// Copy response
-	err := CopyResponse(w, resp)
-	if err != nil {
-		t.Fatalf("CopyResponse failed: %v", err)
-	}
-
-	// Check status
-	if w.Code != 200 {
-		t.Errorf("Expected status 200, got %d", w.Code)
-	}
-
-	// Check headers
-	if ct := w.Header().Get("Content-Type"); ct != "application/json" {
-		t.Errorf("Expected Content-Type application/json, got %s", ct)
-	}
-	if custom := w.Header().Get("X-Custom"); custom != "value" {
-		t.Errorf("Expected X-Custom header, got %s", custom)
-	}
-
-	// Check body
-	body := w.Body.String()
-	if body != `{"result": "test"}` {
-		t.Errorf("Expected body to match, got %s", body)
+	
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := isStreamingRequest(tt.body)
+			if result != tt.expectedStream {
+				t.Errorf("Expected %v, got %v", tt.expectedStream, result)
+			}
+		})
 	}
 }
 
-func TestErrorResponse(t *testing.T) {
-	// Create error response
-	err := NewErrorResponse("Test error", "api_error", "test_code")
-
-	// Marshal to JSON
-	data, _ := json.Marshal(err)
-
-	// Verify structure
-	var parsed map[string]interface{}
-	json.Unmarshal(data, &parsed)
-
-	errorObj := parsed["error"].(map[string]interface{})
-	if errorObj["message"] != "Test error" {
-		t.Errorf("Expected message 'Test error', got %v", errorObj["message"])
+func TestValidateRequest(t *testing.T) {
+	tests := []struct {
+		name          string
+		body          []byte
+		expectedError bool
+		errorContains string
+	}{
+		{
+			name: "valid request",
+			body: []byte(`{"model": "test", "messages": [{"role": "user", "content": "Hello"}]}`),
+		},
+		{
+			name:          "empty body",
+			body:          []byte{},
+			expectedError: true,
+			errorContains: "Request body is required",
+		},
+		{
+			name:          "invalid JSON",
+			body:          []byte(`{"model": "test", invalid json`),
+			expectedError: true,
+			errorContains: "Invalid JSON",
+		},
+		{
+			name:          "missing model",
+			body:          []byte(`{"messages": [{"role": "user", "content": "Hello"}]}`),
+			expectedError: true,
+			errorContains: "model is required",
+		},
+		{
+			name:          "empty model",
+			body:          []byte(`{"model": "", "messages": []}`),
+			expectedError: true,
+			errorContains: "model is required",
+		},
 	}
-	if errorObj["type"] != "api_error" {
-		t.Errorf("Expected type 'api_error', got %v", errorObj["type"])
+	
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			p := &Pipeline{}
+			err := p.validateRequest(tt.body)
+			
+			if tt.expectedError {
+				if err == nil {
+					t.Error("Expected error but got none")
+				} else if tt.errorContains != "" && !strings.Contains(err.Error(), tt.errorContains) {
+					t.Errorf("Expected error to contain %q, got %q", tt.errorContains, err.Error())
+				}
+			} else {
+				if err != nil {
+					t.Errorf("Unexpected error: %v", err)
+				}
+			}
+		})
 	}
-	if errorObj["code"] != "test_code" {
-		t.Errorf("Expected code 'test_code', got %v", errorObj["code"])
+}
+
+func TestCopyHeaders(t *testing.T) {
+	tests := []struct {
+		name           string
+		sourceHeaders  map[string][]string
+		expectedCopied []string
+		notCopied      []string
+	}{
+		{
+			name: "copy allowed headers",
+			sourceHeaders: map[string][]string{
+				"Content-Type":          {"application/json"},
+				"X-Request-Id":          {"123"},
+				"Accept":                {"*/*"},
+				"Accept-Encoding":       {"gzip"},
+				"User-Agent":            {"test-agent"},
+				"Authorization":         {"Bearer token"},
+				"Content-Length":        {"100"},
+				"X-Custom-Header":       {"custom"},
+				"Anthropic-Beta":        {"beta-feature"},
+				"Anthropic-Version":     {"2023-01-01"},
+				"X-Stainless-Os":        {"linux"},
+				"X-Stainless-Retry-Count": {"2"},
+			},
+			expectedCopied: []string{
+				"Content-Type",
+				"X-Request-Id",
+				"Accept",
+				"Accept-Encoding",
+				"User-Agent",
+				"X-Custom-Header",
+				"Anthropic-Beta",
+				"Anthropic-Version",
+				"X-Stainless-Os",
+				"X-Stainless-Retry-Count",
+			},
+			notCopied: []string{
+				"Authorization",
+				"Content-Length",
+			},
+		},
+	}
+	
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			source := make(http.Header)
+			for k, v := range tt.sourceHeaders {
+				source[k] = v
+			}
+			
+			dest := make(http.Header)
+			copyHeaders(source, dest)
+			
+			// Check expected headers were copied
+			for _, h := range tt.expectedCopied {
+				if dest.Get(h) == "" {
+					t.Errorf("Expected header %q to be copied", h)
+				}
+			}
+			
+			// Check headers that shouldn't be copied
+			for _, h := range tt.notCopied {
+				if dest.Get(h) != "" {
+					t.Errorf("Header %q should not be copied", h)
+				}
+			}
+		})
+	}
+}
+
+func TestRecordMetrics(t *testing.T) {
+	providerService := newMockProviderService()
+	logger := utils.GetLogger()
+	
+	tests := []struct {
+		name     string
+		provider string
+		success  bool
+		latency  time.Duration
+	}{
+		{
+			name:     "successful request",
+			provider: "test-provider",
+			success:  true,
+			latency:  100 * time.Millisecond,
+		},
+		{
+			name:     "failed request",
+			provider: "test-provider",
+			success:  false,
+			latency:  50 * time.Millisecond,
+		},
+		{
+			name:     "unknown provider",
+			provider: "unknown",
+			success:  true,
+			latency:  200 * time.Millisecond,
+		},
+	}
+	
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Record metrics
+			recordMetrics(providerService, tt.provider, logger, tt.success, time.Now().Add(-tt.latency))
+			
+			// For known providers, verify stats were updated
+			if tt.provider == "test-provider" {
+				stats := providerService.stats["test-provider"]
+				if stats.TotalRequests == 0 {
+					t.Error("Expected total requests to be updated")
+				}
+			}
+		})
 	}
 }

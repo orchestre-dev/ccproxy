@@ -152,29 +152,23 @@ func (s *Server) handleUpdateProvider(c *gin.Context) {
 func (s *Server) handleDeleteProvider(c *gin.Context) {
 	name := c.Param("name")
 
-	// Find provider index
-	providerIndex := -1
-	for i, p := range s.config.Providers {
-		if p.Name == name {
-			providerIndex = i
-			break
-		}
-	}
-
-	if providerIndex == -1 {
+	// Check if provider exists in provider service
+	if _, err := s.providerService.GetProvider(name); err != nil {
 		NotFound(c, fmt.Sprintf("Provider '%s' not found", name))
 		return
 	}
 
-	// Remove provider from slice
-	s.config.Providers = append(s.config.Providers[:providerIndex], s.config.Providers[providerIndex+1:]...)
-
-	// Save config
+	// Delete from config service
 	configService := config.NewService()
+	configService.SetConfig(s.config)
 	if err := configService.DeleteProvider(name); err != nil {
 		InternalServerError(c, fmt.Sprintf("Failed to delete provider: %v", err))
 		return
 	}
+
+	// Reload config in provider service
+	s.config = configService.Get()
+	s.providerService.Initialize()
 
 	Success(c, gin.H{
 		"message": "Provider deleted successfully",

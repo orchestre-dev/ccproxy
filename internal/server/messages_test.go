@@ -31,8 +31,8 @@ func TestMessagesEndpoint(t *testing.T) {
 				MaxTokens: 100,
 			},
 			apiKey:         "test-key",
-			expectedStatus: http.StatusNotImplemented,
-			expectedBody:   "Message processing pipeline not yet implemented",
+			expectedStatus: http.StatusBadGateway,
+			expectedBody:   "provider_error",
 		},
 		{
 			name: "missing model",
@@ -93,7 +93,7 @@ func TestMessagesEndpoint(t *testing.T) {
 				Stream: true,
 			},
 			apiKey:         "test-key",
-			expectedStatus: http.StatusNotImplemented,
+			expectedStatus: http.StatusBadGateway,
 		},
 		{
 			name: "with system prompt",
@@ -105,21 +105,12 @@ func TestMessagesEndpoint(t *testing.T) {
 				System: "You are a helpful assistant",
 			},
 			apiKey:         "test-key",
-			expectedStatus: http.StatusNotImplemented,
+			expectedStatus: http.StatusBadGateway,
 		},
 	}
 
-	// Create test server
-	cfg := &config.Config{
-		APIKey: "test-key",
-		Port:   3456,
-		Host:   "127.0.0.1",
-	}
-
-	srv, err := New(cfg)
-	if err != nil {
-		t.Fatalf("Failed to create server: %v", err)
-	}
+	// Create test server with provider
+	srv := createMinimalTestServer(t)
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -158,10 +149,7 @@ func TestMessagesAuthentication(t *testing.T) {
 		Host:   "127.0.0.1",
 	}
 
-	srv, err := New(cfg)
-	if err != nil {
-		t.Fatalf("Failed to create server: %v", err)
-	}
+	srv := createTestServerWithProvider(t, cfg)
 
 	validRequest := MessageRequest{
 		Model: "claude-3-opus-20240229",
@@ -178,12 +166,12 @@ func TestMessagesAuthentication(t *testing.T) {
 		{
 			name:           "localhost allowed without API key",
 			clientIP:       "127.0.0.1",
-			expectedStatus: http.StatusNotImplemented, // Because endpoint is not implemented yet
+			expectedStatus: http.StatusBadGateway, // Because endpoint is not implemented yet
 		},
 		{
 			name:           "::1 allowed without API key",
 			clientIP:       "::1",
-			expectedStatus: http.StatusNotImplemented,
+			expectedStatus: http.StatusBadGateway,
 		},
 		{
 			name:           "external IP blocked without API key",

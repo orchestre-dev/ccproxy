@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"net/http"
+	"strings"
 	"sync/atomic"
 
 	"github.com/gin-gonic/gin"
@@ -59,12 +60,55 @@ func (s *Server) handleMessages(c *gin.Context) {
 		return
 	}
 
+	// Validate request structure
+	bodyMap, ok := rawBody.(map[string]interface{})
+	if !ok {
+		BadRequest(c, "Invalid request format")
+		return
+	}
+	
+	// Check required fields
+	if _, hasModel := bodyMap["model"]; !hasModel {
+		BadRequest(c, "Field 'model' is required")
+		return
+	}
+	
+	messages, hasMessages := bodyMap["messages"]
+	if !hasMessages {
+		BadRequest(c, "Field 'messages' is required")
+		return
+	}
+	
+	// Validate messages array
+	messagesArray, ok := messages.([]interface{})
+	if !ok || len(messagesArray) == 0 {
+		BadRequest(c, "Field 'messages' must be a non-empty array")
+		return
+	}
+	
+	// Validate each message
+	for _, msg := range messagesArray {
+		msgMap, ok := msg.(map[string]interface{})
+		if !ok {
+			BadRequest(c, "Invalid message format")
+			return
+		}
+		
+		if _, hasRole := msgMap["role"]; !hasRole {
+			BadRequest(c, "Message missing required field 'role'")
+			return
+		}
+		
+		if _, hasContent := msgMap["content"]; !hasContent {
+			BadRequest(c, "Message missing required field 'content'")
+			return
+		}
+	}
+
 	// Check if streaming is requested
 	isStreaming := false
-	if bodyMap, ok := rawBody.(map[string]interface{}); ok {
-		if stream, ok := bodyMap["stream"].(bool); ok {
-			isStreaming = stream
-		}
+	if stream, ok := bodyMap["stream"].(bool); ok {
+		isStreaming = stream
 	}
 
 	// Create request context
@@ -82,12 +126,22 @@ func (s *Server) handleMessages(c *gin.Context) {
 		utils.GetLogger().Errorf("Pipeline processing failed: %v", err)
 		
 		// Return appropriate error response
+		var statusCode int = http.StatusInternalServerError
+		var errorType string = "api_error"
+		
+		// Check for specific error types
+		if strings.Contains(err.Error(), "connection refused") || 
+		   strings.Contains(err.Error(), "provider request failed") {
+			statusCode = http.StatusBadGateway
+			errorType = "provider_error"
+		}
+		
 		errResp := pipeline.NewErrorResponse(
 			err.Error(),
-			"api_error",
+			errorType,
 			"pipeline_error",
 		)
-		pipeline.WriteErrorResponse(c.Writer, http.StatusInternalServerError, errResp)
+		pipeline.WriteErrorResponse(c.Writer, statusCode, errResp)
 		return
 	}
 

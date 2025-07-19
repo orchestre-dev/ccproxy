@@ -53,7 +53,7 @@ func TestProviderEndpoints(t *testing.T) {
 			method: "POST",
 			path:   "/providers",
 			body: CreateProviderRequest{
-				Name:       "test-provider",
+				Name:       "new-provider",
 				APIBaseURL: "https://api.test.com",
 				APIKey:     "test-provider-key",
 				Models:     []string{"model1", "model2"},
@@ -66,8 +66,8 @@ func TestProviderEndpoints(t *testing.T) {
 				if err := json.Unmarshal(body, &provider); err != nil {
 					t.Errorf("Failed to unmarshal response: %v", err)
 				}
-				if provider.Name != "test-provider" {
-					t.Errorf("Expected provider name 'test-provider', got '%s'", provider.Name)
+				if provider.Name != "new-provider" {
+					t.Errorf("Expected provider name 'new-provider', got '%s'", provider.Name)
 				}
 			},
 		},
@@ -87,7 +87,7 @@ func TestProviderEndpoints(t *testing.T) {
 		{
 			name:           "get existing provider",
 			method:         "GET",
-			path:           "/providers/test-provider",
+			path:           "/providers/existing-provider",
 			apiKey:         "test-key",
 			expectedStatus: http.StatusOK,
 		},
@@ -104,7 +104,7 @@ func TestProviderEndpoints(t *testing.T) {
 		{
 			name:           "toggle provider enabled",
 			method:         "PATCH",
-			path:           "/providers/test-provider/toggle",
+			path:           "/providers/existing-provider/toggle",
 			apiKey:         "test-key",
 			expectedStatus: http.StatusOK,
 			expectedBody:   "successfully",
@@ -114,7 +114,7 @@ func TestProviderEndpoints(t *testing.T) {
 		{
 			name:           "delete existing provider",
 			method:         "DELETE",
-			path:           "/providers/test-provider",
+			path:           "/providers/existing-provider",
 			apiKey:         "test-key",
 			expectedStatus: http.StatusOK,
 			expectedBody:   "Provider deleted successfully",
@@ -136,7 +136,7 @@ func TestProviderEndpoints(t *testing.T) {
 		Host:   "127.0.0.1",
 		Providers: []config.Provider{
 			{
-				Name:       "test-provider",
+				Name:       "existing-provider",
 				APIBaseURL: "https://api.test.com",
 				APIKey:     "provider-key",
 				Models:     []string{"model1"},
