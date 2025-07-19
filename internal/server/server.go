@@ -28,6 +28,12 @@ func New(cfg *config.Config) (*Server, error) {
 		gin.SetMode(gin.ReleaseMode)
 	}
 	
+	// Apply security constraint: force localhost when no API key
+	if cfg.APIKey == "" && cfg.Host != "" && cfg.Host != "127.0.0.1" && cfg.Host != "localhost" {
+		utils.GetLogger().Warn("Forcing host to 127.0.0.1 due to missing API key")
+		cfg.Host = "127.0.0.1"
+	}
+	
 	// Create router
 	router := gin.New()
 	
@@ -37,6 +43,9 @@ func New(cfg *config.Config) (*Server, error) {
 	if cfg.Log {
 		router.Use(loggingMiddleware())
 	}
+	
+	// Add authentication middleware
+	router.Use(authMiddleware(cfg.APIKey, false))
 	
 	// Create server
 	s := &Server{
