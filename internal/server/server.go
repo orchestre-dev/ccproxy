@@ -16,13 +16,19 @@ import (
 
 // Server represents the CCProxy HTTP server
 type Server struct {
-	config *config.Config
-	router *gin.Engine
-	server *http.Server
+	config     *config.Config
+	configPath string
+	router     *gin.Engine
+	server     *http.Server
 }
 
 // New creates a new server instance
 func New(cfg *config.Config) (*Server, error) {
+	return NewWithPath(cfg, "")
+}
+
+// NewWithPath creates a new server instance with a specific config path
+func NewWithPath(cfg *config.Config, configPath string) (*Server, error) {
 	// Set Gin mode based on environment
 	if os.Getenv("GIN_MODE") == "" {
 		gin.SetMode(gin.ReleaseMode)
@@ -45,12 +51,13 @@ func New(cfg *config.Config) (*Server, error) {
 	}
 	
 	// Add authentication middleware
-	router.Use(authMiddleware(cfg.APIKey, false))
+	router.Use(authMiddleware(cfg.APIKey, true))
 	
 	// Create server
 	s := &Server{
-		config: cfg,
-		router: router,
+		config:     cfg,
+		configPath: configPath,
+		router:     router,
 		server: &http.Server{
 			Addr:    fmt.Sprintf("%s:%d", cfg.Host, cfg.Port),
 			Handler: router,
@@ -139,50 +146,7 @@ func (s *Server) handleHealth(c *gin.Context) {
 	})
 }
 
-func (s *Server) handleMessages(c *gin.Context) {
-	// TODO: Implement message handling
-	NotImplemented(c, "Message handling not implemented yet")
-}
 
-func (s *Server) handleListProviders(c *gin.Context) {
-	// TODO: Implement provider listing
-	providers := s.config.Providers
-	c.JSON(http.StatusOK, providers)
-}
-
-func (s *Server) handleCreateProvider(c *gin.Context) {
-	// TODO: Implement provider creation
-	NotImplemented(c, "Provider creation not implemented yet")
-}
-
-func (s *Server) handleGetProvider(c *gin.Context) {
-	name := c.Param("name")
-	
-	// Find provider
-	for _, provider := range s.config.Providers {
-		if provider.Name == name {
-			c.JSON(http.StatusOK, provider)
-			return
-		}
-	}
-	
-	NotFound(c, fmt.Sprintf("Provider '%s' not found", name))
-}
-
-func (s *Server) handleUpdateProvider(c *gin.Context) {
-	// TODO: Implement provider update
-	NotImplemented(c, "Provider update not implemented yet")
-}
-
-func (s *Server) handleDeleteProvider(c *gin.Context) {
-	// TODO: Implement provider deletion
-	NotImplemented(c, "Provider deletion not implemented yet")
-}
-
-func (s *Server) handleToggleProvider(c *gin.Context) {
-	// TODO: Implement provider toggle
-	NotImplemented(c, "Provider toggle not implemented yet")
-}
 
 // loggingMiddleware creates a logging middleware
 func loggingMiddleware() gin.HandlerFunc {

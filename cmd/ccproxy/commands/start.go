@@ -65,7 +65,7 @@ func StartCmd() *cobra.Command {
 			
 			if foreground {
 				// Run in foreground
-				return runInForeground(cfg, pidManager)
+				return runInForeground(cfg, pidManager, configPath)
 			}
 			
 			// Start in background
@@ -80,7 +80,7 @@ func StartCmd() *cobra.Command {
 }
 
 // runInForeground runs the server in the foreground
-func runInForeground(cfg *config.Config, pidManager *process.PIDManager) error {
+func runInForeground(cfg *config.Config, pidManager *process.PIDManager, configPath string) error {
 	// Acquire lock
 	if err := pidManager.AcquireLock(); err != nil {
 		return fmt.Errorf("failed to acquire lock: %w", err)
@@ -91,7 +91,7 @@ func runInForeground(cfg *config.Config, pidManager *process.PIDManager) error {
 	utils.LogStartup(cfg.Port, version)
 	
 	// Create and start server
-	srv, err := server.New(cfg)
+	srv, err := server.NewWithPath(cfg, configPath)
 	if err != nil {
 		return fmt.Errorf("failed to create server: %w", err)
 	}

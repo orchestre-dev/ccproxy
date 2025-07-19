@@ -183,18 +183,30 @@ func (s *Service) GetProvider(name string) (*Provider, error) {
 	return nil, fmt.Errorf("provider not found: %s", name)
 }
 
-// UpdateProvider updates or adds a provider
-func (s *Service) UpdateProvider(provider Provider) error {
+// UpdateProvider updates a provider by name
+func (s *Service) UpdateProvider(name string, provider *Provider) error {
 	provider.UpdatedAt = time.Now()
 	
 	// Find and update existing provider
 	for i, p := range s.config.Providers {
-		if p.Name == provider.Name {
+		if p.Name == name {
 			if provider.CreatedAt.IsZero() {
 				provider.CreatedAt = p.CreatedAt
 			}
-			s.config.Providers[i] = provider
+			s.config.Providers[i] = *provider
 			return s.Save()
+		}
+	}
+	
+	return fmt.Errorf("provider not found: %s", name)
+}
+
+// SaveProvider saves a new provider
+func (s *Service) SaveProvider(provider *Provider) error {
+	// Check if provider already exists
+	for _, p := range s.config.Providers {
+		if p.Name == provider.Name {
+			return fmt.Errorf("provider already exists: %s", provider.Name)
 		}
 	}
 	
@@ -202,7 +214,8 @@ func (s *Service) UpdateProvider(provider Provider) error {
 	if provider.CreatedAt.IsZero() {
 		provider.CreatedAt = time.Now()
 	}
-	s.config.Providers = append(s.config.Providers, provider)
+	provider.UpdatedAt = time.Now()
+	s.config.Providers = append(s.config.Providers, *provider)
 	return s.Save()
 }
 
