@@ -6,14 +6,15 @@ import (
 
 // Config represents the main configuration structure for CCProxy
 type Config struct {
-	Providers []Provider         `json:"providers" mapstructure:"providers"`
-	Routes    map[string]Route   `json:"routes" mapstructure:"routes"`
-	Log       bool               `json:"log" mapstructure:"log"`
-	LogFile   string             `json:"log_file" mapstructure:"log_file"`
-	Host      string             `json:"host" mapstructure:"host"`
-	Port      int                `json:"port" mapstructure:"port"`
-	APIKey    string             `json:"apikey" mapstructure:"apikey"`
-	ProxyURL  string             `json:"proxy_url" mapstructure:"proxy_url"`
+	Providers   []Provider           `json:"providers" mapstructure:"providers"`
+	Routes      map[string]Route     `json:"routes" mapstructure:"routes"`
+	Log         bool                 `json:"log" mapstructure:"log"`
+	LogFile     string               `json:"log_file" mapstructure:"log_file"`
+	Host        string               `json:"host" mapstructure:"host"`
+	Port        int                  `json:"port" mapstructure:"port"`
+	APIKey      string               `json:"apikey" mapstructure:"apikey"`
+	ProxyURL    string               `json:"proxy_url" mapstructure:"proxy_url"`
+	Performance PerformanceConfig    `json:"performance" mapstructure:"performance"`
 }
 
 // Provider represents a LLM provider configuration
@@ -49,6 +50,14 @@ type TransformerConfig struct {
 	Config map[string]interface{} `json:"config,omitempty" mapstructure:"config"`
 }
 
+// PerformanceConfig represents performance monitoring configuration
+type PerformanceConfig struct {
+	MetricsEnabled          bool `json:"metrics_enabled" mapstructure:"metrics_enabled"`
+	RateLimitEnabled        bool `json:"rate_limit_enabled" mapstructure:"rate_limit_enabled"`
+	RateLimitRequestsPerMin int  `json:"rate_limit_requests_per_min" mapstructure:"rate_limit_requests_per_min"`
+	CircuitBreakerEnabled   bool `json:"circuit_breaker_enabled" mapstructure:"circuit_breaker_enabled"`
+}
+
 // Default configuration values
 func DefaultConfig() *Config {
 	return &Config{
@@ -58,5 +67,11 @@ func DefaultConfig() *Config {
 		LogFile:   "",
 		Routes:    map[string]Route{},
 		Providers: []Provider{},
+		Performance: PerformanceConfig{
+			MetricsEnabled:          true,
+			RateLimitEnabled:        false,
+			RateLimitRequestsPerMin: 1000,
+			CircuitBreakerEnabled:   true,
+		},
 	}
 }

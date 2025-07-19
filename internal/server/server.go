@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"fmt"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -13,9 +14,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/musistudio/ccproxy/internal/config"
+	"github.com/musistudio/ccproxy/internal/performance"
 	"github.com/musistudio/ccproxy/internal/pipeline"
 	"github.com/musistudio/ccproxy/internal/providers"
 	modelrouter "github.com/musistudio/ccproxy/internal/router"
+	"github.com/musistudio/ccproxy/internal/state"
 	"github.com/musistudio/ccproxy/internal/transformer"
 	"github.com/musistudio/ccproxy/internal/utils"
 )
@@ -30,6 +33,9 @@ type Server struct {
 	pipeline        *pipeline.Pipeline
 	startTime       time.Time
 	requestsServed  int64
+	stateManager    *state.Manager
+	readiness       *state.ReadinessProbe
+	performance     *performance.Monitor
 }
 
 // New creates a new server instance
@@ -88,6 +94,40 @@ func NewWithPath(cfg *config.Config, configPath string) (*Server, error) {
 	// Add router middleware for intelligent model routing
 	router.Use(modelrouter.RouterMiddleware(cfg))
 	
+	// Create state manager
+	stateManager := state.NewManager()
+	
+	// Create performance monitor with config
+	perfConfig := &performance.PerformanceConfig{
+		ResourceLimits: performance.ResourceLimits{
+			MaxMemoryMB:       2048,
+			MaxGoroutines:     10000,
+			MaxCPUPercent:     80.0,
+			RequestTimeout:    5 * time.Minute,
+			MaxRequestBodyMB:  10,
+			MaxResponseBodyMB: 100,
+		},
+		RateLimit: performance.RateLimitConfig{
+			Enabled:         cfg.Performance.RateLimitEnabled,
+			RequestsPerMin:  cfg.Performance.RateLimitRequestsPerMin,
+			BurstSize:       100,
+			PerProvider:     true,
+			PerAPIKey:       false,
+			CleanupInterval: 5 * time.Minute,
+		},
+		CircuitBreaker: performance.CircuitBreakerConfig{
+			Enabled:             cfg.Performance.CircuitBreakerEnabled,
+			ErrorThreshold:      0.5,
+			ConsecutiveFailures: 5,
+			OpenDuration:        30 * time.Second,
+			HalfOpenMaxRequests: 3,
+		},
+		MetricsEnabled:  cfg.Performance.MetricsEnabled,
+		MetricsInterval: 1 * time.Minute,
+		ProfilerEnabled: false,
+	}
+	perfMonitor := performance.NewMonitor(perfConfig)
+	
 	// Create server
 	s := &Server{
 		config:          cfg,
@@ -96,6 +136,8 @@ func NewWithPath(cfg *config.Config, configPath string) (*Server, error) {
 		providerService: providerService,
 		pipeline:        pipelineService,
 		startTime:       time.Now(),
+		stateManager:    stateManager,
+		performance:     perfMonitor,
 		server: &http.Server{
 			Addr:    fmt.Sprintf("%s:%d", cfg.Host, cfg.Port),
 			Handler: router,
@@ -106,14 +148,46 @@ func NewWithPath(cfg *config.Config, configPath string) (*Server, error) {
 		},
 	}
 	
+	// Create readiness probe
+	s.readiness = state.NewReadinessProbe(stateManager, 10*time.Second, 5*time.Second)
+	
+	// Register readiness checks
+	s.setupReadinessChecks()
+	
+	// Register state change handlers
+	s.setupStateHandlers()
+	
 	// Setup routes
 	s.setupRoutes()
+	
+	// Add performance monitoring middleware if enabled
+	if cfg.Performance.MetricsEnabled {
+		router.Use(s.performanceMiddleware())
+	}
 	
 	return s, nil
 }
 
 // Run starts the server and blocks until shutdown
 func (s *Server) Run() error {
+	// Start readiness probe
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	
+	s.readiness.Start(ctx)
+	defer s.readiness.Stop()
+	
+	// Wait for readiness
+	utils.GetLogger().Info("Waiting for server components to be ready...")
+	if err := s.readiness.WaitForReady(ctx, 30*time.Second); err != nil {
+		s.stateManager.SetError(err)
+		return fmt.Errorf("failed to initialize server components: %w", err)
+	}
+	
+	// Mark server as ready
+	s.stateManager.SetReady()
+	utils.GetLogger().Info("Server components ready")
+	
 	// Setup graceful shutdown
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
@@ -130,8 +204,10 @@ func (s *Server) Run() error {
 	// Wait for interrupt or error
 	select {
 	case err := <-errChan:
+		s.stateManager.SetError(err)
 		return fmt.Errorf("server error: %w", err)
 	case <-stop:
+		s.stateManager.SetStopping()
 		utils.LogShutdown("interrupt signal received")
 	}
 	
@@ -146,9 +222,22 @@ func (s *Server) GetRouter() *gin.Engine {
 
 // Shutdown gracefully shuts down the server
 func (s *Server) Shutdown() error {
+	// Update state
+	s.stateManager.SetStopping()
+	
+	// Stop readiness probe
+	if s.readiness != nil {
+		s.readiness.Stop()
+	}
+	
 	// Stop provider service
 	if s.providerService != nil {
 		s.providerService.Stop()
+	}
+	
+	// Stop performance monitor
+	if s.performance != nil {
+		s.performance.Stop()
 	}
 	
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -157,6 +246,9 @@ func (s *Server) Shutdown() error {
 	if err := s.server.Shutdown(ctx); err != nil {
 		return fmt.Errorf("server shutdown error: %w", err)
 	}
+	
+	// Update state to stopped
+	s.stateManager.SetComponentState("server", state.StateStopped, nil)
 	
 	utils.GetLogger().Info("Server stopped gracefully")
 	return nil
@@ -193,6 +285,16 @@ func (s *Server) handleRoot(c *gin.Context) {
 }
 
 func (s *Server) handleHealth(c *gin.Context) {
+	// Check if server is healthy
+	if !s.stateManager.IsHealthy() {
+		c.JSON(http.StatusServiceUnavailable, gin.H{
+			"status":    "unhealthy",
+			"state":     string(s.stateManager.GetState()),
+			"timestamp": time.Now().Format(time.RFC3339),
+		})
+		return
+	}
+	
 	// Get provider health information
 	healthyProviders := s.providerService.GetHealthyProviders()
 	allProviders := s.providerService.GetAllProviders()
@@ -210,9 +312,24 @@ func (s *Server) handleHealth(c *gin.Context) {
 		}
 	}
 	
+	// Get component health
+	components := s.stateManager.GetComponents()
+	componentHealth := make(map[string]interface{})
+	for name, comp := range components {
+		componentHealth[name] = gin.H{
+			"state":        string(comp.State),
+			"last_changed": comp.LastChanged.Format(time.RFC3339),
+		}
+		if comp.Error != nil {
+			componentHealth[name].(gin.H)["error"] = comp.Error.Error()
+		}
+	}
+	
 	c.JSON(http.StatusOK, gin.H{
-		"status":    "ok",
-		"timestamp": time.Now().Format(time.RFC3339),
+		"status":     "ok",
+		"state":      string(s.stateManager.GetState()),
+		"timestamp":  time.Now().Format(time.RFC3339),
+		"components": componentHealth,
 		"providers": gin.H{
 			"total":   len(allProviders),
 			"healthy": len(healthyProviders),
@@ -304,6 +421,94 @@ func (s *Server) handleStatus(c *gin.Context) {
 	}
 	
 	c.JSON(http.StatusOK, response)
+}
+
+// setupReadinessChecks registers readiness checks for server components
+func (s *Server) setupReadinessChecks() {
+	// Provider service check
+	s.readiness.RegisterCheck("providers", func(ctx context.Context) error {
+		healthyProviders := s.providerService.GetHealthyProviders()
+		if len(healthyProviders) == 0 {
+			return fmt.Errorf("no healthy providers available")
+		}
+		return nil
+	})
+	
+	// Config service check
+	s.readiness.RegisterCheck("config", func(ctx context.Context) error {
+		if s.config == nil {
+			return fmt.Errorf("configuration not loaded")
+		}
+		return nil
+	})
+	
+	// Pipeline check
+	s.readiness.RegisterCheck("pipeline", func(ctx context.Context) error {
+		if s.pipeline == nil {
+			return fmt.Errorf("pipeline not initialized")
+		}
+		return nil
+	})
+	
+	// Server port check
+	s.readiness.RegisterCheck("server", func(ctx context.Context) error {
+		// Check if we can bind to the port
+		addr := fmt.Sprintf("%s:%d", s.config.Host, s.config.Port)
+		listener, err := net.Listen("tcp", addr)
+		if err != nil {
+			// Port might already be in use by the server itself
+			if strings.Contains(err.Error(), "address already in use") {
+				return nil // This is OK if we're already running
+			}
+			return fmt.Errorf("cannot bind to %s: %w", addr, err)
+		}
+		listener.Close()
+		return nil
+	})
+}
+
+// setupStateHandlers registers state change handlers
+func (s *Server) setupStateHandlers() {
+	s.stateManager.OnStateChange(func(old, new state.ServiceState, component string) {
+		if component == "service" {
+			utils.GetLogger().Infof("Service state changed: %s -> %s", old, new)
+		} else {
+			utils.GetLogger().Debugf("Component %s state changed: %s -> %s", component, old, new)
+		}
+		
+		// Handle specific state transitions
+		if new == state.StateError && component == "providers" {
+			utils.GetLogger().Warn("All providers are unhealthy")
+		}
+	})
+}
+
+// performanceMiddleware creates a middleware for performance monitoring
+func (s *Server) performanceMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		start := time.Now()
+		
+		// Process request
+		c.Next()
+		
+		// Record metrics
+		latency := time.Since(start)
+		provider := c.GetString("provider")
+		model := c.GetString("model")
+		
+		s.performance.RecordRequest(performance.RequestMetrics{
+			Provider:   provider,
+			Model:      model,
+			StartTime:  start,
+			EndTime:    time.Now(),
+			Latency:    latency,
+			Success:    c.Writer.Status() < 400,
+			StatusCode: c.Writer.Status(),
+		})
+		
+		// Increment requests served
+		atomic.AddInt64(&s.requestsServed, 1)
+	}
 }
 
 
