@@ -25,7 +25,6 @@ func StartCmd() *cobra.Command {
 		Long:  "Start the CCProxy service in the background (default) or foreground",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// Initialize configuration
-			fmt.Println("[DEBUG] Initializing configuration...")
 			configService := config.NewService()
 			var cfg *config.Config
 			
@@ -46,7 +45,6 @@ func StartCmd() *cobra.Command {
 			}
 			
 			// Initialize logger
-			fmt.Printf("[DEBUG] Initializing logger (enabled=%v, file=%s)...\n", cfg.Log, cfg.LogFile)
 			if err := utils.InitLogger(&utils.LogConfig{
 				Enabled:  cfg.Log,
 				FilePath: cfg.LogFile,
@@ -55,10 +53,8 @@ func StartCmd() *cobra.Command {
 			}); err != nil {
 				return fmt.Errorf("failed to initialize logger: %w", err)
 			}
-			fmt.Println("[DEBUG] Logger initialized")
 			
 			// Initialize Claude configuration
-			fmt.Println("[DEBUG] Initializing Claude configuration...")
 			claudeManager, err := claudeconfig.NewManager()
 			if err != nil {
 				utils.GetLogger().Warnf("Failed to create Claude config manager: %v", err)
@@ -71,7 +67,6 @@ func StartCmd() *cobra.Command {
 			}
 			
 			// Create PID manager
-			fmt.Println("[DEBUG] Creating PID manager...")
 			pidManager, err := process.NewPIDManager()
 			if err != nil {
 				return fmt.Errorf("failed to create PID manager: %w", err)
@@ -108,9 +103,7 @@ func StartCmd() *cobra.Command {
 
 // runInForeground runs the server in the foreground
 func runInForeground(cfg *config.Config, pidManager *process.PIDManager, configPath string) error {
-	fmt.Println("[DEBUG] Running in foreground mode...")
 	// Acquire lock
-	fmt.Println("[DEBUG] Acquiring PID lock...")
 	if err := pidManager.AcquireLock(); err != nil {
 		return fmt.Errorf("failed to acquire lock: %w", err)
 	}
@@ -120,15 +113,12 @@ func runInForeground(cfg *config.Config, pidManager *process.PIDManager, configP
 	utils.LogStartup(cfg.Port, version)
 	
 	// Create and start server
-	fmt.Printf("[DEBUG] Creating server on %s:%d...\n", cfg.Host, cfg.Port)
 	srv, err := server.NewWithPath(cfg, configPath)
 	if err != nil {
 		return fmt.Errorf("failed to create server: %w", err)
 	}
-	fmt.Println("[DEBUG] Server created successfully")
 	
 	// Run server (blocks until shutdown)
-	fmt.Println("[DEBUG] Starting server...")
 	if err := srv.Run(); err != nil {
 		return fmt.Errorf("server error: %w", err)
 	}
