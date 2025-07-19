@@ -41,3 +41,6 @@ go.work.sum
 
 # Dependency directories
 vendor/
+
+# User config
+config.json
