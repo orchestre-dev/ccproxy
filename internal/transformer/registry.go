@@ -31,13 +31,33 @@ func RegisterBuiltinTransformers(service *Service) error {
 		return err
 	}
 	
-	// TODO: Register other built-in transformers as they are implemented
-	// service.Register(NewDeepseekTransformer())
-	// service.Register(NewGeminiTransformer())
-	// service.Register(NewOpenRouterTransformer())
-	// service.Register(NewToolUseTransformer())
+	// Register DeepSeek transformer
+	if err := service.Register(NewDeepSeekTransformer()); err != nil {
+		return err
+	}
+	
+	// Register Gemini transformer
+	if err := service.Register(NewGeminiTransformer()); err != nil {
+		return err
+	}
+	
+	// Register OpenRouter transformer
+	if err := service.Register(NewOpenRouterTransformer()); err != nil {
+		return err
+	}
+	
+	// Register ToolUse transformer
+	if err := service.Register(NewToolUseTransformer()); err != nil {
+		return err
+	}
+	
+	// Register OpenAI transformer
+	if err := service.Register(NewOpenAITransformer()); err != nil {
+		return err
+	}
+	
+	// TODO: Register MaxToken transformer when implemented
 	// service.Register(NewMaxTokenTransformer())
-	// service.Register(NewOpenAITransformer())
 	
 	return nil
 }
