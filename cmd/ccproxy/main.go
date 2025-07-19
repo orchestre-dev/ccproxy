@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/musistudio/ccproxy/cmd/ccproxy/commands"
 )
 
 var (
@@ -26,17 +27,15 @@ func init() {
 	// Disable default completion command
 	rootCmd.CompletionOptions.DisableDefaultCmd = true
 	
-	// Add version command
-	versionCmd := &cobra.Command{
-		Use:   "version",
-		Short: "Print the version information",
-		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Printf("ccproxy version %s\n", Version)
-			fmt.Printf("Build Time: %s\n", BuildTime)
-			fmt.Printf("Commit: %s\n", Commit)
-		},
-	}
-	rootCmd.AddCommand(versionCmd)
+	// Set version info for commands to use
+	commands.SetVersionInfo(Version, BuildTime, Commit)
+	
+	// Add commands
+	rootCmd.AddCommand(commands.StartCmd())
+	rootCmd.AddCommand(commands.StopCmd())
+	rootCmd.AddCommand(commands.StatusCmd())
+	rootCmd.AddCommand(commands.CodeCmd())
+	rootCmd.AddCommand(commands.VersionCmd())
 }
 
 func main() {
