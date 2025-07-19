@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/musistudio/ccproxy/internal/config"
+	"github.com/musistudio/ccproxy/internal/converter"
 	"github.com/musistudio/ccproxy/internal/providers"
 	"github.com/musistudio/ccproxy/internal/proxy"
 	"github.com/musistudio/ccproxy/internal/router"
@@ -27,6 +28,7 @@ type Pipeline struct {
 	router             *router.Router
 	httpClient         *http.Client
 	streamingProcessor *StreamingProcessor
+	messageConverter   *converter.MessageConverter
 }
 
 // NewPipeline creates a new request processing pipeline
@@ -75,6 +77,7 @@ func NewPipeline(
 		router:             router,
 		httpClient:         httpClient,
 		streamingProcessor: NewStreamingProcessor(transformerService),
+		messageConverter:   converter.NewMessageConverter(),
 	}
 }
 

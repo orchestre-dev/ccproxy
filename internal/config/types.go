@@ -26,6 +26,7 @@ type Provider struct {
 	Transformers []TransformerConfig  `json:"transformers" mapstructure:"transformers"`
 	CreatedAt    time.Time            `json:"created_at" mapstructure:"created_at"`
 	UpdatedAt    time.Time            `json:"updated_at" mapstructure:"updated_at"`
+	MessageFormat string              `json:"message_format,omitempty" mapstructure:"message_format"` // Message format used by provider
 }
 
 // Route represents a routing configuration
