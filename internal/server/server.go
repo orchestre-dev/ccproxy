@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"runtime"
 	"strings"
 	"sync/atomic"
 	"syscall"
@@ -39,6 +40,13 @@ func New(cfg *config.Config) (*Server, error) {
 
 // NewWithPath creates a new server instance with a specific config path
 func NewWithPath(cfg *config.Config, configPath string) (*Server, error) {
+	fmt.Println("[DEBUG] Server.NewWithPath called")
+	
+	// Add safety check for runaway initialization
+	if runtime.NumGoroutine() > 100 {
+		return nil, fmt.Errorf("safety check failed: too many goroutines (%d) at startup", runtime.NumGoroutine())
+	}
+	
 	// Set Gin mode based on environment
 	if os.Getenv("GIN_MODE") == "" {
 		gin.SetMode(gin.ReleaseMode)
@@ -55,24 +63,31 @@ func NewWithPath(cfg *config.Config, configPath string) (*Server, error) {
 	configService.SetConfig(cfg)
 	
 	// Create provider service
+	fmt.Printf("[DEBUG] Creating provider service with %d providers...\n", len(cfg.Providers))
 	providerService := providers.NewService(configService)
 	if err := providerService.Initialize(); err != nil {
 		return nil, fmt.Errorf("failed to initialize provider service: %w", err)
 	}
+	fmt.Println("[DEBUG] Provider service initialized")
 	
 	// Start health checks with 5 minute interval to reduce system load
-	providerService.StartHealthChecks(5 * time.Minute)
+	// Temporarily disabled to debug system freeze issue
+	// providerService.StartHealthChecks(5 * time.Minute)
+	utils.GetLogger().Warn("Health checks disabled for safety")
 	
 	// Create transformer service
 	transformerService := transformer.GetRegistry()
 	
 	// Create routing engine
+	fmt.Println("[DEBUG] Creating routing engine...")
 	routingEngine := modelrouter.New(cfg)
 	
 	// Create pipeline
+	fmt.Println("[DEBUG] Creating pipeline...")
 	pipelineService := pipeline.NewPipeline(cfg, providerService, transformerService, routingEngine)
 	
 	// Create router
+	fmt.Println("[DEBUG] Creating Gin router...")
 	router := gin.New()
 	
 	// Add middleware
@@ -85,8 +100,8 @@ func NewWithPath(cfg *config.Config, configPath string) (*Server, error) {
 	// Add authentication middleware
 	router.Use(authMiddleware(cfg.APIKey, true))
 	
-	// Add router middleware for intelligent model routing
-	router.Use(modelrouter.RouterMiddleware(cfg))
+	// Add router middleware for intelligent model routing - disabled for safety
+	// router.Use(modelrouter.RouterMiddleware(cfg))
 	
 	// Create server
 	s := &Server{
@@ -107,13 +122,20 @@ func NewWithPath(cfg *config.Config, configPath string) (*Server, error) {
 	}
 	
 	// Setup routes
+	fmt.Println("[DEBUG] Setting up routes...")
 	s.setupRoutes()
 	
+	fmt.Println("[DEBUG] Server initialization complete")
 	return s, nil
 }
 
 // Run starts the server and blocks until shutdown
 func (s *Server) Run() error {
+	// Add runtime safety check
+	if runtime.NumGoroutine() > 200 {
+		return fmt.Errorf("safety check failed: too many goroutines (%d) before server start", runtime.NumGoroutine())
+	}
+	
 	// Setup graceful shutdown
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
