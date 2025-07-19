@@ -1,95 +1,22 @@
 {
   "host": "127.0.0.1",
   "port": 3456,
-  "log": true,
-  "log_file": "ccproxy.log",
-  "apikey": "",
+  "log": false,
+  "api_key": "",
   "providers": [
     {
-      "name": "openai",
-      "api_base_url": "https://api.openai.com/v1",
-      "api_key": "your-openai-api-key",
-      "models": ["gpt-4", "gpt-3.5-turbo"],
-      "enabled": true,
-      "transformers": []
-    },
-    {
       "name": "anthropic",
-      "api_base_url": "https://api.anthropic.com/v1",
-      "api_key": "your-anthropic-api-key",
-      "models": ["claude-3-sonnet-20240229", "claude-3-haiku-20240307"],
-      "enabled": true,
-      "transformers": [
-        {
-          "name": "anthropic"
-        }
-      ]
-    },
-    {
-      "name": "gemini",
-      "api_base_url": "https://generativelanguage.googleapis.com/v1beta",
-      "api_key": "your-gemini-api-key",
-      "models": ["gemini-1.5-pro-latest", "gemini-1.5-flash-latest"],
-      "enabled": true,
-      "transformers": [
-        {
-          "name": "gemini"
-        }
-      ]
-    },
-    {
-      "name": "deepseek",
-      "api_base_url": "https://api.deepseek.com/v1",
-      "api_key": "your-deepseek-api-key",
-      "models": ["deepseek-chat", "deepseek-reasoner"],
-      "enabled": true,
-      "transformers": [
-        {
-          "name": "deepseek",
-          "config": {
-            "maxTokens": 8192
-          }
-        }
-      ]
+      "api_base_url": "https://api.anthropic.com",
+      "api_key": "YOUR_ANTHROPIC_API_KEY",
+      "models": ["claude-3-5-sonnet-20241022", "claude-3-5-haiku-20241022"],
+      "enabled": true
     }
   ],
   "routes": {
     "default": {
-      "provider": "openai",
-      "model": "gpt-4"
-    },
-    "longContext": {
       "provider": "anthropic",
-      "model": "claude-3-sonnet-20240229",
-      "conditions": [
-        {
-          "type": "tokenCount",
-          "operator": ">",
-          "value": 60000
-        }
-      ]
-    },
-    "background": {
-      "provider": "anthropic",
-      "model": "claude-3-haiku-20240307",
-      "conditions": [
-        {
-          "type": "model",
-          "operator": "contains",
-          "value": "haiku"
-        }
-      ]
-    },
-    "think": {
-      "provider": "deepseek",
-      "model": "deepseek-reasoner",
-      "conditions": [
-        {
-          "type": "parameter",
-          "operator": "==",
-          "value": "thinking"
-        }
-      ]
+      "model": "claude-3-5-sonnet-20241022"
     }
   }
 }
+EOF < /dev/null
