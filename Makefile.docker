@@ -1,0 +1,99 @@
+# Docker-specific Makefile targets
+
+# Variables
+DOCKER_IMAGE ?= ccproxy
+DOCKER_TAG ?= latest
+DOCKER_REGISTRY ?= 
+PLATFORMS ?= linux/amd64,linux/arm64
+
+# Build targets
+.PHONY: docker-build
+docker-build: ## Build Docker image for current platform
+	docker build -t $(DOCKER_IMAGE):$(DOCKER_TAG) .
+
+.PHONY: docker-build-multiarch
+docker-build-multiarch: ## Build multi-architecture Docker image
+	docker buildx build \
+		--platform $(PLATFORMS) \
+		--tag $(DOCKER_IMAGE):$(DOCKER_TAG) \
+		--file Dockerfile.multiarch \
+		.
+
+.PHONY: docker-push
+docker-push: ## Push Docker image to registry
+	docker buildx build \
+		--platform $(PLATFORMS) \
+		--tag $(DOCKER_REGISTRY)$(DOCKER_IMAGE):$(DOCKER_TAG) \
+		--tag $(DOCKER_REGISTRY)$(DOCKER_IMAGE):latest \
+		--file Dockerfile.multiarch \
+		--push \
+		.
+
+.PHONY: docker-run
+docker-run: ## Run Docker container
+	docker run -d \
+		--name ccproxy \
+		-p 3456:3456 \
+		-e CCPROXY_API_KEY=test-key \
+		$(DOCKER_IMAGE):$(DOCKER_TAG)
+
+.PHONY: docker-run-dev
+docker-run-dev: ## Run development container with hot reload
+	docker-compose -f docker-compose.dev.yml up
+
+.PHONY: docker-stop
+docker-stop: ## Stop and remove Docker container
+	docker stop ccproxy || true
+	docker rm ccproxy || true
+
+.PHONY: docker-logs
+docker-logs: ## Show Docker container logs
+	docker logs -f ccproxy
+
+.PHONY: docker-shell
+docker-shell: ## Open shell in Docker container
+	docker exec -it ccproxy sh
+
+.PHONY: docker-compose-up
+docker-compose-up: ## Start services with docker-compose
+	docker-compose up -d
+
+.PHONY: docker-compose-down
+docker-compose-down: ## Stop services with docker-compose
+	docker-compose down
+
+.PHONY: docker-compose-logs
+docker-compose-logs: ## Show docker-compose logs
+	docker-compose logs -f
+
+.PHONY: docker-compose-monitoring
+docker-compose-monitoring: ## Start with monitoring stack
+	docker-compose --profile monitoring up -d
+
+.PHONY: docker-clean
+docker-clean: ## Clean up Docker resources
+	docker-compose down -v
+	docker rmi $(DOCKER_IMAGE):$(DOCKER_TAG) || true
+
+.PHONY: docker-test
+docker-test: ## Run tests in Docker container
+	docker run --rm \
+		-v $(PWD):/app \
+		-w /app \
+		golang:1.24-alpine \
+		go test -v ./...
+
+.PHONY: docker-lint
+docker-lint: ## Run linter in Docker container
+	docker run --rm \
+		-v $(PWD):/app \
+		-w /app \
+		golangci/golangci-lint:latest \
+		golangci-lint run
+
+# Help target
+.PHONY: help
+help: ## Display this help
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+
+.DEFAULT_GOAL := help

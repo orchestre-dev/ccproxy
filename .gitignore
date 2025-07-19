@@ -44,3 +44,12 @@ vendor/
 
 # User config
 config.json
+
+# Docker
+.env
+docker-compose.override.yml
+docker-compose.local.yml
+
+# Kubernetes secrets
+k8s/secrets.yaml
+helm/ccproxy/values.local.yaml

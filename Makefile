@@ -79,3 +79,6 @@ test-integration-coverage:
 	go test ./tests/integration/... -coverprofile=integration_coverage.out -v
 	go tool cover -html=integration_coverage.out -o integration_coverage.html
 	@echo "Coverage report generated: integration_coverage.html"
+
+# Docker targets
+include Makefile.docker

@@ -1,0 +1,71 @@
+# Multi-architecture Dockerfile
+FROM --platform=$BUILDPLATFORM golang:1.24-alpine AS builder
+
+# Build arguments
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
+ARG TARGETOS
+ARG TARGETARCH
+
+# Install build dependencies
+RUN apk add --no-cache git make
+
+# Set working directory
+WORKDIR /build
+
+# Copy go mod files
+COPY go.mod go.sum ./
+
+# Download dependencies
+RUN go mod download
+
+# Copy source code
+COPY . .
+
+# Build the binary for target platform
+RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} \
+    go build -ldflags="-w -s -X main.version=$(git describe --tags --always --dirty) -X main.buildTime=$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+    -o ccproxy ./cmd/ccproxy
+
+# Runtime stage
+FROM --platform=$TARGETPLATFORM alpine:latest
+
+# Install ca-certificates
+RUN apk --no-cache add ca-certificates tzdata
+
+# Create non-root user
+RUN addgroup -g 1000 -S ccproxy && \
+    adduser -u 1000 -S ccproxy -G ccproxy
+
+# Create necessary directories
+RUN mkdir -p /home/ccproxy/.ccproxy && \
+    chown -R ccproxy:ccproxy /home/ccproxy
+
+# Copy binary from builder
+COPY --from=builder /build/ccproxy /usr/local/bin/ccproxy
+
+# Copy default config
+COPY --chown=ccproxy:ccproxy example.config.json /home/ccproxy/.ccproxy/config.example.json
+
+# Set user
+USER ccproxy
+
+# Set working directory
+WORKDIR /home/ccproxy
+
+# Expose default port
+EXPOSE 3456
+
+# Labels
+LABEL org.opencontainers.image.title="CCProxy"
+LABEL org.opencontainers.image.description="Claude Code Proxy - LLM Gateway"
+LABEL org.opencontainers.image.vendor="CCProxy"
+LABEL org.opencontainers.image.source="https://github.com/yourusername/ccproxy"
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD ccproxy status || exit 1
+
+# Default command
+ENTRYPOINT ["ccproxy"]
+CMD ["start", "--foreground"]

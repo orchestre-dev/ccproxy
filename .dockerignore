@@ -1,0 +1,49 @@
+# Git files
+.git
+.gitignore
+
+# Build artifacts
+ccproxy
+dist/
+build/
+
+# Test files
+*_test.go
+tests/
+coverage.out
+coverage.html
+*.test
+
+# Documentation
+docs/
+*.md
+
+# Development files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Temporary files
+tmp/
+temp/
+.temp/
+*.tmp
+*.log
+
+# Configuration files (except examples)
+*.json
+!example.config.json
+!claude.json.example
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+
+# Docker files
+Dockerfile*
+docker-compose*
+.dockerignore
