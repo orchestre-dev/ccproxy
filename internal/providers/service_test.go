@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/musistudio/ccproxy/internal/config"
+	"github.com/orchestre-dev/ccproxy/internal/config"
 )
 
 func TestService_Initialize(t *testing.T) {

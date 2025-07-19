@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/musistudio/ccproxy/internal/utils"
+	"github.com/orchestre-dev/ccproxy/internal/utils"
 )
 
 // ReferenceCounter manages reference counting for Claude Code instances

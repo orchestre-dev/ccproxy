@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/musistudio/ccproxy/internal/proxy"
+	"github.com/orchestre-dev/ccproxy/internal/proxy"
 )
 
 func ExampleCreateHTTPClient() {

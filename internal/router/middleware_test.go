@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
-	"github.com/musistudio/ccproxy/internal/config"
+	"github.com/orchestre-dev/ccproxy/internal/config"
 )
 
 func TestRouterMiddleware(t *testing.T) {

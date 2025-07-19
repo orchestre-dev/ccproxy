@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"encoding/json"
 
-	"github.com/musistudio/ccproxy/internal/config"
-	"github.com/musistudio/ccproxy/internal/server"
+	"github.com/orchestre-dev/ccproxy/internal/config"
+	"github.com/orchestre-dev/ccproxy/internal/server"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

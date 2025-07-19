@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/musistudio/ccproxy/internal/config"
+	"github.com/orchestre-dev/ccproxy/internal/config"
 )
 
 // Registry maintains a global registry of provider clients

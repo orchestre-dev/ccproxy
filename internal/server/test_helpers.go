@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/musistudio/ccproxy/internal/config"
+	"github.com/orchestre-dev/ccproxy/internal/config"
 )
 
 // createTestServerWithProvider creates a server with a test provider configured

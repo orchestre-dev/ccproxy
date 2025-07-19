@@ -9,8 +9,14 @@ node_modules/
 build/
 dist/
 coverage/
-tmp/
+.tmp/
 temp/
+tmp/
+build/
+builds/
+builds/
+builds/
+.temp/
 logs/
 *.log
 .DS_Store

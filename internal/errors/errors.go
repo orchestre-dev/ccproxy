@@ -399,3 +399,45 @@ func GetRetryAfter(err error) *time.Duration {
 	}
 	return nil
 }
+
+// Security-specific error constructors
+
+// NewAuthError creates an authentication error
+func NewAuthError(message string, cause error) *CCProxyError {
+	if cause != nil {
+		return Wrap(cause, ErrorTypeUnauthorized, message)
+	}
+	return New(ErrorTypeUnauthorized, message)
+}
+
+// NewValidationError creates a validation error
+func NewValidationError(message string, cause error) *CCProxyError {
+	if cause != nil {
+		return Wrap(cause, ErrorTypeValidationError, message)
+	}
+	return New(ErrorTypeValidationError, message)
+}
+
+// NewRateLimitError creates a rate limit error
+func NewRateLimitError(message string, cause error) *CCProxyError {
+	if cause != nil {
+		return Wrap(cause, ErrorTypeRateLimitError, message)
+	}
+	return New(ErrorTypeRateLimitError, message)
+}
+
+// NewForbiddenError creates a forbidden error
+func NewForbiddenError(message string, cause error) *CCProxyError {
+	if cause != nil {
+		return Wrap(cause, ErrorTypeForbidden, message)
+	}
+	return New(ErrorTypeForbidden, message)
+}
+
+// NewNotFoundError creates a not found error
+func NewNotFoundError(message string, cause error) *CCProxyError {
+	if cause != nil {
+		return Wrap(cause, ErrorTypeNotFound, message)
+	}
+	return New(ErrorTypeNotFound, message)
+}

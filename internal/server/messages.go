@@ -7,8 +7,8 @@ import (
 	"sync/atomic"
 
 	"github.com/gin-gonic/gin"
-	"github.com/musistudio/ccproxy/internal/pipeline"
-	"github.com/musistudio/ccproxy/internal/utils"
+	"github.com/orchestre-dev/ccproxy/internal/pipeline"
+	"github.com/orchestre-dev/ccproxy/internal/utils"
 )
 
 // Message request structure (Anthropic format)

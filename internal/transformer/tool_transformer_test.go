@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/musistudio/ccproxy/internal/config"
+	"github.com/orchestre-dev/ccproxy/internal/config"
 )
 
 func TestToolTransformer_TransformRequest(t *testing.T) {

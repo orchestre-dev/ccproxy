@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/musistudio/ccproxy/internal/transformer"
-	"github.com/musistudio/ccproxy/internal/utils"
+	"github.com/orchestre-dev/ccproxy/internal/transformer"
+	"github.com/orchestre-dev/ccproxy/internal/utils"
 )
 
 // StreamingProcessor handles streaming response processing

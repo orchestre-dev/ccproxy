@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/musistudio/ccproxy/internal/utils"
+	"github.com/orchestre-dev/ccproxy/internal/utils"
 )
 
 // Config represents proxy configuration

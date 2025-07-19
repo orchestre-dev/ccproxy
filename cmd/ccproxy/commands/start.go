@@ -7,11 +7,11 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
-	"github.com/musistudio/ccproxy/internal/claudeconfig"
-	"github.com/musistudio/ccproxy/internal/config"
-	"github.com/musistudio/ccproxy/internal/process"
-	"github.com/musistudio/ccproxy/internal/server"
-	"github.com/musistudio/ccproxy/internal/utils"
+	"github.com/orchestre-dev/ccproxy/internal/claudeconfig"
+	"github.com/orchestre-dev/ccproxy/internal/config"
+	"github.com/orchestre-dev/ccproxy/internal/process"
+	"github.com/orchestre-dev/ccproxy/internal/server"
+	"github.com/orchestre-dev/ccproxy/internal/utils"
 )
 
 // StartCmd returns the start command

@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/musistudio/ccproxy/internal/config"
+	"github.com/orchestre-dev/ccproxy/internal/config"
 )
 
 func TestRouter_Route(t *testing.T) {

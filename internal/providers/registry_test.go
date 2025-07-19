@@ -3,7 +3,7 @@ package providers
 import (
 	"testing"
 
-	"github.com/musistudio/ccproxy/internal/config"
+	"github.com/orchestre-dev/ccproxy/internal/config"
 )
 
 // MockProvider for testing

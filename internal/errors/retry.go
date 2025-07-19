@@ -6,7 +6,7 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/musistudio/ccproxy/internal/utils"
+	"github.com/orchestre-dev/ccproxy/internal/utils"
 )
 
 // RetryConfig defines retry behavior

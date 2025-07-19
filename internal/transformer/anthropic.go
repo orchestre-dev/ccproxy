@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/musistudio/ccproxy/internal/utils"
+	"github.com/orchestre-dev/ccproxy/internal/utils"
 )
 
 // AnthropicTransformer converts between OpenAI and Anthropic message formats

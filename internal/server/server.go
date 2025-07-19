@@ -13,14 +13,14 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/musistudio/ccproxy/internal/config"
-	"github.com/musistudio/ccproxy/internal/performance"
-	"github.com/musistudio/ccproxy/internal/pipeline"
-	"github.com/musistudio/ccproxy/internal/providers"
-	modelrouter "github.com/musistudio/ccproxy/internal/router"
-	"github.com/musistudio/ccproxy/internal/state"
-	"github.com/musistudio/ccproxy/internal/transformer"
-	"github.com/musistudio/ccproxy/internal/utils"
+	"github.com/orchestre-dev/ccproxy/internal/config"
+	"github.com/orchestre-dev/ccproxy/internal/performance"
+	"github.com/orchestre-dev/ccproxy/internal/pipeline"
+	"github.com/orchestre-dev/ccproxy/internal/providers"
+	modelrouter "github.com/orchestre-dev/ccproxy/internal/router"
+	"github.com/orchestre-dev/ccproxy/internal/state"
+	"github.com/orchestre-dev/ccproxy/internal/transformer"
+	"github.com/orchestre-dev/ccproxy/internal/utils"
 )
 
 // Server represents the CCProxy HTTP server

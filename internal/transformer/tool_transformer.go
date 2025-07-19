@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/musistudio/ccproxy/internal/config"
-	"github.com/musistudio/ccproxy/internal/tools"
+	"github.com/orchestre-dev/ccproxy/internal/config"
+	"github.com/orchestre-dev/ccproxy/internal/tools"
 )
 
 // ToolTransformer handles tool-related transformations

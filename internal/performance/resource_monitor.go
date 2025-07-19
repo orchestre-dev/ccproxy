@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/musistudio/ccproxy/internal/errors"
+	"github.com/orchestre-dev/ccproxy/internal/errors"
 )
 
 // ResourceMonitor monitors system resource usage

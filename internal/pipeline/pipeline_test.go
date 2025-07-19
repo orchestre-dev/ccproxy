@@ -12,11 +12,11 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/musistudio/ccproxy/internal/config"
-	"github.com/musistudio/ccproxy/internal/errors"
-	"github.com/musistudio/ccproxy/internal/providers"
-	"github.com/musistudio/ccproxy/internal/transformer"
-	"github.com/musistudio/ccproxy/internal/utils"
+	"github.com/orchestre-dev/ccproxy/internal/config"
+	"github.com/orchestre-dev/ccproxy/internal/errors"
+	"github.com/orchestre-dev/ccproxy/internal/providers"
+	"github.com/orchestre-dev/ccproxy/internal/transformer"
+	"github.com/orchestre-dev/ccproxy/internal/utils"
 )
 
 // Mock provider service

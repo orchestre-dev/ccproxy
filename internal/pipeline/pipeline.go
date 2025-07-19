@@ -11,13 +11,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/musistudio/ccproxy/internal/config"
-	"github.com/musistudio/ccproxy/internal/converter"
-	"github.com/musistudio/ccproxy/internal/providers"
-	"github.com/musistudio/ccproxy/internal/proxy"
-	"github.com/musistudio/ccproxy/internal/router"
-	"github.com/musistudio/ccproxy/internal/transformer"
-	"github.com/musistudio/ccproxy/internal/utils"
+	"github.com/orchestre-dev/ccproxy/internal/config"
+	"github.com/orchestre-dev/ccproxy/internal/converter"
+	"github.com/orchestre-dev/ccproxy/internal/providers"
+	"github.com/orchestre-dev/ccproxy/internal/proxy"
+	"github.com/orchestre-dev/ccproxy/internal/router"
+	"github.com/orchestre-dev/ccproxy/internal/transformer"
+	"github.com/orchestre-dev/ccproxy/internal/utils"
 )
 
 // Pipeline handles the complete request processing flow

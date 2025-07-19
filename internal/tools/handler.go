@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/musistudio/ccproxy/internal/utils"
+	"github.com/orchestre-dev/ccproxy/internal/utils"
 	"github.com/sirupsen/logrus"
 )
 

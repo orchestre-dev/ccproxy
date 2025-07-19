@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"github.com/musistudio/ccproxy/internal/process"
+	"github.com/orchestre-dev/ccproxy/internal/process"
 )
 
 // StopCmd returns the stop command

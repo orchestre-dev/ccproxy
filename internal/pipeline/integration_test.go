@@ -9,10 +9,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/musistudio/ccproxy/internal/config"
-	"github.com/musistudio/ccproxy/internal/providers"
-	"github.com/musistudio/ccproxy/internal/router"
-	"github.com/musistudio/ccproxy/internal/transformer"
+	"github.com/orchestre-dev/ccproxy/internal/config"
+	"github.com/orchestre-dev/ccproxy/internal/providers"
+	"github.com/orchestre-dev/ccproxy/internal/router"
+	"github.com/orchestre-dev/ccproxy/internal/transformer"
 )
 
 func TestPipeline_StreamingIntegration(t *testing.T) {

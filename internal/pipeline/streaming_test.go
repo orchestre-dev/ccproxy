@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/musistudio/ccproxy/internal/transformer"
+	"github.com/orchestre-dev/ccproxy/internal/transformer"
 )
 
 func TestStreamingProcessor_ProcessStreamingResponse(t *testing.T) {

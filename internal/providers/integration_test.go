@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/musistudio/ccproxy/internal/config"
-	"github.com/musistudio/ccproxy/internal/server"
+	"github.com/orchestre-dev/ccproxy/internal/config"
+	"github.com/orchestre-dev/ccproxy/internal/server"
 )
 
 func TestProviderServiceIntegration(t *testing.T) {

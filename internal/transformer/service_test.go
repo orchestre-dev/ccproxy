@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/musistudio/ccproxy/internal/config"
+	"github.com/orchestre-dev/ccproxy/internal/config"
 )
 
 func TestService_Register(t *testing.T) {

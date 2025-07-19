@@ -7,9 +7,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/musistudio/ccproxy/internal/config"
-	"github.com/musistudio/ccproxy/internal/proxy"
-	"github.com/musistudio/ccproxy/internal/utils"
+	"github.com/orchestre-dev/ccproxy/internal/config"
+	"github.com/orchestre-dev/ccproxy/internal/proxy"
+	"github.com/orchestre-dev/ccproxy/internal/utils"
 )
 
 // HealthStatus represents the health status of a provider

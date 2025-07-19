@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/musistudio/ccproxy/internal/errors"
+	"github.com/orchestre-dev/ccproxy/internal/errors"
 )
 
 // Converter interface defines methods for converting between message formats

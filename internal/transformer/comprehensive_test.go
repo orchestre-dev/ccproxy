@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/musistudio/ccproxy/internal/config"
+	"github.com/orchestre-dev/ccproxy/internal/config"
 )
 
 // TestComprehensiveTransformerSystem tests all aspects of the transformer system
