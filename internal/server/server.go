@@ -11,6 +11,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/musistudio/ccproxy/internal/config"
+	modelrouter "github.com/musistudio/ccproxy/internal/router"
 	"github.com/musistudio/ccproxy/internal/utils"
 )
 
@@ -52,6 +53,9 @@ func NewWithPath(cfg *config.Config, configPath string) (*Server, error) {
 	
 	// Add authentication middleware
 	router.Use(authMiddleware(cfg.APIKey, true))
+	
+	// Add router middleware for intelligent model routing
+	router.Use(modelrouter.RouterMiddleware(cfg))
 	
 	// Create server
 	s := &Server{
