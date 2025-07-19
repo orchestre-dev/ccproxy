@@ -25,6 +25,7 @@ type Pipeline struct {
 	transformerService *transformer.Service
 	router             *router.Router
 	httpClient         *http.Client
+	streamingProcessor *StreamingProcessor
 }
 
 // NewPipeline creates a new request processing pipeline
@@ -49,6 +50,7 @@ func NewPipeline(
 		transformerService: transformerService,
 		router:             router,
 		httpClient:         httpClient,
+		streamingProcessor: NewStreamingProcessor(transformerService),
 	}
 }
 
@@ -214,7 +216,13 @@ func WriteErrorResponse(w http.ResponseWriter, statusCode int, err *ErrorRespons
 	json.NewEncoder(w).Encode(err)
 }
 
-// StreamResponse handles streaming responses
+// StreamResponse handles streaming responses with transformation support
+func (p *Pipeline) StreamResponse(ctx context.Context, w http.ResponseWriter, respCtx *ResponseContext) error {
+	// Use the streaming processor for enhanced streaming support
+	return p.streamingProcessor.ProcessStreamingResponse(ctx, w, respCtx.Response, respCtx.Provider)
+}
+
+// StreamResponse is a compatibility function for simple streaming
 func StreamResponse(w http.ResponseWriter, resp *http.Response) error {
 	// Set headers for SSE
 	w.Header().Set("Content-Type", "text/event-stream")

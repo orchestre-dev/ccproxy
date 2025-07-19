@@ -158,3 +158,10 @@ func (c *TransformerChain) TransformResponseOut(ctx context.Context, response *h
 	}
 	return result, nil
 }
+
+// TransformSSEEvent transforms an SSE event through the chain
+func (c *TransformerChain) TransformSSEEvent(ctx context.Context, event *SSEEvent, provider string) (*SSEEvent, error) {
+	// For now, just return the event as-is
+	// Individual transformers can override this if needed
+	return event, nil
+}

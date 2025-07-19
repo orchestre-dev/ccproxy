@@ -102,6 +102,20 @@ func (s *Service) CreateChainFromNames(names []string) (*TransformerChain, error
 	return chain, nil
 }
 
+// GetChainForProvider gets the transformer chain for a provider by name
+func (s *Service) GetChainForProvider(providerName string) (*TransformerChain, error) {
+	s.mu.RLock()
+	chainKey := fmt.Sprintf("provider:%s", providerName)
+	chain, exists := s.chains[chainKey]
+	s.mu.RUnlock()
+	
+	if exists {
+		return chain, nil
+	}
+	
+	return nil, fmt.Errorf("no transformer chain for provider: %s", providerName)
+}
+
 // GetOrCreateChain gets or creates a transformer chain for a provider
 func (s *Service) GetOrCreateChain(provider *config.Provider) (*TransformerChain, error) {
 	// First check if chain exists with read lock

@@ -93,9 +93,11 @@ func (s *Server) handleMessages(c *gin.Context) {
 
 	// Handle response based on streaming
 	if isStreaming {
-		// Stream the response
-		if err := pipeline.StreamResponse(c.Writer, respCtx.Response); err != nil {
+		// Stream the response with transformation support
+		if err := s.pipeline.StreamResponse(ctx, c.Writer, respCtx); err != nil {
 			utils.GetLogger().Errorf("Streaming failed: %v", err)
+			// Try to send error event if possible
+			pipeline.HandleStreamingError(c.Writer, err)
 		}
 	} else {
 		// Copy non-streaming response
