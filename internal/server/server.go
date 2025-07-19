@@ -11,8 +11,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/musistudio/ccproxy/internal/config"
+	"github.com/musistudio/ccproxy/internal/pipeline"
 	"github.com/musistudio/ccproxy/internal/providers"
 	modelrouter "github.com/musistudio/ccproxy/internal/router"
+	"github.com/musistudio/ccproxy/internal/transformer"
 	"github.com/musistudio/ccproxy/internal/utils"
 )
 
@@ -23,6 +25,7 @@ type Server struct {
 	router          *gin.Engine
 	server          *http.Server
 	providerService *providers.Service
+	pipeline        *pipeline.Pipeline
 }
 
 // New creates a new server instance
@@ -56,6 +59,15 @@ func NewWithPath(cfg *config.Config, configPath string) (*Server, error) {
 	// Start health checks with 30 second interval
 	providerService.StartHealthChecks(30 * time.Second)
 	
+	// Create transformer service
+	transformerService := transformer.GetRegistry()
+	
+	// Create routing engine
+	routingEngine := modelrouter.New(cfg)
+	
+	// Create pipeline
+	pipelineService := pipeline.NewPipeline(cfg, providerService, transformerService, routingEngine)
+	
 	// Create router
 	router := gin.New()
 	
@@ -78,6 +90,7 @@ func NewWithPath(cfg *config.Config, configPath string) (*Server, error) {
 		configPath:      configPath,
 		router:          router,
 		providerService: providerService,
+		pipeline:        pipelineService,
 		server: &http.Server{
 			Addr:    fmt.Sprintf("%s:%d", cfg.Host, cfg.Port),
 			Handler: router,

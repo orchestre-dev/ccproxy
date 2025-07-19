@@ -176,7 +176,7 @@ func (s *Service) ApplyResponseTransformation(ctx context.Context, provider *con
 
 // Response wraps http.Response for type safety
 type Response struct {
-	*http.Response
+	Response *http.Response
 }
 
 // ParseTransformerConfig parses transformer configuration from various formats

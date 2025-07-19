@@ -1,7 +1,12 @@
 package server
 
 import (
+	"context"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
+	"github.com/musistudio/ccproxy/internal/pipeline"
+	"github.com/musistudio/ccproxy/internal/utils"
 )
 
 // Message request structure (Anthropic format)
@@ -43,21 +48,81 @@ type Usage struct {
 
 // handleMessages processes the main Claude API endpoint
 func (s *Server) handleMessages(c *gin.Context) {
-	var req MessageRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
+	// Parse raw body for pipeline processing
+	var rawBody interface{}
+	if err := c.ShouldBindJSON(&rawBody); err != nil {
 		BadRequest(c, err.Error())
 		return
 	}
 
-	// TODO: Implement the full message processing pipeline:
-	// 1. Extract provider from model (provider,model format)
-	// 2. Count tokens for routing decision
-	// 3. Select appropriate model based on rules
-	// 4. Transform request to provider format
-	// 5. Call provider API
-	// 6. Transform response back to Anthropic format
-	// 7. Handle streaming if requested
+	// Check if streaming is requested
+	isStreaming := false
+	if bodyMap, ok := rawBody.(map[string]interface{}); ok {
+		if stream, ok := bodyMap["stream"].(bool); ok {
+			isStreaming = stream
+		}
+	}
 
-	// For now, return a not implemented response
-	NotImplemented(c, "Message processing pipeline not yet implemented. This will be implemented in Phase 7.17")
+	// Create request context
+	reqCtx := &pipeline.RequestContext{
+		Body:        rawBody,
+		Headers:     extractHeaders(c),
+		IsStreaming: isStreaming,
+		Metadata:    make(map[string]interface{}),
+	}
+
+	// Process through pipeline
+	ctx := context.Background()
+	respCtx, err := s.pipeline.ProcessRequest(ctx, reqCtx)
+	if err != nil {
+		utils.GetLogger().Errorf("Pipeline processing failed: %v", err)
+		
+		// Return appropriate error response
+		errResp := pipeline.NewErrorResponse(
+			err.Error(),
+			"api_error",
+			"pipeline_error",
+		)
+		pipeline.WriteErrorResponse(c.Writer, http.StatusInternalServerError, errResp)
+		return
+	}
+
+	// Log routing decision
+	utils.GetLogger().Infof("Routed to provider=%s, model=%s, tokens=%d, strategy=%s",
+		respCtx.Provider, respCtx.Model, respCtx.TokenCount, respCtx.RoutingStrategy)
+
+	// Handle response based on streaming
+	if isStreaming {
+		// Stream the response
+		if err := pipeline.StreamResponse(c.Writer, respCtx.Response); err != nil {
+			utils.GetLogger().Errorf("Streaming failed: %v", err)
+		}
+	} else {
+		// Copy non-streaming response
+		if err := pipeline.CopyResponse(c.Writer, respCtx.Response); err != nil {
+			utils.GetLogger().Errorf("Response copy failed: %v", err)
+		}
+	}
+}
+
+// extractHeaders extracts relevant headers from the request
+func extractHeaders(c *gin.Context) map[string]string {
+	headers := make(map[string]string)
+	
+	// Extract relevant headers
+	relevantHeaders := []string{
+		"Authorization",
+		"X-Api-Key",
+		"Content-Type",
+		"Accept",
+		"User-Agent",
+	}
+	
+	for _, header := range relevantHeaders {
+		if value := c.GetHeader(header); value != "" {
+			headers[header] = value
+		}
+	}
+	
+	return headers
 }
