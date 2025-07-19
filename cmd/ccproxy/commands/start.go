@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
+	"github.com/musistudio/ccproxy/internal/claudeconfig"
 	"github.com/musistudio/ccproxy/internal/config"
 	"github.com/musistudio/ccproxy/internal/process"
 	"github.com/musistudio/ccproxy/internal/server"
@@ -42,6 +43,18 @@ func StartCmd() *cobra.Command {
 				Format:   "json",
 			}); err != nil {
 				return fmt.Errorf("failed to initialize logger: %w", err)
+			}
+			
+			// Initialize Claude configuration
+			claudeManager, err := claudeconfig.NewManager()
+			if err != nil {
+				utils.GetLogger().Warnf("Failed to create Claude config manager: %v", err)
+			} else {
+				if err := claudeManager.Initialize(); err != nil {
+					utils.GetLogger().Warnf("Failed to initialize Claude config: %v", err)
+				} else {
+					utils.GetLogger().Info("Claude configuration initialized successfully")
+				}
 			}
 			
 			// Create PID manager
