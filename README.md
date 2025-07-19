@@ -1,6 +1,6 @@
-# CCProxy - Multi-Provider AI Proxy Server
+# CCProxy
 
-A production-grade Golang proxy server that enables the use of multiple AI providers (Groq, OpenRouter, OpenAI, and more) with Claude Code by translating between Anthropic and provider-specific API formats.
+CCProxy is a Go-based proxy server that acts as an intelligent intermediary between Claude Code and various Large Language Model (LLM) providers.
 
 ## 🌟 Features
 
