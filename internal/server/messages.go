@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"net/http"
+	"sync/atomic"
 
 	"github.com/gin-gonic/gin"
 	"github.com/musistudio/ccproxy/internal/pipeline"
@@ -48,6 +49,9 @@ type Usage struct {
 
 // handleMessages processes the main Claude API endpoint
 func (s *Server) handleMessages(c *gin.Context) {
+	// Increment request counter
+	atomic.AddInt64(&s.requestsServed, 1)
+	
 	// Parse raw body for pipeline processing
 	var rawBody interface{}
 	if err := c.ShouldBindJSON(&rawBody); err != nil {

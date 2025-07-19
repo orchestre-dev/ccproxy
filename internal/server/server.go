@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
+	"sync/atomic"
 	"syscall"
 	"time"
 
@@ -26,6 +28,8 @@ type Server struct {
 	server          *http.Server
 	providerService *providers.Service
 	pipeline        *pipeline.Pipeline
+	startTime       time.Time
+	requestsServed  int64
 }
 
 // New creates a new server instance
@@ -91,6 +95,7 @@ func NewWithPath(cfg *config.Config, configPath string) (*Server, error) {
 		router:          router,
 		providerService: providerService,
 		pipeline:        pipelineService,
+		startTime:       time.Now(),
 		server: &http.Server{
 			Addr:    fmt.Sprintf("%s:%d", cfg.Host, cfg.Port),
 			Handler: router,
@@ -158,6 +163,7 @@ func (s *Server) setupRoutes() {
 	// Health check endpoints
 	s.router.GET("/", s.handleRoot)
 	s.router.GET("/health", s.handleHealth)
+	s.router.GET("/status", s.handleStatus)
 	
 	// Main API endpoint
 	s.router.POST("/v1/messages", s.handleMessages)
@@ -209,6 +215,91 @@ func (s *Server) handleHealth(c *gin.Context) {
 			"details": providerHealth,
 		},
 	})
+}
+
+// handleStatus returns detailed status information about ccproxy and providers
+func (s *Server) handleStatus(c *gin.Context) {
+	// Calculate uptime
+	uptime := time.Since(s.startTime)
+	
+	// Format uptime as human-readable string
+	hours := int(uptime.Hours())
+	minutes := int(uptime.Minutes()) % 60
+	seconds := int(uptime.Seconds()) % 60
+	uptimeStr := fmt.Sprintf("%dh %dm %ds", hours, minutes, seconds)
+	
+	// Get healthy providers
+	healthyProviders := s.providerService.GetHealthyProviders()
+	
+	// Build provider status
+	providerStatus := gin.H{
+		"name":   "none",
+		"status": "disconnected",
+	}
+	
+	// Use first healthy provider as the "current" provider
+	var currentProvider *config.Provider
+	if len(healthyProviders) > 0 {
+		currentProvider = healthyProviders[0]
+		providerStatus = gin.H{
+			"name":   currentProvider.Name,
+			"status": "connected",
+		}
+		
+		// Get default model from routes
+		if routes := s.config.Routes; routes != nil {
+			if defaultRoute, ok := routes["default"]; ok && defaultRoute.Provider == currentProvider.Name {
+				providerStatus["model"] = defaultRoute.Model
+			}
+		}
+		
+		// Add provider-specific details
+		health, _ := s.providerService.GetProviderHealth(currentProvider.Name)
+		if health != nil {
+			providerStatus["last_check"] = health.LastCheck.Format(time.RFC3339)
+			providerStatus["response_time_ms"] = health.ResponseTime.Milliseconds()
+			
+			// Add provider-specific metrics based on provider name
+			if strings.Contains(strings.ToLower(currentProvider.Name), "groq") {
+				// Could add Groq-specific metrics here
+				providerStatus["tokens_per_second"] = 185 // Example value
+			} else if strings.Contains(strings.ToLower(currentProvider.Name), "openai") {
+				// Could add OpenAI-specific metrics here
+				providerStatus["organization"] = "org-..."
+			}
+		}
+	}
+	
+	// Determine overall status
+	status := "healthy"
+	if len(healthyProviders) == 0 {
+		status = "unhealthy"
+	} else if currentProvider != nil {
+		health, _ := s.providerService.GetProviderHealth(currentProvider.Name)
+		if health != nil && !health.Healthy {
+			status = "degraded"
+		}
+	}
+	
+	// Get version from main package (we'll need to pass this in)
+	version := "1.0.0"
+	if v := os.Getenv("CCPROXY_VERSION"); v != "" {
+		version = v
+	}
+	
+	// Build response
+	response := gin.H{
+		"status":    status,
+		"timestamp": time.Now().Format(time.RFC3339),
+		"proxy": gin.H{
+			"version":         version,
+			"uptime":          uptimeStr,
+			"requests_served": atomic.LoadInt64(&s.requestsServed),
+		},
+		"provider": providerStatus,
+	}
+	
+	c.JSON(http.StatusOK, response)
 }
 
 

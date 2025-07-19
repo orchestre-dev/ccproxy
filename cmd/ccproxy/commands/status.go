@@ -39,29 +39,29 @@ func StatusCmd() *cobra.Command {
 			configService.Load() // Ignore error, use defaults if fails
 			cfg := configService.Get()
 			
-			// Display status
-			fmt.Println("🤖 CCProxy Status")
-			fmt.Println("─────────────────")
+			// Display status with exact formatting from TypeScript version
+			fmt.Println("")
+			fmt.Println("📊 Claude Code Router Status")
+			fmt.Println("════════════════════════════════════════")
 			
 			if runningPID > 0 {
-				fmt.Println("📊 Status: ✅ Running")
-				fmt.Printf("🔢 PID: %d\n", runningPID)
+				fmt.Println("✅ Status: Running")
+				fmt.Printf("🆔 Process ID: %d\n", runningPID)
 				fmt.Printf("🌐 Port: %d\n", cfg.Port)
-				fmt.Printf("🔗 Endpoint: http://%s:%d\n", cfg.Host, cfg.Port)
+				fmt.Printf("📡 API Endpoint: http://%s:%d\n", cfg.Host, cfg.Port)
+				fmt.Printf("📄 PID File: %s\n", homeDir.PIDPath)
+				fmt.Println("")
+				fmt.Println("🚀 Ready to use! Run the following commands:")
+				fmt.Println("   ccproxy code    # Start coding with Claude")
+				fmt.Println("   ccproxy stop    # Stop the service")
 			} else {
-				fmt.Println("📊 Status: ❌ Not running")
+				fmt.Println("❌ Status: Not Running")
+				fmt.Println("")
+				fmt.Println("💡 To start the service:")
+				fmt.Println("   ccproxy start")
 			}
 			
-			fmt.Printf("📂 PID File: %s\n", homeDir.PIDPath)
-			
-			// Show available commands based on status
-			fmt.Println("\n💡 Available Commands:")
-			if runningPID > 0 {
-				fmt.Println("   • ccproxy stop    - Stop the service")
-				fmt.Println("   • ccproxy code    - Run Claude Code")
-			} else {
-				fmt.Println("   • ccproxy start   - Start the service")
-			}
+			fmt.Println("")
 			
 			return nil
 		},
