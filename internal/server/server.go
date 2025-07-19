@@ -11,16 +11,18 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/musistudio/ccproxy/internal/config"
+	"github.com/musistudio/ccproxy/internal/providers"
 	modelrouter "github.com/musistudio/ccproxy/internal/router"
 	"github.com/musistudio/ccproxy/internal/utils"
 )
 
 // Server represents the CCProxy HTTP server
 type Server struct {
-	config     *config.Config
-	configPath string
-	router     *gin.Engine
-	server     *http.Server
+	config          *config.Config
+	configPath      string
+	router          *gin.Engine
+	server          *http.Server
+	providerService *providers.Service
 }
 
 // New creates a new server instance
@@ -41,6 +43,19 @@ func NewWithPath(cfg *config.Config, configPath string) (*Server, error) {
 		cfg.Host = "127.0.0.1"
 	}
 	
+	// Create config service
+	configService := config.NewService()
+	configService.SetConfig(cfg)
+	
+	// Create provider service
+	providerService := providers.NewService(configService)
+	if err := providerService.Initialize(); err != nil {
+		return nil, fmt.Errorf("failed to initialize provider service: %w", err)
+	}
+	
+	// Start health checks with 30 second interval
+	providerService.StartHealthChecks(30 * time.Second)
+	
 	// Create router
 	router := gin.New()
 	
@@ -59,9 +74,10 @@ func NewWithPath(cfg *config.Config, configPath string) (*Server, error) {
 	
 	// Create server
 	s := &Server{
-		config:     cfg,
-		configPath: configPath,
-		router:     router,
+		config:          cfg,
+		configPath:      configPath,
+		router:          router,
+		providerService: providerService,
 		server: &http.Server{
 			Addr:    fmt.Sprintf("%s:%d", cfg.Host, cfg.Port),
 			Handler: router,
@@ -101,8 +117,18 @@ func (s *Server) Run() error {
 	return s.Shutdown()
 }
 
+// GetRouter returns the Gin router (mainly for testing)
+func (s *Server) GetRouter() *gin.Engine {
+	return s.router
+}
+
 // Shutdown gracefully shuts down the server
 func (s *Server) Shutdown() error {
+	// Stop provider service
+	if s.providerService != nil {
+		s.providerService.Stop()
+	}
+	
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	
@@ -144,9 +170,31 @@ func (s *Server) handleRoot(c *gin.Context) {
 }
 
 func (s *Server) handleHealth(c *gin.Context) {
+	// Get provider health information
+	healthyProviders := s.providerService.GetHealthyProviders()
+	allProviders := s.providerService.GetAllProviders()
+	
+	providerHealth := make(map[string]interface{})
+	for _, p := range allProviders {
+		health, _ := s.providerService.GetProviderHealth(p.Name)
+		if health != nil {
+			providerHealth[p.Name] = gin.H{
+				"healthy":          health.Healthy,
+				"last_check":       health.LastCheck.Format(time.RFC3339),
+				"response_time_ms": health.ResponseTime.Milliseconds(),
+				"enabled":          p.Enabled,
+			}
+		}
+	}
+	
 	c.JSON(http.StatusOK, gin.H{
 		"status":    "ok",
 		"timestamp": time.Now().Format(time.RFC3339),
+		"providers": gin.H{
+			"total":   len(allProviders),
+			"healthy": len(healthyProviders),
+			"details": providerHealth,
+		},
 	})
 }
 

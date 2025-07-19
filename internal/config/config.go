@@ -94,6 +94,11 @@ func (s *Service) Get() *Config {
 	return s.config
 }
 
+// SetConfig sets the configuration (mainly for testing)
+func (s *Service) SetConfig(cfg *Config) {
+	s.config = cfg
+}
+
 // Validate checks if the configuration is valid
 func (s *Service) Validate() error {
 	// Validate port
