@@ -40,6 +40,7 @@ const (
 	ErrorTypeRateLimitError  ErrorType = "rate_limit_error"
 	ErrorTypeProxyError      ErrorType = "proxy_error"
 	ErrorTypeToolError       ErrorType = "tool_error"
+	ErrorTypeResourceExhausted ErrorType = "resource_exhausted"
 )
 
 // CCProxyError represents a standardized error for ccproxy
