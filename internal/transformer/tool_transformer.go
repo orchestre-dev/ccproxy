@@ -3,6 +3,7 @@ package transformer
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/musistudio/ccproxy/internal/config"
 	"github.com/musistudio/ccproxy/internal/tools"
@@ -62,18 +63,27 @@ func (t *ToolTransformer) TransformRequest(ctx context.Context, provider *config
 	if provider.Name == "openai" || provider.Name == "gpt" {
 		// OpenAI uses "functions" instead of "tools" for older models
 		// Modern models use tools with function type
-		if model, ok := reqMap["model"].(string); ok && isLegacyOpenAIModel(model) {
-			// Convert to legacy format
-			var functions []interface{}
-			for _, tool := range transformedTools {
-				if toolMap, ok := tool.(map[string]interface{}); ok {
-					if function, ok := toolMap["function"]; ok {
-						functions = append(functions, function)
-					}
+		if model, ok := reqMap["model"].(string); ok {
+			// Strip provider prefix if present
+			if strings.Contains(model, ",") {
+				parts := strings.SplitN(model, ",", 2)
+				if len(parts) == 2 {
+					model = parts[1]
 				}
 			}
-			delete(reqMap, "tools")
-			reqMap["functions"] = functions
+			if isLegacyOpenAIModel(model) {
+				// Convert to legacy format
+				var functions []interface{}
+				for _, tool := range transformedTools {
+					if toolMap, ok := tool.(map[string]interface{}); ok {
+						if function, ok := toolMap["function"]; ok {
+							functions = append(functions, function)
+						}
+					}
+				}
+				delete(reqMap, "tools")
+				reqMap["functions"] = functions
+			}
 		}
 	}
 

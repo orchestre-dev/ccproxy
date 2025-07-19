@@ -9,9 +9,9 @@ import (
 // authMiddleware creates authentication middleware
 func authMiddleware(apiKey string, enforceLocalhost bool) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// Skip auth for health endpoints
+		// Skip auth for health and status endpoints
 		path := c.Request.URL.Path
-		if path == "/" || path == "/health" {
+		if path == "/" || path == "/health" || path == "/status" {
 			c.Next()
 			return
 		}

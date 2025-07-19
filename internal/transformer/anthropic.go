@@ -37,7 +37,17 @@ func (t *AnthropicTransformer) TransformRequestIn(ctx context.Context, request i
 
 	// Copy basic fields
 	if model, ok := reqMap["model"].(string); ok {
-		transformed["model"] = model
+		// Strip provider prefix if present (e.g., "anthropic,claude-3" -> "claude-3")
+		if strings.Contains(model, ",") {
+			parts := strings.SplitN(model, ",", 2)
+			if len(parts) == 2 {
+				transformed["model"] = parts[1]
+			} else {
+				transformed["model"] = model
+			}
+		} else {
+			transformed["model"] = model
+		}
 	}
 	if maxTokens, ok := reqMap["max_tokens"]; ok {
 		transformed["max_tokens"] = maxTokens
