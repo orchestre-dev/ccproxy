@@ -61,6 +61,40 @@ This command will automatically start the proxy if not running.`,
 				env = setOrAppendEnv(env, "ANTHROPIC_API_KEY", cfg.APIKey)
 			}
 			
+			// Create reference counter
+			refCounter, err := process.NewReferenceCounter()
+			if err != nil {
+				return fmt.Errorf("failed to create reference counter: %w", err)
+			}
+			
+			// Increment reference count
+			newCount, err := refCounter.IncrementAndCheck()
+			if err != nil {
+				return fmt.Errorf("failed to increment reference count: %w", err)
+			}
+			fmt.Printf("Reference count incremented to %d\n", newCount)
+			
+			// Ensure we decrement on exit
+			defer func() {
+				shouldStop, finalCount, err := refCounter.DecrementAndCheck()
+				if err != nil {
+					fmt.Fprintf(os.Stderr, "Warning: failed to decrement reference count: %v\n", err)
+					return
+				}
+				
+				fmt.Printf("Reference count decremented to %d\n", finalCount)
+				
+				if shouldStop {
+					fmt.Println("Last Claude Code instance exited, stopping service...")
+					// Stop the service
+					if err := pidManager.StopProcess(); err != nil {
+						fmt.Fprintf(os.Stderr, "Warning: failed to stop service: %v\n", err)
+					} else {
+						fmt.Println("Service stopped successfully")
+					}
+				}
+			}()
+			
 			// Get Claude executable path
 			claudePath := os.Getenv("CLAUDE_PATH")
 			if claudePath == "" {
