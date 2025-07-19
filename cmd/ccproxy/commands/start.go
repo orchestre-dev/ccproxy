@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 	"time"
 
@@ -25,15 +26,23 @@ func StartCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// Initialize configuration
 			configService := config.NewService()
+			var cfg *config.Config
+			
 			if configPath != "" {
-				// TODO: Support custom config path
+				// Load from specified config file
+				loadedCfg, err := config.LoadFromFile(configPath)
+				if err != nil {
+					return fmt.Errorf("failed to load config from %s: %w", configPath, err)
+				}
+				cfg = loadedCfg
+				configService.SetConfig(cfg)
+			} else {
+				// Load from default locations
+				if err := configService.Load(); err != nil {
+					return fmt.Errorf("failed to load configuration: %w", err)
+				}
+				cfg = configService.Get()
 			}
-			
-			if err := configService.Load(); err != nil {
-				return fmt.Errorf("failed to load configuration: %w", err)
-			}
-			
-			cfg := configService.Get()
 			
 			// Initialize logger
 			if err := utils.InitLogger(&utils.LogConfig{
@@ -119,6 +128,11 @@ func runInForeground(cfg *config.Config, pidManager *process.PIDManager, configP
 
 // startInBackground starts the server in the background
 func startInBackground(cfg *config.Config) error {
+	// Check if we're already running in foreground mode to prevent infinite spawning
+	if os.Getenv("CCPROXY_FOREGROUND") == "1" {
+		return fmt.Errorf("cannot start background process from foreground mode")
+	}
+	
 	// Get executable path
 	execPath, err := utils.GetExecutablePath()
 	if err != nil {
@@ -127,6 +141,7 @@ func startInBackground(cfg *config.Config) error {
 	
 	// Start background process
 	cmd := exec.Command(execPath, "start", "--foreground")
+	cmd.Env = append(os.Environ(), "CCPROXY_FOREGROUND=1")
 	cmd.Stdout = nil
 	cmd.Stderr = nil
 	cmd.Stdin = nil

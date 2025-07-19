@@ -79,7 +79,7 @@ func (s *Service) Load() error {
 	}
 	
 	// Step 6: Validate configuration
-	if err := s.Validate(); err != nil {
+	if err := s.config.Validate(); err != nil {
 		return fmt.Errorf("invalid configuration: %w", err)
 	}
 	
@@ -251,8 +251,7 @@ func setDefaults(v *viper.Viper) {
 	v.SetDefault("port", 3456)
 	v.SetDefault("log", false)
 	v.SetDefault("log_file", "")
-	v.SetDefault("routes.default.provider", "anthropic")
-	v.SetDefault("routes.default.model", "claude-3-sonnet-20240229")
+	// Don't set default routes - let user configure them
 }
 
 // loadEnvFile loads environment variables from .env file

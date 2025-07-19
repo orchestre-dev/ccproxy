@@ -329,3 +329,98 @@ func TestGetReferenceCountPath(t *testing.T) {
 		t.Errorf("Reference count path doesn't contain expected name: %s", path)
 	}
 }
+
+func TestResolveConfigPath(t *testing.T) {
+	// Test with empty path (should use default)
+	path, err := ResolveConfigPath("")
+	if err != nil {
+		t.Fatalf("ResolveConfigPath() with empty path failed: %v", err)
+	}
+	
+	// Should return config.json in home directory
+	if !strings.Contains(path, "config.json") {
+		t.Errorf("Expected path to contain config.json, got %s", path)
+	}
+	
+	// Test with specific path
+	testPath := "/tmp/test-config.json"
+	resolvedPath, err := ResolveConfigPath(testPath)
+	if err != nil {
+		t.Fatalf("ResolveConfigPath() failed: %v", err)
+	}
+	
+	if resolvedPath != testPath {
+		t.Errorf("Expected %s, got %s", testPath, resolvedPath)
+	}
+	
+	// Test with home directory path
+	userHome, _ := os.UserHomeDir()
+	homePath := filepath.Join(userHome, "test-config.json")
+	resolvedPath, err = ResolveConfigPath(homePath)
+	if err != nil {
+		t.Fatalf("ResolveConfigPath() with home path failed: %v", err)
+	}
+	
+	if resolvedPath != homePath {
+		t.Errorf("Expected %s, got %s", homePath, resolvedPath)
+	}
+}
+
+func TestGetExecutablePath(t *testing.T) {
+	path, err := GetExecutablePath()
+	if err != nil {
+		t.Fatalf("GetExecutablePath() failed: %v", err)
+	}
+	
+	// Path should not be empty
+	if path == "" {
+		t.Error("Expected non-empty executable path")
+	}
+	
+	// Path should be absolute
+	if !filepath.IsAbs(path) {
+		t.Errorf("Expected absolute path, got %s", path)
+	}
+	
+	// For test environment, the path should exist
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		t.Errorf("Executable path does not exist: %s", path)
+	}
+}
+
+// Additional test for GetTempFile with error case
+func TestGetTempFile_Error(t *testing.T) {
+	// Save original home
+	tempDir := t.TempDir()
+	oldHome := os.Getenv("HOME")
+	if runtime.GOOS == "windows" {
+		oldHome = os.Getenv("USERPROFILE")
+	}
+	
+	// Create a file where the .ccproxy directory should be
+	invalidHome := filepath.Join(tempDir, "invalid")
+	os.WriteFile(invalidHome, []byte("test"), 0644) // Create a file, not a directory
+	
+	// Set invalid home
+	if runtime.GOOS == "windows" {
+		os.Setenv("USERPROFILE", invalidHome)
+	} else {
+		os.Setenv("HOME", invalidHome)
+	}
+	
+	defer func() {
+		if runtime.GOOS == "windows" {
+			os.Setenv("USERPROFILE", oldHome)
+		} else {
+			os.Setenv("HOME", oldHome)
+		}
+	}()
+	
+	// This should handle the error gracefully
+	_, err := GetTempFile("test")
+	
+	// Should return an error
+	if err == nil {
+		t.Error("Expected error when home directory setup fails")
+	}
+}

@@ -60,8 +60,8 @@ func NewWithPath(cfg *config.Config, configPath string) (*Server, error) {
 		return nil, fmt.Errorf("failed to initialize provider service: %w", err)
 	}
 	
-	// Start health checks with 30 second interval
-	providerService.StartHealthChecks(30 * time.Second)
+	// Start health checks with 5 minute interval to reduce system load
+	providerService.StartHealthChecks(5 * time.Minute)
 	
 	// Create transformer service
 	transformerService := transformer.GetRegistry()
@@ -99,6 +99,10 @@ func NewWithPath(cfg *config.Config, configPath string) (*Server, error) {
 		server: &http.Server{
 			Addr:    fmt.Sprintf("%s:%d", cfg.Host, cfg.Port),
 			Handler: router,
+			// Add timeouts to prevent hanging connections
+			ReadTimeout:    30 * time.Second,
+			WriteTimeout:   30 * time.Second,
+			IdleTimeout:    120 * time.Second,
 		},
 	}
 	

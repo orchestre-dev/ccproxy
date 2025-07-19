@@ -33,6 +33,8 @@ build-windows:
 clean:
 	rm -f $(BINARY_NAME)
 	rm -rf dist/
+	rm -f coverage.out coverage.html
+	rm -f integration_coverage.out integration_coverage.html
 
 # Run tests
 test:
@@ -62,3 +64,18 @@ tidy:
 # Generate test coverage report
 coverage: test
 	go tool cover -html=coverage.out -o coverage.html
+
+# Integration tests
+test-integration:
+	@echo "Running integration tests..."
+	go test ./tests/integration/... -v -timeout 5m
+
+# Run all tests (unit + integration)
+test-all: test test-integration
+
+# Integration test coverage
+test-integration-coverage:
+	@echo "Running integration tests with coverage..."
+	go test ./tests/integration/... -coverprofile=integration_coverage.out -v
+	go tool cover -html=integration_coverage.out -o integration_coverage.html
+	@echo "Coverage report generated: integration_coverage.html"

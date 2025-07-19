@@ -51,16 +51,11 @@ type TransformerConfig struct {
 // Default configuration values
 func DefaultConfig() *Config {
 	return &Config{
-		Host:    "127.0.0.1",
-		Port:    3456,
-		Log:     false,
-		LogFile: "",
-		Routes: map[string]Route{
-			"default": {
-				Provider: "anthropic",
-				Model:    "claude-3-sonnet-20240229",
-			},
-		},
+		Host:      "127.0.0.1",
+		Port:      3456,
+		Log:       false,
+		LogFile:   "",
+		Routes:    map[string]Route{},
 		Providers: []Provider{},
 	}
 }

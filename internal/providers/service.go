@@ -287,13 +287,29 @@ func (s *Service) checkAllProviders() {
 func (s *Service) checkProviderHealth(provider *config.Provider) {
 	logger := utils.GetLogger()
 	
+	// Skip health check if API key is empty or provider is disabled
+	if provider.APIKey == "" || !provider.Enabled {
+		s.mu.Lock()
+		s.health[provider.Name] = &HealthStatus{
+			Healthy:      false,
+			LastCheck:    time.Now(),
+			ErrorMessage: "provider disabled or missing API key",
+		}
+		s.mu.Unlock()
+		return
+	}
+	
 	start := time.Now()
 	healthy := true
 	var errorMsg string
 	
+	// Create a context with timeout to prevent hanging
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	
 	// Perform simple HTTP health check
 	// In a real implementation, this would be provider-specific
-	req, err := http.NewRequest("GET", provider.APIBaseURL, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", provider.APIBaseURL, nil)
 	if err != nil {
 		healthy = false
 		errorMsg = fmt.Sprintf("failed to create request: %v", err)
