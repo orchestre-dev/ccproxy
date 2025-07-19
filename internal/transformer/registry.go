@@ -51,6 +51,11 @@ func RegisterBuiltinTransformers(service *Service) error {
 		return err
 	}
 	
+	// Register Tool transformer (for general tool handling)
+	if err := service.Register(NewToolTransformer()); err != nil {
+		return err
+	}
+	
 	// Register OpenAI transformer
 	if err := service.Register(NewOpenAITransformer()); err != nil {
 		return err
