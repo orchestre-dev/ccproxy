@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strconv"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -133,6 +134,27 @@ func startInBackground(cfg *config.Config) error {
 		return fmt.Errorf("cannot start background process from foreground mode")
 	}
 	
+	// Additional safety check - if CCPROXY_SPAWN_DEPTH is set, we're in a spawn chain
+	spawnDepth := 0
+	if depthStr := os.Getenv("CCPROXY_SPAWN_DEPTH"); depthStr != "" {
+		if depth, err := strconv.Atoi(depthStr); err == nil {
+			spawnDepth = depth
+		}
+	}
+	if spawnDepth > 0 {
+		return fmt.Errorf("detected spawn chain (depth: %d), preventing infinite spawn", spawnDepth)
+	}
+	
+	// Check if service is already running
+	pidManager, err := process.NewPIDManager()
+	if err != nil {
+		return fmt.Errorf("failed to create PID manager: %w", err)
+	}
+	
+	if runningPID, _ := pidManager.GetRunningPID(); runningPID > 0 {
+		return fmt.Errorf("service is already running with PID %d", runningPID)
+	}
+	
 	// Get executable path
 	execPath, err := utils.GetExecutablePath()
 	if err != nil {
@@ -141,7 +163,10 @@ func startInBackground(cfg *config.Config) error {
 	
 	// Start background process
 	cmd := exec.Command(execPath, "start", "--foreground")
-	cmd.Env = append(os.Environ(), "CCPROXY_FOREGROUND=1")
+	cmd.Env = append(os.Environ(), 
+		"CCPROXY_FOREGROUND=1",
+		fmt.Sprintf("CCPROXY_SPAWN_DEPTH=%d", spawnDepth+1),
+	)
 	cmd.Stdout = nil
 	cmd.Stderr = nil
 	cmd.Stdin = nil
@@ -153,11 +178,7 @@ func startInBackground(cfg *config.Config) error {
 	// Wait for service to be ready
 	fmt.Print("Starting CCProxy service")
 	
-	// Create PID manager for checking
-	pidManager, err := process.NewPIDManager()
-	if err != nil {
-		return fmt.Errorf("failed to create PID manager: %w", err)
-	}
+	// PID manager already created above, no need to create again
 	
 	// Poll for up to 10 seconds
 	for i := 0; i < 100; i++ {

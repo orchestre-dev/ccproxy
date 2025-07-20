@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/viper"
 )
 
@@ -73,8 +74,22 @@ func (s *Service) Load() error {
 	
 	// Step 4: Environment variables are automatically loaded by Viper
 	
-	// Step 5: Unmarshal into config struct
-	if err := s.viper.Unmarshal(s.config); err != nil {
+	// Step 5: Unmarshal into config struct with custom decoder
+	decoderConfig := &mapstructure.DecoderConfig{
+		DecodeHook: mapstructure.ComposeDecodeHookFunc(
+			mapstructure.StringToTimeHookFunc(time.RFC3339),
+			mapstructure.StringToTimeDurationHookFunc(),
+		),
+		Result: s.config,
+		WeaklyTypedInput: true,
+	}
+	
+	decoder, err := mapstructure.NewDecoder(decoderConfig)
+	if err != nil {
+		return fmt.Errorf("error creating decoder: %w", err)
+	}
+	
+	if err := decoder.Decode(s.viper.AllSettings()); err != nil {
 		return fmt.Errorf("error unmarshaling config: %w", err)
 	}
 	

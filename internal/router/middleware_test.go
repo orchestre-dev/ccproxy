@@ -69,7 +69,7 @@ func TestRouterMiddleware(t *testing.T) {
 			},
 			expectedNext:  true,
 			checkContext:  true,
-			expectedModel: "openrouter:anthropic/claude-3-opus",
+			expectedModel: "openrouter,anthropic/claude-3-opus",
 		},
 		{
 			name:   "request with system and tools",
@@ -94,7 +94,7 @@ func TestRouterMiddleware(t *testing.T) {
 			},
 			expectedNext:  true,
 			checkContext:  true,
-			expectedModel: "openrouter:anthropic/claude-3.5-sonnet",
+			expectedModel: "openai,gpt-4",
 		},
 		{
 			name:   "request with invalid message format",
@@ -108,7 +108,7 @@ func TestRouterMiddleware(t *testing.T) {
 			},
 			expectedNext:  true,
 			checkContext:  true,
-			expectedModel: "openai:gpt-4",
+			expectedModel: "openai,gpt-4",
 		},
 	}
 
@@ -132,6 +132,16 @@ func TestRouterMiddleware(t *testing.T) {
 							"gpt-4",
 							"gpt-3.5-turbo",
 						},
+					},
+				},
+				Routes: map[string]config.Route{
+					"think": {
+						Provider: "openrouter",
+						Model:    "anthropic/claude-3-opus",
+					},
+					"default": {
+						Provider: "openai",
+						Model:    "gpt-4",
 					},
 				},
 			}

@@ -9,6 +9,8 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -37,16 +39,30 @@ func TestMain(m *testing.M) {
 
 // cleanup ensures no processes are left running
 func cleanup() {
-	// Kill any existing ccproxy processes
-	exec.Command("pkill", "-f", "ccproxy").Run()
-	
-	// Remove PID file
+	// First try to stop using the PID file
 	homeDir, _ := os.UserHomeDir()
 	pidFile := filepath.Join(homeDir, ".ccproxy", ".ccproxy.pid")
+	
+	// Read PID and kill specific process
+	if pidData, err := os.ReadFile(pidFile); err == nil {
+		pidStr := strings.TrimSpace(string(pidData))
+		if pid, err := strconv.Atoi(pidStr); err == nil && pid > 0 {
+			// Kill the specific process
+			if proc, err := os.FindProcess(pid); err == nil {
+				proc.Kill()
+			}
+		}
+	}
+	
+	// Remove PID file
 	os.Remove(pidFile)
 	
+	// Only use pkill as last resort and be more specific
+	// Look for processes with "ccproxy start" to avoid killing test runner
+	exec.Command("pkill", "-f", "ccproxy start").Run()
+	
 	// Wait for ports to be released
-	time.Sleep(100 * time.Millisecond)
+	time.Sleep(200 * time.Millisecond)
 }
 
 // testConfig represents the test configuration
@@ -125,6 +141,13 @@ func startCCProxy(t *testing.T, configPath string) func() {
 	
 	// Start ccproxy
 	cmd := exec.Command(ccproxyPath, "start", "--config", configPath, "--foreground")
+	
+	// Set environment variables to prevent infinite spawning
+	cmd.Env = append(os.Environ(),
+		"CCPROXY_FOREGROUND=1",
+		"CCPROXY_SPAWN_DEPTH=1",
+		"CCPROXY_TEST_MODE=1",
+	)
 	
 	// Capture output for debugging
 	var stdout, stderr bytes.Buffer
