@@ -96,6 +96,31 @@ test-integration:
 	@echo "Running integration tests..."
 	$(GOTEST) -v -race -tags=integration ./tests/integration/...
 
+## test-unit: Run unit tests only
+test-unit:
+	@echo "Running unit tests..."
+	@./scripts/test.sh unit
+
+## test-benchmark: Run benchmark tests
+test-benchmark:
+	@echo "Running benchmark tests..."
+	@./scripts/test.sh benchmark
+
+## test-load: Run load tests
+test-load:
+	@echo "Running load tests..."
+	@./scripts/test.sh load
+
+## test-race: Run race detection tests
+test-race:
+	@echo "Running race detection tests..."
+	@./scripts/test.sh race
+
+## test-all: Run all tests with coverage
+test-all:
+	@echo "Running all tests..."
+	@./scripts/test.sh all
+
 ## coverage: Generate test coverage report
 coverage:
 	@echo "Generating coverage report..."
