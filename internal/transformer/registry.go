@@ -61,8 +61,15 @@ func RegisterBuiltinTransformers(service *Service) error {
 		return err
 	}
 	
-	// TODO: Register MaxToken transformer when implemented
-	// service.Register(NewMaxTokenTransformer())
+	// Register MaxToken transformer
+	if err := service.Register(NewMaxTokenTransformer()); err != nil {
+		return err
+	}
+	
+	// Register Parameters transformer
+	if err := service.Register(NewParametersTransformer()); err != nil {
+		return err
+	}
 	
 	return nil
 }
