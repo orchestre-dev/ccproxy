@@ -1,0 +1,162 @@
+# .goreleaser.yml
+project_name: ccproxy
+
+before:
+  hooks:
+    - go mod tidy
+    - go generate ./...
+
+builds:
+  - id: ccproxy
+    main: ./cmd/ccproxy
+    binary: ccproxy
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ignore:
+      - goos: windows
+        goarch: arm64
+    ldflags:
+      - -s -w
+      - -X main.Version={{.Version}}
+      - -X main.Commit={{.Commit}}
+      - -X main.BuildTime={{.Date}}
+
+archives:
+  - id: ccproxy
+    name_template: >-
+      {{ .ProjectName }}-
+      {{- .Version }}-
+      {{- .Os }}-
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+    format_overrides:
+      - goos: windows
+        format: zip
+    files:
+      - README.md
+      - LICENSE
+
+checksum:
+  name_template: '{{ .ProjectName }}-{{ .Version }}-checksums.txt'
+  algorithm: sha256
+
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^chore:'
+      - 'Merge pull request'
+      - 'Merge branch'
+
+dockers:
+  - image_templates:
+      - "ghcr.io/orchestre-dev/{{ .ProjectName }}:{{ .Version }}-amd64"
+      - "ghcr.io/orchestre-dev/{{ .ProjectName }}:latest-amd64"
+    dockerfile: Dockerfile
+    use: buildx
+    build_flag_templates:
+      - "--platform=linux/amd64"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.title={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
+      - "--label=org.opencontainers.image.source=https://github.com/orchestre-dev/ccproxy"
+      - "--label=org.opencontainers.image.licenses=MIT"
+    
+  - image_templates:
+      - "ghcr.io/orchestre-dev/{{ .ProjectName }}:{{ .Version }}-arm64"
+      - "ghcr.io/orchestre-dev/{{ .ProjectName }}:latest-arm64"
+    dockerfile: Dockerfile
+    use: buildx
+    build_flag_templates:
+      - "--platform=linux/arm64"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.title={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
+      - "--label=org.opencontainers.image.source=https://github.com/orchestre-dev/ccproxy"
+      - "--label=org.opencontainers.image.licenses=MIT"
+
+docker_manifests:
+  - name_template: "ghcr.io/orchestre-dev/{{ .ProjectName }}:{{ .Version }}"
+    image_templates:
+      - "ghcr.io/orchestre-dev/{{ .ProjectName }}:{{ .Version }}-amd64"
+      - "ghcr.io/orchestre-dev/{{ .ProjectName }}:{{ .Version }}-arm64"
+  
+  - name_template: "ghcr.io/orchestre-dev/{{ .ProjectName }}:latest"
+    image_templates:
+      - "ghcr.io/orchestre-dev/{{ .ProjectName }}:latest-amd64"
+      - "ghcr.io/orchestre-dev/{{ .ProjectName }}:latest-arm64"
+
+brews:
+  - name: ccproxy
+    tap:
+      owner: orchestre-dev
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
+    folder: Formula
+    homepage: "https://github.com/orchestre-dev/ccproxy"
+    description: "Intelligent LLM proxy for Claude Code"
+    license: "MIT"
+    test: |
+      system "#{bin}/ccproxy", "--version"
+    install: |
+      bin.install "ccproxy"
+
+nfpms:
+  - id: ccproxy
+    package_name: ccproxy
+    vendor: Orchestre Dev
+    homepage: https://github.com/orchestre-dev/ccproxy
+    maintainer: CCProxy Team <ccproxy@orchestre.dev>
+    description: Intelligent LLM proxy for Claude Code
+    license: MIT
+    formats:
+      - deb
+      - rpm
+      - apk
+    bindir: /usr/bin
+    contents:
+      - src: ./LICENSE
+        dst: /usr/share/licenses/ccproxy/LICENSE
+
+release:
+  github:
+    owner: orchestre-dev
+    name: ccproxy
+  draft: false
+  prerelease: auto
+  name_template: "v{{.Version}}"
+  footer: |
+    ## Docker Images
+    
+    ```bash
+    docker pull ghcr.io/orchestre-dev/ccproxy:{{.Version}}
+    ```
+    
+    ## Installation
+    
+    ### Homebrew
+    ```bash
+    brew tap orchestre-dev/tap
+    brew install ccproxy
+    ```
+    
+    ### Linux (deb/rpm)
+    Download the appropriate package from the assets below.
+    
+    ### Manual
+    Download the appropriate binary for your platform from the assets below.
