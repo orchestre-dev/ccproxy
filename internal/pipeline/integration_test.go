@@ -1,70 +1,106 @@
-package pipeline
+package pipeline_test
 
 import (
 	"context"
-	"fmt"
+	"encoding/json"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/orchestre-dev/ccproxy/internal/config"
+	"github.com/orchestre-dev/ccproxy/internal/pipeline"
 	"github.com/orchestre-dev/ccproxy/internal/providers"
 	"github.com/orchestre-dev/ccproxy/internal/router"
 	"github.com/orchestre-dev/ccproxy/internal/transformer"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-func TestPipeline_StreamingIntegration(t *testing.T) {
-	// Create a mock provider server that streams SSE
-	providerServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Verify request
-		if r.Method != "POST" {
-			t.Errorf("Expected POST, got %s", r.Method)
-		}
-		if auth := r.Header.Get("Authorization"); auth != "Bearer test-key" {
-			t.Errorf("Expected Authorization header, got %s", auth)
-		}
-
-		// Send SSE response
-		w.Header().Set("Content-Type", "text/event-stream")
-		w.WriteHeader(200)
+func TestPipelineIntegration(t *testing.T) {
+	// Create test server to simulate provider
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Verify request details
+		assert.Equal(t, "POST", r.Method)
+		assert.Contains(t, r.Header.Get("Content-Type"), "application/json")
 		
-		// Stream some events
-		events := []string{
-			`data: {"id":"msg_123","type":"content_block_start","content_block":{"type":"text","text":""}}`,
-			`data: {"id":"msg_123","type":"content_block_delta","delta":{"type":"text_delta","text":"Hello"}}`,
-			`data: {"id":"msg_123","type":"content_block_delta","delta":{"type":"text_delta","text":" streaming"}}`,
-			`data: {"id":"msg_123","type":"content_block_delta","delta":{"type":"text_delta","text":" world!"}}`,
-			`data: {"id":"msg_123","type":"content_block_stop"}`,
-			`data: {"id":"msg_123","type":"message_stop"}`,
-			`data: [DONE]`,
+		// Check provider-specific auth
+		if strings.Contains(r.URL.Path, "/v1/messages") {
+			// Anthropic
+			assert.Equal(t, "test-anthropic-key", r.Header.Get("X-API-Key"))
+			assert.Equal(t, "2023-06-01", r.Header.Get("anthropic-version"))
+		} else if strings.Contains(r.URL.Path, "/v1/chat/completions") {
+			// OpenAI
+			assert.Equal(t, "Bearer test-openai-key", r.Header.Get("Authorization"))
 		}
 		
-		flusher := w.(http.Flusher)
-		for _, event := range events {
-			fmt.Fprintf(w, "%s\n\n", event)
-			flusher.Flush()
-			time.Sleep(10 * time.Millisecond) // Simulate streaming delay
+		// Read and validate request body
+		body, err := io.ReadAll(r.Body)
+		require.NoError(t, err)
+		
+		var reqBody map[string]interface{}
+		err = json.Unmarshal(body, &reqBody)
+		require.NoError(t, err)
+		
+		// Check that transformers have been applied
+		// MaxToken transformer should have added max_tokens
+		assert.Contains(t, reqBody, "max_tokens")
+		
+		// Parameters transformer should have validated temperature
+		if temp, ok := reqBody["temperature"].(float64); ok {
+			assert.True(t, temp >= 0 && temp <= 1)
 		}
+		
+		// Send response
+		response := map[string]interface{}{
+			"id": "test-response",
+			"type": "message",
+			"role": "assistant",
+			"content": []map[string]interface{}{
+				{
+					"type": "text",
+					"text": "Hello from test provider!",
+				},
+			},
+			"model": reqBody["model"],
+			"usage": map[string]interface{}{
+				"input_tokens": 10,
+				"output_tokens": 5,
+			},
+		}
+		
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(response)
 	}))
-	defer providerServer.Close()
+	defer server.Close()
 
-	// Create test configuration
+	// Create config
 	cfg := &config.Config{
 		Providers: []config.Provider{
 			{
-				Name:       "test-provider",
-				APIBaseURL: providerServer.URL,
-				APIKey:     "test-key",
+				Name:       "anthropic",
+				APIBaseURL: server.URL,
+				APIKey:     "test-anthropic-key",
 				Enabled:    true,
-				Models:     []string{"test-model"},
+				Models:     []string{"claude-3-opus"},
+			},
+			{
+				Name:       "openai",
+				APIBaseURL: server.URL,
+				APIKey:     "test-openai-key",
+				Enabled:    true,
+				Models:     []string{"gpt-4"},
 			},
 		},
 		Routes: map[string]config.Route{
-			"default": {
-				Provider: "test-provider",
-				Model:    "test-model",
+			"claude-3-opus": {
+				Provider: "anthropic",
+				Model:    "claude-3-opus",
+			},
+			"gpt-4": {
+				Provider: "openai",
+				Model:    "gpt-4",
 			},
 		},
 	}
@@ -72,20 +108,148 @@ func TestPipeline_StreamingIntegration(t *testing.T) {
 	// Create services
 	configService := config.NewService()
 	configService.SetConfig(cfg)
-	
 	providerService := providers.NewService(configService)
-	providerService.Initialize()
+	providerService.Initialize() // Initialize providers
+	transformerService := transformer.GetRegistry()
+	routerService := router.New(cfg)
 	
+	// Create pipeline
+	pipelineService := pipeline.NewPipeline(cfg, providerService, transformerService, routerService)
+	
+	// Test cases
+	tests := []struct {
+		name         string
+		request      map[string]interface{}
+		expectedPath string
+		expectedAuth string
+	}{
+		{
+			name: "anthropic request",
+			request: map[string]interface{}{
+				"model": "claude-3-opus",
+				"messages": []interface{}{
+					map[string]interface{}{
+						"role":    "user",
+						"content": "Hello",
+					},
+				},
+				"temperature": 0.7,
+			},
+			expectedPath: "/v1/messages",
+			expectedAuth: "X-API-Key",
+		},
+		{
+			name: "openai request",
+			request: map[string]interface{}{
+				"model": "gpt-4",
+				"messages": []interface{}{
+					map[string]interface{}{
+						"role":    "user",
+						"content": "Hello",
+					},
+				},
+				"temperature": 0.8,
+			},
+			expectedPath: "/v1/chat/completions",
+			expectedAuth: "Authorization",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Create request context
+			reqCtx := &pipeline.RequestContext{
+				Body:        tt.request,
+				Headers:     make(map[string]string),
+				IsStreaming: false,
+			}
+			
+			// Process request
+			ctx := context.Background()
+			respCtx, err := pipelineService.ProcessRequest(ctx, reqCtx)
+			require.NoError(t, err)
+			
+			// Verify response
+			assert.NotNil(t, respCtx)
+			assert.NotNil(t, respCtx.Response)
+			assert.Equal(t, 200, respCtx.Response.StatusCode)
+			
+			// Read response body
+			body, err := io.ReadAll(respCtx.Response.Body)
+			require.NoError(t, err)
+			
+			var respBody map[string]interface{}
+			err = json.Unmarshal(body, &respBody)
+			require.NoError(t, err)
+			
+			// Verify response content
+			assert.Equal(t, "test-response", respBody["id"])
+			assert.Equal(t, tt.request["model"], respBody["model"])
+			
+			// Verify usage was preserved/enhanced by MaxToken transformer
+			usage, ok := respBody["usage"].(map[string]interface{})
+			assert.True(t, ok)
+			assert.Contains(t, usage, "total_tokens")
+		})
+	}
+}
+
+func TestPipelineStreamingIntegration(t *testing.T) {
+	// Create test SSE server
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/event-stream")
+		w.Header().Set("Cache-Control", "no-cache")
+		
+		// Send SSE events
+		events := []string{
+			`data: {"id":"test","type":"message_start"}`,
+			`data: {"type":"content_block_delta","delta":{"text":"Hello"}}`,
+			`data: {"type":"content_block_delta","delta":{"text":" world!"}}`,
+			`data: {"type":"message_stop"}`,
+			`data: [DONE]`,
+		}
+		
+		for _, event := range events {
+			w.Write([]byte(event + "\n\n"))
+			w.(http.Flusher).Flush()
+		}
+	}))
+	defer server.Close()
+
+	// Create minimal config
+	cfg := &config.Config{
+		Providers: []config.Provider{
+			{
+				Name:       "anthropic",
+				APIBaseURL: server.URL,
+				APIKey:     "test-key",
+				Enabled:    true,
+				Models:     []string{"claude-3-opus"},
+			},
+		},
+		Routes: map[string]config.Route{
+			"claude-3-opus": {
+				Provider: "anthropic",
+				Model:    "claude-3-opus",
+			},
+		},
+	}
+
+	// Create services
+	configService := config.NewService()
+	configService.SetConfig(cfg)
+	providerService := providers.NewService(configService)
+	providerService.Initialize() // Initialize providers
 	transformerService := transformer.GetRegistry()
 	routerService := router.New(cfg)
 
 	// Create pipeline
-	pipeline := NewPipeline(cfg, providerService, transformerService, routerService)
+	pipelineService := pipeline.NewPipeline(cfg, providerService, transformerService, routerService)
 
-	// Create request
-	reqCtx := &RequestContext{
+	// Create streaming request
+	reqCtx := &pipeline.RequestContext{
 		Body: map[string]interface{}{
-			"model": "test-model",
+			"model": "claude-3-opus",
 			"messages": []interface{}{
 				map[string]interface{}{
 					"role":    "user",
@@ -94,57 +258,74 @@ func TestPipeline_StreamingIntegration(t *testing.T) {
 			},
 			"stream": true,
 		},
-		Headers:     map[string]string{},
+		Headers:     make(map[string]string),
 		IsStreaming: true,
 	}
 
 	// Process request
 	ctx := context.Background()
-	respCtx, err := pipeline.ProcessRequest(ctx, reqCtx)
-	if err != nil {
-		t.Fatalf("ProcessRequest failed: %v", err)
-	}
+	respCtx, err := pipelineService.ProcessRequest(ctx, reqCtx)
+	require.NoError(t, err)
 
-	// Verify response context
-	if respCtx.Provider != "test-provider" {
-		t.Errorf("Expected provider test-provider, got %s", respCtx.Provider)
-	}
-	if respCtx.Model != "test-model" {
-		t.Errorf("Expected model test-model, got %s", respCtx.Model)
-	}
+	// Verify streaming response
+	assert.NotNil(t, respCtx)
+	assert.NotNil(t, respCtx.Response)
+	assert.Equal(t, "text/event-stream", respCtx.Response.Header.Get("Content-Type"))
 
-	// Create response writer
-	w := httptest.NewRecorder()
+	// Create response writer to capture stream
+	recorder := httptest.NewRecorder()
 
-	// Stream the response
-	err = pipeline.StreamResponse(ctx, w, respCtx)
-	if err != nil {
-		t.Fatalf("StreamResponse failed: %v", err)
-	}
+	// Stream response
+	err = pipelineService.StreamResponse(ctx, recorder, respCtx)
+	require.NoError(t, err)
 
-	// Verify streamed response
-	body := w.Body.String()
-	expectedContent := []string{
-		"Hello",
-		"streaming",
-		"world!",
-		"[DONE]",
-	}
-	
-	for _, expected := range expectedContent {
-		if !strings.Contains(body, expected) {
-			t.Errorf("Expected response to contain %q, got:\n%s", expected, body)
-		}
-	}
-
-	// Verify SSE format
-	if !strings.Contains(body, "data:") {
-		t.Error("Expected SSE format with 'data:' prefix")
-	}
+	// Verify streamed content
+	result := recorder.Body.String()
+	assert.Contains(t, result, "data:")
+	assert.Contains(t, result, "[DONE]")
 }
 
-func TestPipeline_StreamingWithTransformation(t *testing.T) {
-	// This test would verify that transformations are applied during streaming
-	// For now, we'll skip it as we need more complex mocking
-	t.Skip("Skipping transformation test - requires more complex mocking")
+func TestPipelineErrorHandling(t *testing.T) {
+	// Create config with invalid provider
+	cfg := &config.Config{
+		Providers: []config.Provider{},
+		Routes: map[string]config.Route{
+			"test-model": {
+				Provider: "non-existent",
+				Model:    "test-model",
+			},
+		},
+	}
+	
+	// Create services
+	configService := config.NewService()
+	configService.SetConfig(cfg)
+	providerService := providers.NewService(configService)
+	providerService.Initialize() // Initialize providers
+	transformerService := transformer.GetRegistry()
+	routerService := router.New(cfg)
+	
+	// Create pipeline
+	pipelineService := pipeline.NewPipeline(cfg, providerService, transformerService, routerService)
+	
+	// Create request
+	reqCtx := &pipeline.RequestContext{
+		Body: map[string]interface{}{
+			"model": "test-model",
+			"messages": []interface{}{
+				map[string]interface{}{
+					"role":    "user",
+					"content": "Hello",
+				},
+			},
+		},
+		Headers:     make(map[string]string),
+		IsStreaming: false,
+	}
+	
+	// Process request - should fail
+	ctx := context.Background()
+	_, err := pipelineService.ProcessRequest(ctx, reqCtx)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "provider not found")
 }

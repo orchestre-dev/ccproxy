@@ -61,8 +61,8 @@ func (p *StreamingProcessor) ProcessStreamingResponse(
 	}()
 	
 	// Get transformer chain for the provider
-	chain, err := p.transformerService.GetChainForProvider(provider)
-	if err != nil {
+	chain := p.transformerService.GetChainForProvider(provider)
+	if chain == nil {
 		// If no chain, just pass through
 		return p.passThrough(reader, writer, flusher)
 	}
@@ -165,29 +165,3 @@ func (p *StreamingProcessor) passThrough(
 	return nil
 }
 
-// HandleStreamingError sends an error event in SSE format
-func HandleStreamingError(w http.ResponseWriter, err error) {
-	// Ensure SSE headers are set
-	w.Header().Set("Content-Type", "text/event-stream")
-	w.Header().Set("Cache-Control", "no-cache")
-	
-	writer := transformer.NewSSEWriter(w)
-	
-	// Send error event
-	errorEvent := &transformer.SSEEvent{
-		Event: "error",
-		Data:  fmt.Sprintf(`{"error": {"type": "stream_error", "message": "%s"}}`, err.Error()),
-	}
-	
-	writer.WriteEvent(errorEvent)
-	
-	// Send done marker
-	doneEvent := &transformer.SSEEvent{
-		Data: "[DONE]",
-	}
-	writer.WriteEvent(doneEvent)
-	
-	if flusher, ok := w.(http.Flusher); ok {
-		flusher.Flush()
-	}
-}

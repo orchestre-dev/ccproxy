@@ -50,7 +50,17 @@ func (r *Router) Route(req Request, tokenCount int) RouteDecision {
 		}
 	}
 	
-	// 2. Check for long context routing based on token count
+	// 2. Check if there's a direct route for this model
+	if route, exists := r.config.Routes[req.Model]; exists && route.Provider != "" {
+		logger.Debugf("Using direct route for model: %s", req.Model)
+		return RouteDecision{
+			Provider: route.Provider,
+			Model:    route.Model,
+			Reason:   "direct model route",
+		}
+	}
+	
+	// 3. Check for long context routing based on token count
 	if longContext, exists := r.config.Routes["longContext"]; exists && tokenCount > 60000 && longContext.Provider != "" {
 		logger.Infof("Using long context model due to token count: %d", tokenCount)
 		return RouteDecision{
@@ -60,7 +70,7 @@ func (r *Router) Route(req Request, tokenCount int) RouteDecision {
 		}
 	}
 	
-	// 3. Check for background routing for haiku models
+	// 4. Check for background routing for haiku models
 	if background, exists := r.config.Routes["background"]; exists && strings.HasPrefix(req.Model, "claude-3-5-haiku") && background.Provider != "" {
 		logger.Info("Using background model for claude-3-5-haiku")
 		return RouteDecision{
@@ -70,7 +80,7 @@ func (r *Router) Route(req Request, tokenCount int) RouteDecision {
 		}
 	}
 	
-	// 4. Check for thinking routing based on parameter
+	// 5. Check for thinking routing based on parameter
 	if think, exists := r.config.Routes["think"]; exists && req.Thinking && think.Provider != "" {
 		logger.Info("Using think model due to thinking parameter")
 		return RouteDecision{
@@ -80,7 +90,7 @@ func (r *Router) Route(req Request, tokenCount int) RouteDecision {
 		}
 	}
 	
-	// 5. Fall back to default model
+	// 6. Fall back to default model
 	defaultRoute := r.config.Routes["default"]
 	logger.Debug("Using default model")
 	return RouteDecision{

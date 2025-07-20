@@ -103,17 +103,50 @@ func (s *Service) CreateChainFromNames(names []string) (*TransformerChain, error
 }
 
 // GetChainForProvider gets the transformer chain for a provider by name
-func (s *Service) GetChainForProvider(providerName string) (*TransformerChain, error) {
+func (s *Service) GetChainForProvider(providerName string) *TransformerChain {
 	s.mu.RLock()
 	chainKey := fmt.Sprintf("provider:%s", providerName)
 	chain, exists := s.chains[chainKey]
 	s.mu.RUnlock()
 	
 	if exists {
-		return chain, nil
+		return chain
 	}
 	
-	return nil, fmt.Errorf("no transformer chain for provider: %s", providerName)
+	// Create a default chain with common transformers
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	
+	// Double-check in case another goroutine created it
+	if existingChain, exists := s.chains[chainKey]; exists {
+		return existingChain
+	}
+	
+	// Create default chain with provider-specific transformer and common ones
+	chain = NewTransformerChain()
+	
+	// Add provider-specific transformer if it exists
+	providerTransformer := s.transformers[providerName]
+	if providerTransformer != nil {
+		chain.Add(providerTransformer)
+	}
+	
+	// Add common transformers
+	if maxTokenTransformer := s.transformers["maxtoken"]; maxTokenTransformer != nil {
+		chain.Add(maxTokenTransformer)
+	}
+	
+	if parametersTransformer := s.transformers["parameters"]; parametersTransformer != nil {
+		chain.Add(parametersTransformer)
+	}
+	
+	// Add tool transformer if needed
+	if toolTransformer := s.transformers["tool"]; toolTransformer != nil {
+		chain.Add(toolTransformer)
+	}
+	
+	s.chains[chainKey] = chain
+	return chain
 }
 
 // GetOrCreateChain gets or creates a transformer chain for a provider

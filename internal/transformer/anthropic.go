@@ -449,7 +449,10 @@ func (t *AnthropicTransformer) transformStreamEvent(event *SSEEvent, state *anth
 		}
 
 	case "content_block_start":
-		index := int(data["index"].(float64))
+		index := 0
+		if idx, ok := data["index"].(float64); ok {
+			index = int(idx)
+		}
 		state.currentIndex = index
 		
 		if block, ok := data["content_block"].(map[string]interface{}); ok {
@@ -475,7 +478,10 @@ func (t *AnthropicTransformer) transformStreamEvent(event *SSEEvent, state *anth
 		}
 
 	case "content_block_delta":
-		index := int(data["index"].(float64))
+		index := 0
+		if idx, ok := data["index"].(float64); ok {
+			index = int(idx)
+		}
 		
 		if delta, ok := data["delta"].(map[string]interface{}); ok {
 			deltaType, _ := delta["type"].(string)
