@@ -124,10 +124,11 @@ func (t *OpenRouterTransformer) transformStreamData(data string, state *openrout
 		return []string{data}, nil
 	}
 
-	// Get delta
-	delta, ok := choice["delta"].(map[string]interface{})
-	if !ok {
-		return []string{data}, nil
+	// Get delta (might not exist for finish_reason only chunks)
+	delta, hasDelta := choice["delta"].(map[string]interface{})
+	if !hasDelta {
+		// Create empty delta for finish_reason only chunks
+		delta = make(map[string]interface{})
 	}
 
 	// Check for reasoning content
@@ -208,19 +209,32 @@ func (t *OpenRouterTransformer) transformStreamData(data string, state *openrout
 		results = append(results, string(modifiedData))
 	}
 
-	// Handle finish reason
+	// Handle finish reason - need to check if results is empty
 	if finishReason := choice["finish_reason"]; finishReason != nil && finishReason != "" {
-		// Make sure we send any remaining reasoning content
+		// Debug logging
+		// fmt.Printf("DEBUG: finish_reason found, isReasoningComplete=%v, reasoningContent='%s'\n", state.isReasoningComplete, state.reasoningContent)
+		
+		// Make sure we send any remaining reasoning content first
 		if !state.isReasoningComplete && state.reasoningContent != "" {
 			state.isReasoningComplete = true
 			thinkingChunk := t.createThinkingBlockChunk(chunk, state.reasoningContent, state.contentIndex)
 			thinkingData, _ := json.Marshal(thinkingChunk)
 			results = append(results, string(thinkingData))
+			
+			// Increment index for the finish reason chunk
+			state.contentIndex++
+		}
+
+		// Update the index for finish reason if we had reasoning
+		if state.isReasoningComplete {
+			choice["index"] = state.contentIndex
 		}
 
 		// Pass through the finish chunk
 		modifiedData, _ := json.Marshal(chunk)
 		results = append(results, string(modifiedData))
+		
+		return results, nil
 	}
 
 	return results, nil

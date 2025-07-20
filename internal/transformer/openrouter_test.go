@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestNewOpenRouterTransformer(t *testing.T) {
@@ -54,11 +55,11 @@ func TestOpenRouterTransformer_TransformResponseOut(t *testing.T) {
 			"Content-Type": []string{"text/event-stream"},
 		},
 		Body: io.NopCloser(strings.NewReader(
-			`data: {"choices":[{"delta":{"reasoning_content":"Let me think"}}]}` + "\n" +
-			`data: {"choices":[{"delta":{"reasoning_content":" about this."}}]}` + "\n" +
-			`data: {"choices":[{"delta":{"content":"The answer is 42."}}]}` + "\n" +
-			`data: {"choices":[{"finish_reason":"stop"}]}` + "\n" +
-			`data: [DONE]` + "\n",
+			`data: {"choices":[{"delta":{"reasoning_content":"Let me think"}}]}` + "\n\n" +
+			`data: {"choices":[{"delta":{"reasoning_content":" about this."}}]}` + "\n\n" +
+			`data: {"choices":[{"delta":{"content":"The answer is 42."}}]}` + "\n\n" +
+			`data: {"choices":[{"finish_reason":"stop"}]}` + "\n\n" +
+			`data: [DONE]` + "\n\n",
 		)),
 	}
 	
@@ -67,6 +68,9 @@ func TestOpenRouterTransformer_TransformResponseOut(t *testing.T) {
 		t.Fatalf("Failed to transform streaming response: %v", err)
 	}
 	
+	// Small delay to allow the goroutine to process
+	time.Sleep(10 * time.Millisecond)
+	
 	// Read transformed response
 	body, err := io.ReadAll(result.Body)
 	if err != nil {
@@ -74,6 +78,9 @@ func TestOpenRouterTransformer_TransformResponseOut(t *testing.T) {
 	}
 	
 	responseText := string(body)
+	
+	// Debug: print the actual response
+	// t.Logf("Response: %s", responseText)
 	
 	// Should have transformed reasoning_content to thinking
 	// The thinking content is in a nested structure: delta.thinking.content
