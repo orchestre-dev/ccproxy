@@ -16,7 +16,7 @@ PROVIDER=groq  # Options: groq, openai, gemini, mistral, ollama, xai, openrouter
 ```bash
 # Server settings
 SERVER_HOST=0.0.0.0           # Host to bind to
-SERVER_PORT=7187              # Port to listen on
+SERVER_PORT=3456              # Port to listen on
 SERVER_ENVIRONMENT=production # Environment: development, production
 ```
 

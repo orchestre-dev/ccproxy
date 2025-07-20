@@ -119,7 +119,7 @@ export PROVIDER=groq
 ccproxy &
 
 # Point Claude Code to CCProxy instead of Anthropic
-export ANTHROPIC_BASE_URL=http://localhost:7187
+export ANTHROPIC_BASE_URL=http://localhost:3456
 export ANTHROPIC_API_KEY=dummy
 
 # Use Claude Code normally - now with Groq speed!

@@ -8,7 +8,7 @@ CCProxy provides comprehensive Docker support for easy deployment and developmen
 
 ```bash
 # Pull the image
-docker pull ghcr.io/yourusername/ccproxy:latest
+docker pull ghcr.io/orchestre-dev/ccproxy:latest
 
 # Run with minimal configuration
 docker run -d \
@@ -17,7 +17,7 @@ docker run -d \
   -e CCPROXY_API_KEY=your-api-key \
   -e CCPROXY_PROVIDERS_0_NAME=anthropic \
   -e CCPROXY_PROVIDERS_0_API_KEY=your-anthropic-key \
-  ghcr.io/yourusername/ccproxy:latest
+  ghcr.io/orchestre-dev/ccproxy:latest
 ```
 
 ### Using Docker Compose
@@ -82,7 +82,7 @@ docker run -d \
   --name ccproxy \
   -p 3456:3456 \
   -v $(pwd)/config.json:/home/ccproxy/.ccproxy/config.json:ro \
-  ghcr.io/yourusername/ccproxy:latest
+  ghcr.io/orchestre-dev/ccproxy:latest
 ```
 
 ## Docker Compose
@@ -94,7 +94,7 @@ version: '3.8'
 
 services:
   ccproxy:
-    image: ghcr.io/yourusername/ccproxy:latest
+    image: ghcr.io/orchestre-dev/ccproxy:latest
     container_name: ccproxy
     ports:
       - "3456:3456"
@@ -179,7 +179,7 @@ docker run -d \
   --tmpfs /tmp \
   -v ccproxy-data:/home/ccproxy/.ccproxy \
   -p 3456:3456 \
-  ghcr.io/yourusername/ccproxy:latest
+  ghcr.io/orchestre-dev/ccproxy:latest
 ```
 
 ## Resource Limits
@@ -193,7 +193,7 @@ docker run -d \
   --memory-swap="1g" \
   --cpus="1.0" \
   -p 3456:3456 \
-  ghcr.io/yourusername/ccproxy:latest
+  ghcr.io/orchestre-dev/ccproxy:latest
 ```
 
 ### Docker Compose
@@ -232,7 +232,7 @@ docker logs --tail 100 ccproxy
 ```bash
 docker run -it --rm \
   --entrypoint sh \
-  ghcr.io/yourusername/ccproxy:latest
+  ghcr.io/orchestre-dev/ccproxy:latest
 ```
 
 ### Common Issues

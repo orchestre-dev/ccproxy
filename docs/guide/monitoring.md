@@ -36,7 +36,7 @@ global:
 scrape_configs:
   - job_name: 'ccproxy'
     static_configs:
-      - targets: ['localhost:7187']
+      - targets: ['localhost:3456']
     metrics_path: /health
     scrape_interval: 30s
 ```
@@ -124,7 +124,7 @@ output {
 ```bash
 #!/bin/bash
 # health-check.sh
-ENDPOINT="http://localhost:7187/health"
+ENDPOINT="http://localhost:3456/health"
 TIMEOUT=10
 
 while true; do
@@ -152,8 +152,8 @@ spec:
     app: ccproxy
   ports:
     - name: http
-      port: 7187
-      targetPort: 7187
+      port: 3456
+      targetPort: 3456
 
 ---
 apiVersion: monitoring.coreos.com/v1
@@ -242,7 +242,7 @@ for provider in "${PROVIDERS[@]}"; do
   # Test provider endpoint
   response=$(curl -s -o /dev/null -w "%{http_code}" \
     -H "Content-Type: application/json" \
-    -X POST http://localhost:7187/v1/messages \
+    -X POST http://localhost:3456/v1/messages \
     -d '{
       "model": "test",
       "messages": [{"role": "user", "content": "test"}],

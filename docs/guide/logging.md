@@ -48,7 +48,7 @@ Standard application lifecycle logs:
 ```json
 {
   "level": "info",
-  "msg": "Starting server on 0.0.0.0:7187",
+  "msg": "Starting server on 0.0.0.0:3456",
   "time": "2025-01-17T10:30:00Z"
 }
 ```

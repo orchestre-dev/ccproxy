@@ -86,7 +86,7 @@ export GROQ_API_KEY=your_backup_key
 ccproxy &
 
 # Point Claude Code to backup
-export ANTHROPIC_BASE_URL=http://localhost:7187
+export ANTHROPIC_BASE_URL=http://localhost:3456
 
 # Continue coding with identical interface
 claude "help me debug this function"
@@ -167,7 +167,7 @@ CCProxy is designed to be invisible during normal operation and instantly availa
 export PROVIDER=groq
 export GROQ_API_KEY=your_backup_key
 ccproxy &
-export ANTHROPIC_BASE_URL=http://localhost:7187
+export ANTHROPIC_BASE_URL=http://localhost:3456
 
 # Same Claude Code experience continues
 claude "continue our previous conversation"
@@ -298,7 +298,7 @@ export GROQ_API_KEY=your_groq_key
 ./ccproxy &
 
 # 4. Configure Claude Code to use backup
-export ANTHROPIC_BASE_URL=http://localhost:7187
+export ANTHROPIC_BASE_URL=http://localhost:3456
 export ANTHROPIC_API_KEY=NOT_NEEDED
 
 # 5. Continue coding normally

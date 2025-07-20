@@ -195,7 +195,7 @@ Responses follow the Anthropic Messages API format:
 ### Basic Text Request
 
 ```bash
-curl -X POST http://localhost:7187/v1/messages \
+curl -X POST http://localhost:3456/v1/messages \
   -H "Content-Type: application/json" \
   -d '{
     "model": "claude-3-sonnet",
@@ -212,7 +212,7 @@ curl -X POST http://localhost:7187/v1/messages \
 ### Multi-turn Conversation
 
 ```bash
-curl -X POST http://localhost:7187/v1/messages \
+curl -X POST http://localhost:3456/v1/messages \
   -H "Content-Type: application/json" \
   -d '{
     "model": "claude-3-sonnet",
@@ -237,7 +237,7 @@ curl -X POST http://localhost:7187/v1/messages \
 ### Request with System Message
 
 ```bash
-curl -X POST http://localhost:7187/v1/messages \
+curl -X POST http://localhost:3456/v1/messages \
   -H "Content-Type: application/json" \
   -d '{
     "model": "claude-3-sonnet",
@@ -255,7 +255,7 @@ curl -X POST http://localhost:7187/v1/messages \
 ### Request with Tools
 
 ```bash
-curl -X POST http://localhost:7187/v1/messages \
+curl -X POST http://localhost:3456/v1/messages \
   -H "Content-Type: application/json" \
   -d '{
     "model": "claude-3-sonnet",
@@ -286,7 +286,7 @@ curl -X POST http://localhost:7187/v1/messages \
 ### Tool Result Follow-up
 
 ```bash
-curl -X POST http://localhost:7187/v1/messages \
+curl -X POST http://localhost:3456/v1/messages \
   -H "Content-Type: application/json" \
   -d '{
     "model": "claude-3-sonnet",

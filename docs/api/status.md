@@ -17,7 +17,7 @@ Returns detailed status information about CCProxy and the configured provider.
 ### Request
 
 ```bash
-curl http://localhost:7187/status
+curl http://localhost:3456/status
 ```
 
 ### Response
@@ -85,13 +85,13 @@ curl http://localhost:7187/status
 export ENABLE_METRICS=true
 
 # Scrape metrics
-curl http://localhost:7187/metrics
+curl http://localhost:3456/metrics
 ```
 
 ### Health Check Script
 ```bash
 #!/bin/bash
-STATUS=$(curl -s http://localhost:7187/status | jq -r '.status')
+STATUS=$(curl -s http://localhost:3456/status | jq -r '.status')
 if [ "$STATUS" != "healthy" ]; then
   echo "CCProxy unhealthy: $STATUS"
   exit 1

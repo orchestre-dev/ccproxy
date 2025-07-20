@@ -67,7 +67,7 @@ export GROQ_API_KEY=your_groq_api_key
 ccproxy &
 
 # Point Claude Code to CCProxy
-export ANTHROPIC_BASE_URL=http://localhost:7187
+export ANTHROPIC_BASE_URL=http://localhost:3456
 export ANTHROPIC_API_KEY=dummy_key
 
 # Use Claude Code normally!

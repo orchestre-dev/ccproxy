@@ -109,7 +109,7 @@ export OPENAI_API_KEY=your_openai_key
 ccproxy &
 
 # Claude Code connects seamlessly
-export ANTHROPIC_BASE_URL=http://localhost:7187
+export ANTHROPIC_BASE_URL=http://localhost:3456
 claude "Help me debug this function"
 ```
 
@@ -155,7 +155,7 @@ export OPENAI_MODEL=gpt-4
 ccproxy
 
 # Configure Claude Code to use the proxy
-export ANTHROPIC_BASE_URL=http://localhost:7187
+export ANTHROPIC_BASE_URL=http://localhost:3456
 ```
 
 **The Result:**
@@ -286,7 +286,7 @@ export OPENAI_MODEL=gpt-4
 ./ccproxy-linux-amd64
 
 # Step 4: Configure Claude Code
-export ANTHROPIC_BASE_URL=http://localhost:7187
+export ANTHROPIC_BASE_URL=http://localhost:3456
 export ANTHROPIC_API_KEY=NOT_NEEDED
 
 # Step 5: Use Claude Code as normal
@@ -319,7 +319,7 @@ OPENAI_MODEL=gpt-4
 EOF
 
 # Run with Docker
-docker run -p 7187:7187 --env-file .env orchestre/ccproxy:latest
+docker run -p 3456:3456 --env-file .env orchestre/ccproxy:latest
 ```
 
 ## Cost Considerations
@@ -402,7 +402,7 @@ export OPENAI_API_KEY=$(vault kv get -field=api_key secret/openai)
 
 ### Basic Security Considerations
 
-- **Local operation**: CCProxy runs locally by default (localhost:7187)
+- **Local operation**: CCProxy runs locally by default (localhost:3456)
 - **No data storage**: CCProxy doesn't store requests or responses
 - **Simple proxy**: Just forwards requests to the configured provider
 - **Standard HTTPS**: Uses provider's native HTTPS endpoints
@@ -536,10 +536,10 @@ export PROVIDER=openai  # Make sure this matches your key
 # If Claude Code can't connect to CCProxy:
 
 # 1. Check CCProxy is running
-curl http://localhost:7187/health
+curl http://localhost:3456/health
 
 # 2. Verify Claude Code configuration
-export ANTHROPIC_BASE_URL=http://localhost:7187
+export ANTHROPIC_BASE_URL=http://localhost:3456
 export ANTHROPIC_API_KEY=NOT_NEEDED
 
 # 3. Check firewall settings (if needed)
@@ -601,7 +601,7 @@ export GROQ_API_KEY=your_groq_key
 
 **Step 4: Configure Claude Code**
 ```bash
-export ANTHROPIC_BASE_URL=http://localhost:7187
+export ANTHROPIC_BASE_URL=http://localhost:3456
 export ANTHROPIC_API_KEY=NOT_NEEDED
 ```
 

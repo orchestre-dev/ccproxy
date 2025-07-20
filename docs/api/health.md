@@ -32,7 +32,7 @@ Simple health check that returns immediately if the service is running.
 ### Example
 
 ```bash
-curl http://localhost:7187/
+curl http://localhost:3456/
 ```
 
 ### Use Cases
@@ -102,7 +102,7 @@ Comprehensive health check that validates the service configuration and provider
 ### Example
 
 ```bash
-curl http://localhost:7187/health
+curl http://localhost:3456/health
 ```
 
 ### Error Response
@@ -167,7 +167,7 @@ Provides detailed information about the current provider configuration and opera
     ]
   },
   "configuration": {
-    "port": 7187,
+    "port": 3456,
     "log_level": "info",
     "timeout": "120s",
     "cors_enabled": true
@@ -195,7 +195,7 @@ Provides detailed information about the current provider configuration and opera
 ### Example
 
 ```bash
-curl http://localhost:7187/status
+curl http://localhost:3456/status
 ```
 
 ### Provider-Specific Status
@@ -280,7 +280,7 @@ ccproxy_tokens_processed_total{provider="groq",type="output"} 1240000
 #!/bin/bash
 # health-check.sh
 
-response=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:7187/)
+response=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3456/)
 
 if [ $response -eq 200 ]; then
     echo "CCProxy is healthy"
@@ -296,7 +296,7 @@ fi
 #!/bin/bash
 # detailed-health-check.sh
 
-health=$(curl -s http://localhost:7187/health | jq -r '.status')
+health=$(curl -s http://localhost:3456/health | jq -r '.status')
 
 case $health in
     "healthy")
@@ -332,9 +332,9 @@ COPY --from=builder /app/ccproxy .
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:7187/health || exit 1
+  CMD curl -f http://localhost:3456/health || exit 1
 
-EXPOSE 7187
+EXPOSE 3456
 CMD ["./ccproxy"]
 ```
 
@@ -345,12 +345,12 @@ services:
   ccproxy:
     build: .
     ports:
-      - "7187:7187"
+      - "3456:3456"
     environment:
       - PROVIDER=groq
       - GROQ_API_KEY=${GROQ_API_KEY}
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:7187/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:3456/health"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -378,7 +378,7 @@ spec:
       - name: ccproxy
         image: ccproxy:latest
         ports:
-        - containerPort: 7187
+        - containerPort: 3456
         env:
         - name: PROVIDER
           value: "groq"
@@ -390,7 +390,7 @@ spec:
         livenessProbe:
           httpGet:
             path: /
-            port: 7187
+            port: 3456
           initialDelaySeconds: 30
           periodSeconds: 10
           timeoutSeconds: 5
@@ -398,7 +398,7 @@ spec:
         readinessProbe:
           httpGet:
             path: /health
-            port: 7187
+            port: 3456
           initialDelaySeconds: 5
           periodSeconds: 5
           timeoutSeconds: 10
@@ -450,7 +450,7 @@ Example Grafana alert rules:
 #!/bin/bash
 # pagerduty-alert.sh
 
-HEALTH_STATUS=$(curl -s http://localhost:7187/health | jq -r '.status')
+HEALTH_STATUS=$(curl -s http://localhost:3456/health | jq -r '.status')
 
 if [ "$HEALTH_STATUS" != "healthy" ]; then
     curl -X POST https://events.pagerduty.com/v2/enqueue \

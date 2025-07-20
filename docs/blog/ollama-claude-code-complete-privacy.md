@@ -226,7 +226,7 @@ ccproxy --privacy-mode=maximum \
 # Visit https://claude.ai/code for installation instructions
 
 # Configure Claude Code to use your local setup
-export ANTHROPIC_BASE_URL=http://localhost:7187
+export ANTHROPIC_BASE_URL=http://localhost:3456
 export ANTHROPIC_API_KEY=dummy  # CCProxy handles local routing
 ```
 

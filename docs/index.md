@@ -84,7 +84,7 @@ export PROVIDER=groq GROQ_API_KEY=your_key
 ccproxy &
 
 # Connect Claude Code
-export ANTHROPIC_BASE_URL=http://localhost:7187
+export ANTHROPIC_BASE_URL=http://localhost:3456
 claude-code "Help me with coding tasks"
 ```
 

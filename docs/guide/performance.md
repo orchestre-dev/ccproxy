@@ -489,4 +489,4 @@ go tool pprof http://localhost:8080/debug/pprof/profile?seconds=30
 
 - [Monitoring Guide](/guide/monitoring) - Set up comprehensive monitoring
 - [Security Best Practices](/guide/security) - Secure your deployment
-- [Production Deployment](/guide/docker) - Deploy to production
+- [Production Deployment](/docker) - Deploy to production

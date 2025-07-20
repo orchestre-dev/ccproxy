@@ -145,7 +145,7 @@ Once configured, use Claude Code normally:
 
 ```bash
 # Set CCProxy as the API endpoint
-export ANTHROPIC_BASE_URL=http://localhost:7187
+export ANTHROPIC_BASE_URL=http://localhost:3456
 export ANTHROPIC_API_KEY=NOT_NEEDED
 
 # Use Claude Code
@@ -408,7 +408,7 @@ import anthropic
 # Point to CCProxy
 client = anthropic.Anthropic(
     api_key="NOT_NEEDED",
-    base_url="http://localhost:7187"
+    base_url="http://localhost:3456"
 )
 
 response = client.messages.create(
@@ -449,10 +449,10 @@ Monitor usage at [console.mistral.ai](https://console.mistral.ai):
 tail -f ccproxy.log | grep mistral
 
 # Status endpoint
-curl http://localhost:7187/status
+curl http://localhost:3456/status
 
 # Health check
-curl http://localhost:7187/health
+curl http://localhost:3456/health
 ```
 
 ## Comparison with Other Providers
