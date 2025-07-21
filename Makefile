@@ -36,7 +36,7 @@ PLATFORMS := darwin/amd64 darwin/arm64 linux/amd64 linux/arm64 windows/amd64
 .DEFAULT_GOAL := help
 
 # Phony targets
-.PHONY: all build test clean help install lint fmt coverage release docker
+.PHONY: all build test clean help install lint fmt coverage release docker version
 
 ## help: Show this help message
 help:
@@ -231,6 +231,43 @@ info:
 ## version: Show version
 version:
 	@echo "$(VERSION)"
+
+# Version management targets
+## version-current: Show current version
+version-current:
+	@./scripts/version.sh current
+
+## version-next: Show next version that would be generated
+version-next:
+	@./scripts/version.sh next auto
+
+## version-bump: Bump version automatically based on commits
+version-bump:
+	@./scripts/version.sh bump auto
+
+## version-bump-patch: Bump patch version
+version-bump-patch:
+	@./scripts/version.sh bump patch
+
+## version-bump-minor: Bump minor version  
+version-bump-minor:
+	@./scripts/version.sh bump minor
+
+## version-bump-major: Bump major version
+version-bump-major:
+	@./scripts/version.sh bump major
+
+## version-suggest: Suggest version bump based on commits
+version-suggest:
+	@./scripts/version.sh suggest
+
+## version-check: Check conventional commit format
+version-check:
+	@./scripts/version.sh check
+
+## changelog: Generate changelog
+changelog:
+	@./scripts/version.sh changelog
 
 # Docker targets (if Makefile.docker exists)
 -include Makefile.docker

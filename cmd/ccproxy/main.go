@@ -6,6 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/orchestre-dev/ccproxy/cmd/ccproxy/commands"
+	"github.com/orchestre-dev/ccproxy/internal/version"
 )
 
 var (
@@ -26,6 +27,20 @@ between Claude Code and various Large Language Model (LLM) providers.`,
 func init() {
 	// Disable default completion command
 	rootCmd.CompletionOptions.DisableDefaultCmd = true
+	
+	// Use build-time version if available, otherwise fallback to version package
+	if Version == "dev" || Version == "" {
+		Version = version.Version
+	}
+	if BuildTime == "unknown" || BuildTime == "" {
+		BuildTime = version.BuildTime
+	}
+	if Commit == "unknown" || Commit == "" {
+		Commit = version.Commit
+	}
+	
+	// Update root command version
+	rootCmd.Version = Version
 	
 	// Set version info for commands to use
 	commands.SetVersionInfo(Version, BuildTime, Commit)

@@ -1,9 +1,15 @@
-name: Release
+name: Manual Release
 
 on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Git tag to release'
+        required: true
+        type: string
 
 env:
   GO_VERSION: '1.24'
