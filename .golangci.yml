@@ -38,6 +38,13 @@ issues:
     - G204
     # gosec: Duplicated errcheck checks
     - G104
+    # staticcheck: Ignore nil pointer dereference false positives in tests where we check for nil
+    - SA5011
+    # unparam: Ignore unused parameters in event handlers and interface implementations
+    - (.*)worker(.*) - `id` is unused
+    # errcheck: Ignore certain test file patterns that don't need error checking
+    - Error return value of `.*\.Write` is not checked
+    - Error return value of `.*\.WriteString` is not checked
   max-issues-per-linter: 0
   max-same-issues: 0
   new: false

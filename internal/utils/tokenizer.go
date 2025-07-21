@@ -138,7 +138,7 @@ func CountMessageTokens(params *MessageCreateParams) (int, error) {
 		}
 	}
 
-	return tokenCount
+	return tokenCount, nil
 }
 
 // countMessageContentTokens counts tokens in message content
@@ -200,7 +200,7 @@ func countMessageContentTokens(enc *tiktoken.Tiktoken, content interface{}) (int
 		}
 	}
 
-	return tokenCount
+	return tokenCount, nil
 }
 
 // countSystemTokens counts tokens in system content
