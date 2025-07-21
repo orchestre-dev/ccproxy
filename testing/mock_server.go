@@ -23,6 +23,8 @@ type MockRoute struct {
 	Response    interface{}
 	StatusCode  int
 	Headers     map[string]string
+	IsStreaming bool
+	Chunks      []string
 }
 
 // RecordedRequest represents a recorded request
@@ -72,6 +74,22 @@ func (ms *MockServer) AddRoute(method, path string, response interface{}, status
 	}
 }
 
+// AddStreamingRoute adds a streaming route that sends chunks
+func (ms *MockServer) AddStreamingRoute(method, path string, chunks []string) {
+	ms.mu.Lock()
+	defer ms.mu.Unlock()
+	
+	key := method + ":" + path
+	ms.routes[key] = &MockRoute{
+		Method:      method,
+		Path:        path,
+		StatusCode:  http.StatusOK,
+		Headers:     map[string]string{"Content-Type": "text/event-stream"},
+		IsStreaming: true,
+		Chunks:      chunks,
+	}
+}
+
 // GetRequests returns all recorded requests
 func (ms *MockServer) GetRequests() []RecordedRequest {
 	ms.mu.RLock()
@@ -112,6 +130,20 @@ func (ms *MockServer) handleRequest(w http.ResponseWriter, r *http.Request) {
 	// Write response
 	w.WriteHeader(route.StatusCode)
 	
+	// Handle streaming response
+	if route.IsStreaming {
+		flusher, ok := w.(http.Flusher)
+		if ok {
+			for _, chunk := range route.Chunks {
+				w.Write([]byte(chunk))
+				flusher.Flush()
+				time.Sleep(10 * time.Millisecond) // Small delay between chunks
+			}
+		}
+		return
+	}
+	
+	// Handle regular response
 	if route.Response != nil {
 		switch v := route.Response.(type) {
 		case string:

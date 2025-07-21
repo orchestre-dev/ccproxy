@@ -147,3 +147,44 @@ func (f *Fixtures) GetProvider(name string) (map[string]interface{}, error) {
 	}
 	return nil, fmt.Errorf("provider fixture %s not found", name)
 }
+
+// GenerateLargeMessage generates a message with approximately the specified number of tokens
+func (f *Fixtures) GenerateLargeMessage(tokens int) string {
+	// Rough approximation: 1 token ≈ 4 characters
+	chars := tokens * 4
+	result := make([]byte, chars)
+	
+	// Fill with repeated pattern
+	pattern := "The quick brown fox jumps over the lazy dog. "
+	patternLen := len(pattern)
+	
+	for i := 0; i < chars; i++ {
+		result[i] = pattern[i%patternLen]
+	}
+	
+	return string(result)
+}
+
+// GenerateMessages generates multiple test messages
+func (f *Fixtures) GenerateMessages(count int) []map[string]interface{} {
+	messages := make([]map[string]interface{}, count)
+	
+	for i := 0; i < count; i++ {
+		messages[i] = map[string]interface{}{
+			"role": "user",
+			"content": fmt.Sprintf("Test message %d: %s", i+1, f.GenerateLargeMessage(10)),
+		}
+	}
+	
+	return messages
+}
+
+// AddRequest adds a request fixture
+func (f *Fixtures) AddRequest(name string, request map[string]interface{}) {
+	f.requests[name] = request
+}
+
+// AddResponse adds a response fixture
+func (f *Fixtures) AddResponse(name string, response interface{}) {
+	f.responses[name] = response
+}
