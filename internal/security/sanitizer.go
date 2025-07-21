@@ -189,6 +189,7 @@ func (s *DataSanitizer) isSensitiveKey(key string) bool {
 		"refresh_token", "refresh-token",
 		"session", "session_id", "session-id",
 		"cookie", "csrf", "xsrf",
+		"email",
 	}
 
 	for _, sensitive := range sensitiveKeys {

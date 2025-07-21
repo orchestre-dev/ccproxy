@@ -226,6 +226,15 @@ func (v *RequestValidator) validateURL(u *url.URL) error {
 		}
 	}
 
+	// Check for invalid percent encoding in raw query before parsing
+	if u.RawQuery != "" {
+		// Check for invalid percent encoding patterns
+		_, err := url.QueryUnescape(u.RawQuery)
+		if err != nil {
+			return fmt.Errorf("invalid query parameter encoding")
+		}
+	}
+
 	// Check query parameters
 	for key, values := range u.Query() {
 		for _, value := range values {
@@ -352,6 +361,10 @@ func (v *RequestValidator) detectXSS(req *http.Request) bool {
 
 // detectPathTraversal detects path traversal attempts
 func (v *RequestValidator) detectPathTraversal(req *http.Request) bool {
+	if req == nil || req.URL == nil {
+		return false
+	}
+	
 	patterns := []string{
 		`\.\.\/`,
 		`\.\.\\`,

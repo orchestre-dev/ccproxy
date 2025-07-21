@@ -118,6 +118,10 @@ func (m *Manager) Close() error {
 
 // ValidateRequest validates an incoming HTTP request
 func (m *Manager) ValidateRequest(req *http.Request) error {
+	if req == nil {
+		return errors.NewValidationError("request is nil", nil)
+	}
+	
 	m.mu.Lock()
 	m.requestCount++
 	m.mu.Unlock()
