@@ -12,6 +12,9 @@ type IPRateLimiter struct {
 	window   time.Duration
 	mu       sync.RWMutex
 	cleanup  *time.Ticker
+	done     chan struct{}
+	wg       sync.WaitGroup
+	stopOnce sync.Once
 }
 
 // rateLimitBucket tracks requests for a single IP
@@ -27,9 +30,11 @@ func NewIPRateLimiter(limit int, window time.Duration) *IPRateLimiter {
 		limit:    limit,
 		window:   window,
 		cleanup:  time.NewTicker(window),
+		done:     make(chan struct{}),
 	}
 
 	// Start cleanup goroutine
+	rl.wg.Add(1)
 	go rl.cleanupExpired()
 
 	return rl
@@ -99,21 +104,31 @@ func (rl *IPRateLimiter) Reset(ip string) {
 
 // cleanupExpired removes expired buckets
 func (rl *IPRateLimiter) cleanupExpired() {
-	for range rl.cleanup.C {
-		rl.mu.Lock()
-		now := time.Now()
-		for ip, bucket := range rl.requests {
-			if now.After(bucket.resetTime) {
-				delete(rl.requests, ip)
+	defer rl.wg.Done()
+	for {
+		select {
+		case <-rl.cleanup.C:
+			rl.mu.Lock()
+			now := time.Now()
+			for ip, bucket := range rl.requests {
+				if now.After(bucket.resetTime) {
+					delete(rl.requests, ip)
+				}
 			}
+			rl.mu.Unlock()
+		case <-rl.done:
+			return
 		}
-		rl.mu.Unlock()
 	}
 }
 
 // Stop stops the rate limiter
 func (rl *IPRateLimiter) Stop() {
-	rl.cleanup.Stop()
+	rl.stopOnce.Do(func() {
+		rl.cleanup.Stop()
+		close(rl.done)
+		rl.wg.Wait()
+	})
 }
 
 // TokenBucketRateLimiter implements a token bucket rate limiter
@@ -123,6 +138,9 @@ type TokenBucketRateLimiter struct {
 	refillRate int
 	mu         sync.RWMutex
 	cleanup    *time.Ticker
+	done       chan struct{}
+	wg         sync.WaitGroup
+	stopOnce   sync.Once
 }
 
 // tokenBucket represents a token bucket for rate limiting
@@ -138,8 +156,10 @@ func NewTokenBucketRateLimiter(capacity, refillRate int) *TokenBucketRateLimiter
 		capacity:   capacity,
 		refillRate: refillRate,
 		cleanup:    time.NewTicker(5 * time.Minute),
+		done:       make(chan struct{}),
 	}
 
+	rl.wg.Add(1)
 	go rl.cleanupStale()
 	return rl
 }
@@ -211,19 +231,29 @@ func (rl *TokenBucketRateLimiter) GetTokens(key string) int {
 
 // cleanupStale removes buckets that haven't been used recently
 func (rl *TokenBucketRateLimiter) cleanupStale() {
-	for range rl.cleanup.C {
-		rl.mu.Lock()
-		now := time.Now()
-		for key, bucket := range rl.buckets {
-			if now.Sub(bucket.lastRefill) > 10*time.Minute {
-				delete(rl.buckets, key)
+	defer rl.wg.Done()
+	for {
+		select {
+		case <-rl.cleanup.C:
+			rl.mu.Lock()
+			now := time.Now()
+			for key, bucket := range rl.buckets {
+				if now.Sub(bucket.lastRefill) > 10*time.Minute {
+					delete(rl.buckets, key)
+				}
 			}
+			rl.mu.Unlock()
+		case <-rl.done:
+			return
 		}
-		rl.mu.Unlock()
 	}
 }
 
 // Stop stops the rate limiter
 func (rl *TokenBucketRateLimiter) Stop() {
-	rl.cleanup.Stop()
+	rl.stopOnce.Do(func() {
+		rl.cleanup.Stop()
+		close(rl.done)
+		rl.wg.Wait()
+	})
 }

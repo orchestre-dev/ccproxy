@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -464,7 +465,8 @@ func TestStreamingProcessor_AdvancedErrorHandling(t *testing.T) {
 			Body:       slowReader,
 		}
 
-		w := httptest.NewRecorder()
+		// Use a custom writer that's safe for concurrent access
+		w := &safeTestWriter{ResponseWriter: httptest.NewRecorder()}
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Millisecond)
 		defer cancel()
 
@@ -473,6 +475,9 @@ func TestStreamingProcessor_AdvancedErrorHandling(t *testing.T) {
 		if err != nil {
 			t.Logf("Context cancellation handled: %v", err)
 		}
+		
+		// Wait a bit to ensure goroutines complete
+		time.Sleep(100 * time.Millisecond)
 	})
 
 	t.Run("WriterCloseErrors", func(t *testing.T) {
@@ -653,4 +658,24 @@ data: [DONE]
 			t.Error("Expected [DONE] marker")
 		}
 	})
+}
+
+// safeTestWriter wraps httptest.ResponseRecorder to be safe for concurrent access
+type safeTestWriter struct {
+	http.ResponseWriter
+	mu sync.Mutex
+}
+
+func (w *safeTestWriter) Write(data []byte) (int, error) {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	return w.ResponseWriter.Write(data)
+}
+
+func (w *safeTestWriter) Flush() {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	if flusher, ok := w.ResponseWriter.(http.Flusher); ok {
+		flusher.Flush()
+	}
 }

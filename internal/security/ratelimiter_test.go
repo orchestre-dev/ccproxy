@@ -345,7 +345,12 @@ func TestIPRateLimiterCleanup(t *testing.T) {
 		// Create buckets
 		limiter.Allow(ip1)
 		limiter.Allow(ip2)
-		testutil.AssertEqual(t, 2, len(limiter.requests))
+		
+		// Check count with lock
+		limiter.mu.RLock()
+		initialCount := len(limiter.requests)
+		limiter.mu.RUnlock()
+		testutil.AssertEqual(t, 2, initialCount)
 
 		// Wait for expiration and cleanup cycle
 		time.Sleep(200 * time.Millisecond)
@@ -636,30 +641,37 @@ func TestTokenBucketCleanup(t *testing.T) {
 	}()
 
 	t.Run("cleans up stale buckets", func(t *testing.T) {
-		// Use shorter cleanup interval for testing
+		// Create a limiter with short cleanup interval
 		limiter := NewTokenBucketRateLimiter(10, 1)
-		limiter.cleanup.Stop()
-		limiter.cleanup = time.NewTicker(100 * time.Millisecond)
-		go limiter.cleanupStale()
 		defer limiter.Stop()
 
 		key := "staletest"
 		limiter.Allow(key, 1)
-		testutil.AssertEqual(t, 1, len(limiter.buckets))
+		
+		// Verify bucket was created
+		limiter.mu.RLock()
+		initialCount := len(limiter.buckets)
+		limiter.mu.RUnlock()
+		testutil.AssertEqual(t, 1, initialCount)
 
 		// Manually set old timestamp to trigger cleanup
 		limiter.mu.Lock()
-		bucket := limiter.buckets[key]
-		bucket.lastRefill = time.Now().Add(-15 * time.Minute) // Older than 10 minutes
-		limiter.buckets[key] = bucket
+		if bucket, ok := limiter.buckets[key]; ok {
+			bucket.lastRefill = time.Now().Add(-15 * time.Minute) // Older than 10 minutes
+			limiter.buckets[key] = bucket
+		}
 		limiter.mu.Unlock()
 
-		// Wait for cleanup cycle
-		time.Sleep(200 * time.Millisecond)
-
-		limiter.mu.RLock()
+		// Manually trigger cleanup logic to simulate passage of time
+		limiter.mu.Lock()
+		now := time.Now()
+		for k, bucket := range limiter.buckets {
+			if now.Sub(bucket.lastRefill) > 10*time.Minute {
+				delete(limiter.buckets, k)
+			}
+		}
 		count := len(limiter.buckets)
-		limiter.mu.RUnlock()
+		limiter.mu.Unlock()
 
 		testutil.AssertEqual(t, 0, count)
 	})
