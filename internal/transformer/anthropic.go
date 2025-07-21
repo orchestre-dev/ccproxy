@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/google/uuid"
 	"github.com/orchestre-dev/ccproxy/internal/utils"
 )
 
@@ -320,8 +321,14 @@ func (t *AnthropicTransformer) transformNonStreamingResponse(ctx context.Context
 
 // transformAnthropicToOpenAI transforms Anthropic response format to OpenAI format
 func (t *AnthropicTransformer) transformAnthropicToOpenAI(anthropicResp map[string]interface{}) map[string]interface{} {
+	// Ensure we have a valid ID
+	responseID := anthropicResp["id"]
+	if responseID == nil || responseID == "" {
+		responseID = "chatcmpl-" + uuid.New().String()
+	}
+	
 	openaiResp := map[string]interface{}{
-		"id":      anthropicResp["id"],
+		"id":      responseID,
 		"object":  "chat.completion",
 		"created": utils.GetTimestamp(),
 		"model":   anthropicResp["model"],
@@ -446,6 +453,11 @@ func (t *AnthropicTransformer) transformStreamEvent(event *SSEEvent, state *anth
 		if msg, ok := data["message"].(map[string]interface{}); ok {
 			state.messageID, _ = msg["id"].(string)
 			state.model, _ = msg["model"].(string)
+			
+			// Ensure we have a valid message ID
+			if state.messageID == "" {
+				state.messageID = "chatcmpl-" + uuid.New().String()
+			}
 		}
 
 	case "content_block_start":

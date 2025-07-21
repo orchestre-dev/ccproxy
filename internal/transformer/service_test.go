@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/orchestre-dev/ccproxy/internal/config"
 )
@@ -262,27 +263,27 @@ func TestService_GetChainForProvider(t *testing.T) {
 	service := NewService()
 	
 	// Test getting chain that doesn't exist
-	_, err := service.GetChainForProvider("non-existent")
-	if err == nil {
-		t.Error("Expected error for non-existent provider")
+	chain := service.GetChainForProvider("non-existent")
+	if chain == nil {
+		t.Error("Expected chain to be created for non-existent provider")
 	}
 	
 	// Create and cache a chain
-	chain := NewTransformerChain()
-	chain.Add(NewMockTransformer("test"))
+	cachedChain := NewTransformerChain()
+	cachedChain.Add(NewMockTransformer("test"))
 	
 	// Manually add it to the cache
 	service.mu.Lock()
-	service.chains["provider:test-provider"] = chain
+	service.chains["provider:test-provider"] = &cacheEntry{
+		chain:      cachedChain,
+		lastAccess: time.Now(),
+	}
 	service.mu.Unlock()
 	
 	// Now get it
-	retrievedChain, err := service.GetChainForProvider("test-provider")
-	if err != nil {
-		t.Errorf("Failed to get cached chain: %v", err)
-	}
+	retrievedChain := service.GetChainForProvider("test-provider")
 	
-	if retrievedChain != chain {
+	if retrievedChain != cachedChain {
 		t.Error("Retrieved chain doesn't match cached one")
 	}
 }

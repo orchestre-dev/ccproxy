@@ -2,18 +2,27 @@ package transformer
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"sync"
+	"time"
 
 	"github.com/orchestre-dev/ccproxy/internal/config"
 	"github.com/orchestre-dev/ccproxy/internal/utils"
 )
 
+// cacheEntry represents a cached transformer chain with last access time
+type cacheEntry struct {
+	chain      *TransformerChain
+	lastAccess time.Time
+}
+
 // Service manages transformers and their lifecycle
 type Service struct {
 	transformers map[string]Transformer
-	chains       map[string]*TransformerChain
+	chains       map[string]*cacheEntry
+	maxCacheSize int
 	mu           sync.RWMutex
 }
 
@@ -21,7 +30,8 @@ type Service struct {
 func NewService() *Service {
 	return &Service{
 		transformers: make(map[string]Transformer),
-		chains:       make(map[string]*TransformerChain),
+		chains:       make(map[string]*cacheEntry),
+		maxCacheSize: 100, // Limit to 100 cached chains
 	}
 }
 
@@ -102,28 +112,56 @@ func (s *Service) CreateChainFromNames(names []string) (*TransformerChain, error
 	return chain, nil
 }
 
+// evictLRU removes the least recently used cache entry
+func (s *Service) evictLRU() {
+	if len(s.chains) <= s.maxCacheSize {
+		return
+	}
+	
+	// Find the oldest entry
+	var oldestKey string
+	oldestTime := time.Now()
+	
+	for key, entry := range s.chains {
+		if entry.lastAccess.Before(oldestTime) {
+			oldestTime = entry.lastAccess
+			oldestKey = key
+		}
+	}
+	
+	if oldestKey != "" {
+		delete(s.chains, oldestKey)
+	}
+}
+
 // GetChainForProvider gets the transformer chain for a provider by name
 func (s *Service) GetChainForProvider(providerName string) *TransformerChain {
 	s.mu.RLock()
 	chainKey := fmt.Sprintf("provider:%s", providerName)
-	chain, exists := s.chains[chainKey]
-	s.mu.RUnlock()
-	
+	entry, exists := s.chains[chainKey]
 	if exists {
+		// Update last access time
+		entry.lastAccess = time.Now()
+		chain := entry.chain
+		s.mu.RUnlock()
 		return chain
 	}
+	s.mu.RUnlock()
+	
+	// Chain doesn't exist, need to create it
 	
 	// Create a default chain with common transformers
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	
 	// Double-check in case another goroutine created it
-	if existingChain, exists := s.chains[chainKey]; exists {
-		return existingChain
+	if existingEntry, exists := s.chains[chainKey]; exists {
+		existingEntry.lastAccess = time.Now()
+		return existingEntry.chain
 	}
 	
 	// Create default chain with provider-specific transformer and common ones
-	chain = NewTransformerChain()
+	chain := NewTransformerChain()
 	
 	// Add provider-specific transformer if it exists
 	providerTransformer := s.transformers[providerName]
@@ -145,7 +183,14 @@ func (s *Service) GetChainForProvider(providerName string) *TransformerChain {
 		chain.Add(toolTransformer)
 	}
 	
-	s.chains[chainKey] = chain
+	// Evict LRU entries if cache is full
+	s.evictLRU()
+	
+	// Cache the new chain
+	s.chains[chainKey] = &cacheEntry{
+		chain:      chain,
+		lastAccess: time.Now(),
+	}
 	return chain
 }
 
@@ -154,12 +199,15 @@ func (s *Service) GetOrCreateChain(provider *config.Provider) (*TransformerChain
 	// First check if chain exists with read lock
 	s.mu.RLock()
 	chainKey := fmt.Sprintf("provider:%s", provider.Name)
-	chain, exists := s.chains[chainKey]
-	s.mu.RUnlock()
-	
+	entry, exists := s.chains[chainKey]
 	if exists {
+		// Update last access time
+		entry.lastAccess = time.Now()
+		chain := entry.chain
+		s.mu.RUnlock()
 		return chain, nil
 	}
+	s.mu.RUnlock()
 	
 	// Create new chain (without holding lock)
 	chain, err := s.CreateChain(provider.Transformers)
@@ -172,11 +220,19 @@ func (s *Service) GetOrCreateChain(provider *config.Provider) (*TransformerChain
 	defer s.mu.Unlock()
 	
 	// Double-check in case another goroutine created it
-	if existingChain, exists := s.chains[chainKey]; exists {
-		return existingChain, nil
+	if existingEntry, exists := s.chains[chainKey]; exists {
+		existingEntry.lastAccess = time.Now()
+		return existingEntry.chain, nil
 	}
 	
-	s.chains[chainKey] = chain
+	// Evict LRU entries if cache is full
+	s.evictLRU()
+	
+	// Cache the new chain
+	s.chains[chainKey] = &cacheEntry{
+		chain:      chain,
+		lastAccess: time.Now(),
+	}
 	return chain, nil
 }
 
@@ -224,6 +280,37 @@ func (s *Service) ApplyResponseTransformation(ctx context.Context, provider *con
 // Response wraps http.Response for type safety
 type Response struct {
 	Response *http.Response
+}
+
+// TransformRequest applies transformations using a named transformer
+func (s *Service) TransformRequest(ctx context.Context, transformerName string, req *http.Request, body []byte) ([]byte, map[string]string, error) {
+	transformer, err := s.Get(transformerName)
+	if err != nil {
+		return body, nil, err
+	}
+	
+	// Convert body to request object
+	var request interface{}
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &request); err != nil {
+			return body, nil, fmt.Errorf("failed to unmarshal request: %w", err)
+		}
+	}
+	
+	// Apply transformer
+	transformed, err := transformer.TransformRequestIn(ctx, request, transformerName)
+	if err != nil {
+		return body, nil, err
+	}
+	
+	// Marshal back to body
+	transformedBody, err := json.Marshal(transformed)
+	if err != nil {
+		return body, nil, fmt.Errorf("failed to marshal transformed request: %w", err)
+	}
+	
+	// For now, return no additional headers
+	return transformedBody, nil, nil
 }
 
 // ParseTransformerConfig parses transformer configuration from various formats
