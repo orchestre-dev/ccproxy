@@ -110,20 +110,20 @@ func (s *Service) Load() error {
 func (s *Service) Get() *Config {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	
+
 	// Create a deep copy of the config
 	configCopy := *s.config
-	
+
 	// Deep copy the slices
 	configCopy.Providers = make([]Provider, len(s.config.Providers))
 	copy(configCopy.Providers, s.config.Providers)
-	
+
 	// Deep copy the routes map
 	configCopy.Routes = make(map[string]Route)
 	for k, v := range s.config.Routes {
 		configCopy.Routes[k] = v
 	}
-	
+
 	return &configCopy
 }
 
@@ -227,7 +227,7 @@ func (s *Service) GetProvider(name string) (*Provider, error) {
 func (s *Service) UpdateProvider(name string, provider *Provider) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	
+
 	provider.UpdatedAt = time.Now()
 
 	// Find and update existing provider
@@ -248,7 +248,7 @@ func (s *Service) UpdateProvider(name string, provider *Provider) error {
 func (s *Service) SaveProvider(provider *Provider) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	
+
 	// Check if provider already exists
 	for _, p := range s.config.Providers {
 		if p.Name == provider.Name {
@@ -269,7 +269,7 @@ func (s *Service) SaveProvider(provider *Provider) error {
 func (s *Service) DeleteProvider(name string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	
+
 	providers := make([]Provider, 0, len(s.config.Providers))
 	found := false
 
