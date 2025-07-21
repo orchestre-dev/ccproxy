@@ -140,6 +140,7 @@ func (s *Server) handleUpdateProvider(c *gin.Context) {
 
 	// Save config
 	configService := config.NewService()
+	configService.SetConfig(s.config)
 	if err := configService.UpdateProvider(name, provider); err != nil {
 		InternalServerError(c, fmt.Sprintf("Failed to update provider: %v", err))
 		return
@@ -198,6 +199,7 @@ func (s *Server) handleToggleProvider(c *gin.Context) {
 
 	// Save config
 	configService := config.NewService()
+	configService.SetConfig(s.config)
 	if err := configService.UpdateProvider(name, provider); err != nil {
 		InternalServerError(c, fmt.Sprintf("Failed to toggle provider: %v", err))
 		return
