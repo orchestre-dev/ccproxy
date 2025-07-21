@@ -15,7 +15,7 @@ func NewGoogleConverter() *GoogleConverter {
 
 // GoogleRequest represents Google's request format
 type GoogleRequest struct {
-	Contents         []GoogleContent        `json:"contents"`
+	Contents         []GoogleContent         `json:"contents"`
 	GenerationConfig *GoogleGenerationConfig `json:"generationConfig,omitempty"`
 }
 
@@ -41,8 +41,8 @@ type GoogleGenerationConfig struct {
 
 // GoogleResponse represents Google's response format
 type GoogleResponse struct {
-	Candidates []GoogleCandidate `json:"candidates"`
-	UsageMetadata *GoogleUsage     `json:"usageMetadata,omitempty"`
+	Candidates    []GoogleCandidate `json:"candidates"`
+	UsageMetadata *GoogleUsage      `json:"usageMetadata,omitempty"`
 }
 
 // GoogleCandidate represents a response candidate
@@ -75,19 +75,19 @@ func (gc *GoogleConverter) ToGeneric(data json.RawMessage, isRequest bool) (json
 			for _, part := range content.Parts {
 				text += part.Text
 			}
-			
+
 			// Convert content to JSON
 			contentJSON, err := json.Marshal(text)
 			if err != nil {
 				return nil, fmt.Errorf("failed to marshal content: %w", err)
 			}
-			
+
 			// Map Google roles to generic roles
 			role := content.Role
 			if role == "model" {
 				role = "assistant"
 			}
-			
+
 			messages[i] = Message{
 				Role:    role,
 				Content: contentJSON,
@@ -119,13 +119,13 @@ func (gc *GoogleConverter) ToGeneric(data json.RawMessage, isRequest bool) (json
 	}
 
 	candidate := resp.Candidates[0]
-	
+
 	// Extract text from parts
 	var text string
 	for _, part := range candidate.Content.Parts {
 		text += part.Text
 	}
-	
+
 	// Convert content
 	content, err := json.Marshal(text)
 	if err != nil {
@@ -166,11 +166,11 @@ func (gc *GoogleConverter) FromGeneric(data json.RawMessage, isRequest bool) (js
 
 		// Convert messages to contents
 		contents := make([]GoogleContent, 0, len(req.Messages))
-		
+
 		// Add system message as first user message if present
 		if req.System != "" {
 			contents = append(contents, GoogleContent{
-				Role: "user",
+				Role:  "user",
 				Parts: []GooglePart{{Text: req.System}},
 			})
 		}
@@ -187,13 +187,13 @@ func (gc *GoogleConverter) FromGeneric(data json.RawMessage, isRequest bool) (js
 					return nil, fmt.Errorf("failed to parse content: %w", err)
 				}
 			}
-			
+
 			// Map role
 			role := msg.Role
 			if role == "assistant" {
 				role = "model"
 			}
-			
+
 			contents = append(contents, GoogleContent{
 				Role:  role,
 				Parts: []GooglePart{{Text: text}},

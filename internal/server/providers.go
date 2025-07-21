@@ -2,7 +2,6 @@ package server
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/orchestre-dev/ccproxy/internal/config"
@@ -72,7 +71,7 @@ func (s *Server) handleCreateProvider(c *gin.Context) {
 // handleGetProvider returns a specific provider by name
 func (s *Server) handleGetProvider(c *gin.Context) {
 	name := c.Param("name")
-	
+
 	// Find provider
 	for _, provider := range s.config.Providers {
 		if provider.Name == name {
@@ -80,14 +79,14 @@ func (s *Server) handleGetProvider(c *gin.Context) {
 			return
 		}
 	}
-	
+
 	NotFound(c, fmt.Sprintf("Provider '%s' not found", name))
 }
 
 // handleUpdateProvider updates an existing provider
 func (s *Server) handleUpdateProvider(c *gin.Context) {
 	name := c.Param("name")
-	
+
 	var req UpdateProviderRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		BadRequest(c, err.Error())
@@ -110,7 +109,7 @@ func (s *Server) handleUpdateProvider(c *gin.Context) {
 
 	// Update provider fields
 	provider := &s.config.Providers[providerIndex]
-	
+
 	if req.Name != "" && req.Name != provider.Name {
 		// Check if new name already exists
 		for i, p := range s.config.Providers {
@@ -121,25 +120,26 @@ func (s *Server) handleUpdateProvider(c *gin.Context) {
 		}
 		provider.Name = req.Name
 	}
-	
+
 	if req.APIBaseURL != "" {
 		provider.APIBaseURL = req.APIBaseURL
 	}
-	
+
 	if req.APIKey != "" {
 		provider.APIKey = req.APIKey
 	}
-	
+
 	if req.Models != nil {
 		provider.Models = req.Models
 	}
-	
+
 	if req.Enabled != nil {
 		provider.Enabled = *req.Enabled
 	}
 
 	// Save config
 	configService := config.NewService()
+	configService.SetConfig(s.config)
 	if err := configService.UpdateProvider(name, provider); err != nil {
 		InternalServerError(c, fmt.Sprintf("Failed to update provider: %v", err))
 		return
@@ -168,7 +168,10 @@ func (s *Server) handleDeleteProvider(c *gin.Context) {
 
 	// Reload config in provider service
 	s.config = configService.Get()
-	s.providerService.Initialize()
+	if err := s.providerService.Initialize(); err != nil {
+		InternalServerError(c, fmt.Sprintf("Failed to reinitialize provider service: %v", err))
+		return
+	}
 
 	Success(c, gin.H{
 		"message": "Provider deleted successfully",
@@ -198,6 +201,7 @@ func (s *Server) handleToggleProvider(c *gin.Context) {
 
 	// Save config
 	configService := config.NewService()
+	configService.SetConfig(s.config)
 	if err := configService.UpdateProvider(name, provider); err != nil {
 		InternalServerError(c, fmt.Sprintf("Failed to toggle provider: %v", err))
 		return
@@ -211,21 +215,4 @@ func (s *Server) handleToggleProvider(c *gin.Context) {
 	Success(c, gin.H{
 		"message": message,
 	})
-}
-
-// Helper function to validate provider configuration
-func validateProvider(p *config.Provider) error {
-	if p.Name == "" {
-		return fmt.Errorf("provider name is required")
-	}
-	if p.APIBaseURL == "" {
-		return fmt.Errorf("provider API base URL is required")
-	}
-	if p.APIKey == "" {
-		return fmt.Errorf("provider API key is required")
-	}
-	if !strings.HasPrefix(p.APIBaseURL, "http://") && !strings.HasPrefix(p.APIBaseURL, "https://") {
-		return fmt.Errorf("provider API base URL must start with http:// or https://")
-	}
-	return nil
 }

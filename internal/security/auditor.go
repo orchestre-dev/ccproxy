@@ -21,6 +21,7 @@ type SecurityAuditor struct {
 	bufferSize  int
 	flushTicker *time.Ticker
 	done        chan struct{}
+	closeOnce   sync.Once
 }
 
 // NewSecurityAuditor creates a new security auditor
@@ -60,20 +61,22 @@ func NewSecurityAuditor(config *SecurityConfig) (*SecurityAuditor, error) {
 
 // Close closes the auditor
 func (a *SecurityAuditor) Close() error {
-	close(a.done)
-	
-	if a.flushTicker != nil {
-		a.flushTicker.Stop()
-	}
+	var err error
+	a.closeOnce.Do(func() {
+		close(a.done)
 
-	// Flush remaining entries
-	a.flush()
+		if a.flushTicker != nil {
+			a.flushTicker.Stop()
+		}
 
-	if a.logFile != nil {
-		return a.logFile.Close()
-	}
+		// Flush remaining entries
+		a.flush()
 
-	return nil
+		if a.logFile != nil {
+			err = a.logFile.Close()
+		}
+	})
+	return err
 }
 
 // LogSecurityEvent logs a security event
@@ -346,7 +349,7 @@ func (a *SecurityAuditor) RotateLogs() error {
 
 	// Get audit log directory
 	dir := filepath.Dir(a.config.AuditLogPath)
-	
+
 	// Find old log files
 	files, err := filepath.Glob(filepath.Join(dir, "audit*.log"))
 	if err != nil {

@@ -49,57 +49,57 @@ func NewWithPath(cfg *config.Config, configPath string) (*Server, error) {
 	if os.Getenv("GIN_MODE") == "" {
 		gin.SetMode(gin.ReleaseMode)
 	}
-	
+
 	// Apply security constraint: force localhost when no API key
 	if cfg.APIKey == "" && cfg.Host != "" && cfg.Host != "127.0.0.1" && cfg.Host != "localhost" {
 		utils.GetLogger().Warn("Forcing host to 127.0.0.1 due to missing API key")
 		cfg.Host = "127.0.0.1"
 	}
-	
+
 	// Create config service
 	configService := config.NewService()
 	configService.SetConfig(cfg)
-	
+
 	// Create provider service
 	providerService := providers.NewService(configService)
 	if err := providerService.Initialize(); err != nil {
 		return nil, fmt.Errorf("failed to initialize provider service: %w", err)
 	}
-	
+
 	// Start health checks with 5 minute interval to reduce system load
 	providerService.StartHealthChecks(5 * time.Minute)
-	
+
 	// Create transformer service
 	transformerService := transformer.GetRegistry()
-	
+
 	// Create routing engine
 	routingEngine := modelrouter.New(cfg)
-	
+
 	// Create pipeline
 	pipelineService := pipeline.NewPipeline(cfg, providerService, transformerService, routingEngine)
-	
+
 	// Create router
 	router := gin.New()
-	
+
 	// Add middleware
 	router.Use(gin.Recovery())
 	router.Use(corsMiddleware())
 	if cfg.Log {
 		router.Use(loggingMiddleware())
 	}
-	
+
 	// Add request size limit middleware
 	router.Use(requestSizeLimitMiddleware(cfg.Performance.MaxRequestBodySize))
-	
+
 	// Add authentication middleware
 	router.Use(authMiddleware(cfg.APIKey, true))
-	
+
 	// Add router middleware for intelligent model routing
 	router.Use(modelrouter.RouterMiddleware(cfg))
-	
+
 	// Create state manager
 	stateManager := state.NewManager()
-	
+
 	// Create performance monitor with config
 	perfConfig := &performance.PerformanceConfig{
 		ResourceLimits: performance.ResourceLimits{
@@ -130,7 +130,7 @@ func NewWithPath(cfg *config.Config, configPath string) (*Server, error) {
 		ProfilerEnabled: false,
 	}
 	perfMonitor := performance.NewMonitor(perfConfig)
-	
+
 	// Create server
 	s := &Server{
 		config:          cfg,
@@ -145,31 +145,31 @@ func NewWithPath(cfg *config.Config, configPath string) (*Server, error) {
 			Addr:    fmt.Sprintf("%s:%d", cfg.Host, cfg.Port),
 			Handler: router,
 			// Add timeouts to prevent hanging connections
-			ReadTimeout:    30 * time.Second,
-			WriteTimeout:   30 * time.Second,
-			IdleTimeout:    120 * time.Second,
+			ReadTimeout:  30 * time.Second,
+			WriteTimeout: 30 * time.Second,
+			IdleTimeout:  120 * time.Second,
 		},
 	}
-	
+
 	// Create readiness probe
 	s.readiness = state.NewReadinessProbe(stateManager, 10*time.Second, 5*time.Second)
-	
+
 	// Register readiness checks
 	s.setupReadinessChecks()
-	
+
 	// Register state change handlers
 	s.setupStateHandlers()
-	
+
 	// Setup routes
 	s.setupRoutes()
-	
+
 	// Add performance monitoring middleware if enabled
 	if cfg.Performance.MetricsEnabled {
 		router.Use(s.performanceMiddleware())
 		// Add resource limit enforcement middleware
 		router.Use(performance.Middleware(s.performance))
 	}
-	
+
 	return s, nil
 }
 
@@ -178,25 +178,25 @@ func (s *Server) Run() error {
 	// Start readiness probe
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	
+
 	s.readiness.Start(ctx)
 	defer s.readiness.Stop()
-	
+
 	// Wait for readiness
 	utils.GetLogger().Info("Waiting for server components to be ready...")
 	if err := s.readiness.WaitForReady(ctx, 30*time.Second); err != nil {
 		s.stateManager.SetError(err)
 		return fmt.Errorf("failed to initialize server components: %w", err)
 	}
-	
+
 	// Mark server as ready
 	s.stateManager.SetReady()
 	utils.GetLogger().Info("Server components ready")
-	
+
 	// Setup graceful shutdown
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
-	
+
 	// Start server in goroutine
 	errChan := make(chan error, 1)
 	go func() {
@@ -205,7 +205,7 @@ func (s *Server) Run() error {
 			errChan <- err
 		}
 	}()
-	
+
 	// Wait for interrupt or error
 	select {
 	case err := <-errChan:
@@ -215,7 +215,7 @@ func (s *Server) Run() error {
 		s.stateManager.SetStopping()
 		utils.LogShutdown("interrupt signal received")
 	}
-	
+
 	// Graceful shutdown
 	return s.Shutdown()
 }
@@ -229,32 +229,32 @@ func (s *Server) GetRouter() *gin.Engine {
 func (s *Server) Shutdown() error {
 	// Update state
 	s.stateManager.SetStopping()
-	
+
 	// Stop readiness probe
 	if s.readiness != nil {
 		s.readiness.Stop()
 	}
-	
+
 	// Stop provider service
 	if s.providerService != nil {
 		s.providerService.Stop()
 	}
-	
+
 	// Stop performance monitor
 	if s.performance != nil {
 		s.performance.Stop()
 	}
-	
+
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	
+
 	if err := s.server.Shutdown(ctx); err != nil {
 		return fmt.Errorf("server shutdown error: %w", err)
 	}
-	
+
 	// Update state to stopped
 	s.stateManager.SetComponentState("server", state.StateStopped, nil)
-	
+
 	utils.GetLogger().Info("Server stopped gracefully")
 	return nil
 }
@@ -265,10 +265,10 @@ func (s *Server) setupRoutes() {
 	s.router.GET("/", s.handleRoot)
 	s.router.GET("/health", s.handleHealth)
 	s.router.GET("/status", s.handleStatus)
-	
+
 	// Main API endpoint
 	s.router.POST("/v1/messages", s.handleMessages)
-	
+
 	// Provider management endpoints
 	providers := s.router.Group("/providers")
 	{
@@ -298,13 +298,13 @@ func (s *Server) handleHealth(c *gin.Context) {
 		})
 		return
 	}
-	
+
 	// Check if request is authenticated for detailed information
 	isAuthenticated := s.isHealthRequestAuthenticated(c)
-	
+
 	// Basic health status (always available)
 	healthyProviders := s.providerService.GetHealthyProviders()
-	
+
 	response := gin.H{
 		"status":    "healthy",
 		"timestamp": time.Now().Format(time.RFC3339),
@@ -313,11 +313,11 @@ func (s *Server) handleHealth(c *gin.Context) {
 			"total":   len(s.providerService.GetAllProviders()),
 		},
 	}
-	
+
 	// Add detailed information only if authenticated
 	if isAuthenticated {
 		allProviders := s.providerService.GetAllProviders()
-		
+
 		providerHealth := make(map[string]interface{})
 		for _, p := range allProviders {
 			health, _ := s.providerService.GetProviderHealth(p.Name)
@@ -330,10 +330,10 @@ func (s *Server) handleHealth(c *gin.Context) {
 				}
 			}
 		}
-		
+
 		response["state"] = string(s.stateManager.GetState())
 		response["providers"].(gin.H)["details"] = providerHealth
-		
+
 		// Get component health
 		components := s.stateManager.GetComponents()
 		componentHealth := make(map[string]interface{})
@@ -348,7 +348,7 @@ func (s *Server) handleHealth(c *gin.Context) {
 		}
 		response["components"] = componentHealth
 	}
-	
+
 	c.JSON(http.StatusOK, response)
 }
 
@@ -358,7 +358,7 @@ func (s *Server) isHealthRequestAuthenticated(c *gin.Context) bool {
 	if s.config.APIKey == "" {
 		return isLocalhost(c)
 	}
-	
+
 	// Check Authorization header (Bearer token)
 	authHeader := c.GetHeader("Authorization")
 	if authHeader != "" {
@@ -370,12 +370,12 @@ func (s *Server) isHealthRequestAuthenticated(c *gin.Context) bool {
 			}
 		}
 	}
-	
+
 	// Check x-api-key header
 	if c.GetHeader("x-api-key") == s.config.APIKey {
 		return true
 	}
-	
+
 	return false
 }
 
@@ -383,22 +383,22 @@ func (s *Server) isHealthRequestAuthenticated(c *gin.Context) bool {
 func (s *Server) handleStatus(c *gin.Context) {
 	// Calculate uptime
 	uptime := time.Since(s.startTime)
-	
+
 	// Format uptime as human-readable string
 	hours := int(uptime.Hours())
 	minutes := int(uptime.Minutes()) % 60
 	seconds := int(uptime.Seconds()) % 60
 	uptimeStr := fmt.Sprintf("%dh %dm %ds", hours, minutes, seconds)
-	
+
 	// Get healthy providers
 	healthyProviders := s.providerService.GetHealthyProviders()
-	
+
 	// Build provider status
 	providerStatus := gin.H{
 		"name":   "none",
 		"status": "disconnected",
 	}
-	
+
 	// Use first healthy provider as the "current" provider
 	var currentProvider *config.Provider
 	if len(healthyProviders) > 0 {
@@ -407,20 +407,20 @@ func (s *Server) handleStatus(c *gin.Context) {
 			"name":   currentProvider.Name,
 			"status": "connected",
 		}
-		
+
 		// Get default model from routes
 		if routes := s.config.Routes; routes != nil {
 			if defaultRoute, ok := routes["default"]; ok && defaultRoute.Provider == currentProvider.Name {
 				providerStatus["model"] = defaultRoute.Model
 			}
 		}
-		
+
 		// Add provider-specific details
 		health, _ := s.providerService.GetProviderHealth(currentProvider.Name)
 		if health != nil {
 			providerStatus["last_check"] = health.LastCheck.Format(time.RFC3339)
 			providerStatus["response_time_ms"] = health.ResponseTime.Milliseconds()
-			
+
 			// Add provider-specific metrics based on provider name
 			if strings.Contains(strings.ToLower(currentProvider.Name), "groq") {
 				// Could add Groq-specific metrics here
@@ -431,7 +431,7 @@ func (s *Server) handleStatus(c *gin.Context) {
 			}
 		}
 	}
-	
+
 	// Determine overall status
 	status := "healthy"
 	if len(healthyProviders) == 0 {
@@ -442,13 +442,13 @@ func (s *Server) handleStatus(c *gin.Context) {
 			status = "degraded"
 		}
 	}
-	
+
 	// Get version from main package (we'll need to pass this in)
 	version := "1.0.0"
 	if v := os.Getenv("CCPROXY_VERSION"); v != "" {
 		version = v
 	}
-	
+
 	// Build response
 	response := gin.H{
 		"status":    status,
@@ -460,7 +460,7 @@ func (s *Server) handleStatus(c *gin.Context) {
 		},
 		"provider": providerStatus,
 	}
-	
+
 	c.JSON(http.StatusOK, response)
 }
 
@@ -474,7 +474,7 @@ func (s *Server) setupReadinessChecks() {
 		}
 		return nil
 	})
-	
+
 	// Config service check
 	s.readiness.RegisterCheck("config", func(ctx context.Context) error {
 		if s.config == nil {
@@ -482,7 +482,7 @@ func (s *Server) setupReadinessChecks() {
 		}
 		return nil
 	})
-	
+
 	// Pipeline check
 	s.readiness.RegisterCheck("pipeline", func(ctx context.Context) error {
 		if s.pipeline == nil {
@@ -490,7 +490,7 @@ func (s *Server) setupReadinessChecks() {
 		}
 		return nil
 	})
-	
+
 	// Server port check
 	s.readiness.RegisterCheck("server", func(ctx context.Context) error {
 		// Check if we can bind to the port
@@ -516,7 +516,7 @@ func (s *Server) setupStateHandlers() {
 		} else {
 			utils.GetLogger().Debugf("Component %s state changed: %s -> %s", component, old, new)
 		}
-		
+
 		// Handle specific state transitions
 		if new == state.StateError && component == "providers" {
 			utils.GetLogger().Warn("All providers are unhealthy")
@@ -528,15 +528,15 @@ func (s *Server) setupStateHandlers() {
 func (s *Server) performanceMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
-		
+
 		// Process request
 		c.Next()
-		
+
 		// Record metrics
 		latency := time.Since(start)
 		provider := c.GetString("provider")
 		model := c.GetString("model")
-		
+
 		s.performance.RecordRequest(performance.RequestMetrics{
 			Provider:   provider,
 			Model:      model,
@@ -546,13 +546,11 @@ func (s *Server) performanceMiddleware() gin.HandlerFunc {
 			Success:    c.Writer.Status() < 400,
 			StatusCode: c.Writer.Status(),
 		})
-		
+
 		// Increment requests served
 		atomic.AddInt64(&s.requestsServed, 1)
 	}
 }
-
-
 
 // loggingMiddleware creates a logging middleware
 func loggingMiddleware() gin.HandlerFunc {
@@ -560,22 +558,22 @@ func loggingMiddleware() gin.HandlerFunc {
 		start := time.Now()
 		path := c.Request.URL.Path
 		raw := c.Request.URL.RawQuery
-		
+
 		// Process request
 		c.Next()
-		
+
 		// Log request
 		latency := time.Since(start)
-		
+
 		if raw != "" {
 			path = path + "?" + raw
 		}
-		
+
 		utils.LogRequest(c.Request.Method, path, map[string]interface{}{
-			"client_ip": c.ClientIP(),
+			"client_ip":  c.ClientIP(),
 			"user_agent": c.Request.UserAgent(),
 		})
-		
+
 		utils.LogResponse(c.Writer.Status(), latency.Seconds(), map[string]interface{}{
 			"size": c.Writer.Size(),
 		})
@@ -595,7 +593,7 @@ func requestSizeLimitMiddleware(maxSize int64) gin.HandlerFunc {
 			c.Next()
 			return
 		}
-		
+
 		// Check Content-Length header
 		contentLength := c.Request.ContentLength
 		if contentLength > maxSize {
@@ -606,12 +604,12 @@ func requestSizeLimitMiddleware(maxSize int64) gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		
+
 		// Wrap the body with a limited reader to enforce the limit at read time
 		if c.Request.Body != nil {
 			c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, maxSize)
 		}
-		
+
 		c.Next()
 	}
 }
@@ -624,13 +622,13 @@ func corsMiddleware() gin.HandlerFunc {
 		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, PATCH")
 		c.Writer.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type, Accept, Authorization")
 		c.Writer.Header().Set("Access-Control-Max-Age", "86400")
-		
+
 		// Handle preflight requests
 		if c.Request.Method == "OPTIONS" {
 			c.AbortWithStatus(http.StatusNoContent)
 			return
 		}
-		
+
 		c.Next()
 	}
 }

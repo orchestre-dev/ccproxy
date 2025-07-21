@@ -1,0 +1,692 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>config: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">github.com/orchestre-dev/ccproxy/internal/config/config.go (70.9%)</option>
+				
+				<option value="file1">github.com/orchestre-dev/ccproxy/internal/config/load.go (100.0%)</option>
+				
+				<option value="file2">github.com/orchestre-dev/ccproxy/internal/config/types.go (100.0%)</option>
+				
+				<option value="file3">github.com/orchestre-dev/ccproxy/internal/config/validate.go (100.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package config
+
+import (
+        "encoding/json"
+        "fmt"
+        "os"
+        "path/filepath"
+        "strings"
+        "time"
+
+        "github.com/mitchellh/mapstructure"
+        "github.com/spf13/viper"
+)
+
+// Service handles configuration loading and management
+type Service struct {
+        config *Config
+        viper  *viper.Viper
+}
+
+// NewService creates a new configuration service
+func NewService() *Service <span class="cov8" title="1">{
+        v := viper.New()
+        
+        // Set default values
+        setDefaults(v)
+        
+        // Set up configuration search paths
+        v.SetConfigName("config")
+        v.SetConfigType("json")
+        
+        // Add configuration paths in order of priority
+        // 1. Current directory
+        v.AddConfigPath(".")
+        
+        // 2. User's home directory under .ccproxy
+        if home, err := os.UserHomeDir(); err == nil </span><span class="cov8" title="1">{
+                v.AddConfigPath(filepath.Join(home, ".ccproxy"))
+        }</span>
+        
+        // 3. System configuration directory
+        <span class="cov8" title="1">v.AddConfigPath("/etc/ccproxy")
+        
+        // Enable environment variable binding
+        v.SetEnvPrefix("CCPROXY")
+        v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+        v.AutomaticEnv()
+        
+        return &amp;Service{
+                viper:  v,
+                config: DefaultConfig(),
+        }</span>
+}
+
+// Load reads and parses the configuration from all sources
+func (s *Service) Load() error <span class="cov8" title="1">{
+        // Step 1: Load defaults (already set in NewService)
+        
+        // Step 2: Load from JSON config file if exists
+        if err := s.viper.ReadInConfig(); err != nil </span><span class="cov8" title="1">{
+                // It's okay if config file doesn't exist
+                if _, ok := err.(viper.ConfigFileNotFoundError); !ok </span><span class="cov0" title="0">{
+                        return fmt.Errorf("error reading config file: %w", err)
+                }</span>
+        }
+        
+        // Step 3: Load from .env file if exists
+        <span class="cov8" title="1">if err := s.loadEnvFile(); err != nil </span><span class="cov8" title="1">{
+                // Log but don't fail if .env file doesn't exist
+                if !os.IsNotExist(err) </span><span class="cov0" title="0">{
+                        return fmt.Errorf("error loading .env file: %w", err)
+                }</span>
+        }
+        
+        // Step 4: Environment variables are automatically loaded by Viper
+        
+        // Step 5: Unmarshal into config struct with custom decoder
+        <span class="cov8" title="1">decoderConfig := &amp;mapstructure.DecoderConfig{
+                DecodeHook: mapstructure.ComposeDecodeHookFunc(
+                        mapstructure.StringToTimeHookFunc(time.RFC3339),
+                        mapstructure.StringToTimeDurationHookFunc(),
+                ),
+                Result: s.config,
+                WeaklyTypedInput: true,
+        }
+        
+        decoder, err := mapstructure.NewDecoder(decoderConfig)
+        if err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("error creating decoder: %w", err)
+        }</span>
+        
+        <span class="cov8" title="1">if err := decoder.Decode(s.viper.AllSettings()); err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("error unmarshaling config: %w", err)
+        }</span>
+        
+        // Step 6: Validate configuration
+        <span class="cov8" title="1">if err := s.config.Validate(); err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("invalid configuration: %w", err)
+        }</span>
+        
+        // Step 7: Apply special environment variable mappings
+        <span class="cov8" title="1">s.applyEnvironmentMappings()
+        
+        return nil</span>
+}
+
+// Get returns the current configuration
+func (s *Service) Get() *Config <span class="cov8" title="1">{
+        return s.config
+}</span>
+
+// SetConfig sets the configuration (mainly for testing)
+func (s *Service) SetConfig(cfg *Config) <span class="cov8" title="1">{
+        s.config = cfg
+}</span>
+
+// Validate checks if the configuration is valid
+func (s *Service) Validate() error <span class="cov8" title="1">{
+        // Validate port
+        if s.config.Port &lt; 1 || s.config.Port &gt; 65535 </span><span class="cov8" title="1">{
+                return fmt.Errorf("invalid port number: %d", s.config.Port)
+        }</span>
+        
+        // Validate providers
+        <span class="cov8" title="1">providerNames := make(map[string]bool)
+        for _, provider := range s.config.Providers </span><span class="cov0" title="0">{
+                if provider.Name == "" </span><span class="cov0" title="0">{
+                        return fmt.Errorf("provider name cannot be empty")
+                }</span>
+                <span class="cov0" title="0">if providerNames[provider.Name] </span><span class="cov0" title="0">{
+                        return fmt.Errorf("duplicate provider name: %s", provider.Name)
+                }</span>
+                <span class="cov0" title="0">providerNames[provider.Name] = true
+                
+                if provider.APIBaseURL == "" </span><span class="cov0" title="0">{
+                        return fmt.Errorf("provider %s: api_base_url cannot be empty", provider.Name)
+                }</span>
+        }
+        
+        // Validate routes
+        <span class="cov8" title="1">for routeName, route := range s.config.Routes </span><span class="cov0" title="0">{
+                if route.Provider == "" </span><span class="cov0" title="0">{
+                        return fmt.Errorf("route %s: provider cannot be empty", routeName)
+                }</span>
+                <span class="cov0" title="0">if route.Model == "" </span><span class="cov0" title="0">{
+                        return fmt.Errorf("route %s: model cannot be empty", routeName)
+                }</span>
+        }
+        
+        <span class="cov8" title="1">return nil</span>
+}
+
+// Reload reloads the configuration
+func (s *Service) Reload() error <span class="cov8" title="1">{
+        // Create a new viper instance to avoid conflicts
+        newService := NewService()
+        if err := newService.Load(); err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        
+        // Update the configuration atomically
+        <span class="cov8" title="1">s.config = newService.config
+        s.viper = newService.viper
+        
+        return nil</span>
+}
+
+// Save saves the current configuration to file
+func (s *Service) Save() error <span class="cov8" title="1">{
+        // Ensure config directory exists
+        home, err := os.UserHomeDir()
+        if err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("cannot get home directory: %w", err)
+        }</span>
+        
+        <span class="cov8" title="1">configDir := filepath.Join(home, ".ccproxy")
+        if err := os.MkdirAll(configDir, 0755); err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("cannot create config directory: %w", err)
+        }</span>
+        
+        // Marshal configuration to JSON
+        <span class="cov8" title="1">data, err := json.MarshalIndent(s.config, "", "  ")
+        if err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("cannot marshal config: %w", err)
+        }</span>
+        
+        // Write to file
+        <span class="cov8" title="1">configPath := filepath.Join(configDir, "config.json")
+        if err := os.WriteFile(configPath, data, 0644); err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("cannot write config file: %w", err)
+        }</span>
+        
+        <span class="cov8" title="1">return nil</span>
+}
+
+// GetProvider returns a provider by name
+func (s *Service) GetProvider(name string) (*Provider, error) <span class="cov8" title="1">{
+        for _, provider := range s.config.Providers </span><span class="cov8" title="1">{
+                if provider.Name == name </span><span class="cov8" title="1">{
+                        return &amp;provider, nil
+                }</span>
+        }
+        <span class="cov8" title="1">return nil, fmt.Errorf("provider not found: %s", name)</span>
+}
+
+// UpdateProvider updates a provider by name
+func (s *Service) UpdateProvider(name string, provider *Provider) error <span class="cov8" title="1">{
+        provider.UpdatedAt = time.Now()
+        
+        // Find and update existing provider
+        for i, p := range s.config.Providers </span><span class="cov8" title="1">{
+                if p.Name == name </span><span class="cov8" title="1">{
+                        if provider.CreatedAt.IsZero() </span><span class="cov8" title="1">{
+                                provider.CreatedAt = p.CreatedAt
+                        }</span>
+                        <span class="cov8" title="1">s.config.Providers[i] = *provider
+                        return s.Save()</span>
+                }
+        }
+        
+        <span class="cov8" title="1">return fmt.Errorf("provider not found: %s", name)</span>
+}
+
+// SaveProvider saves a new provider
+func (s *Service) SaveProvider(provider *Provider) error <span class="cov8" title="1">{
+        // Check if provider already exists
+        for _, p := range s.config.Providers </span><span class="cov8" title="1">{
+                if p.Name == provider.Name </span><span class="cov8" title="1">{
+                        return fmt.Errorf("provider already exists: %s", provider.Name)
+                }</span>
+        }
+        
+        // Add new provider
+        <span class="cov8" title="1">if provider.CreatedAt.IsZero() </span><span class="cov8" title="1">{
+                provider.CreatedAt = time.Now()
+        }</span>
+        <span class="cov8" title="1">provider.UpdatedAt = time.Now()
+        s.config.Providers = append(s.config.Providers, *provider)
+        return s.Save()</span>
+}
+
+// DeleteProvider removes a provider by name
+func (s *Service) DeleteProvider(name string) error <span class="cov8" title="1">{
+        providers := make([]Provider, 0, len(s.config.Providers))
+        found := false
+        
+        for _, p := range s.config.Providers </span><span class="cov8" title="1">{
+                if p.Name != name </span><span class="cov0" title="0">{
+                        providers = append(providers, p)
+                }</span> else<span class="cov8" title="1"> {
+                        found = true
+                }</span>
+        }
+        
+        <span class="cov8" title="1">if !found </span><span class="cov8" title="1">{
+                return fmt.Errorf("provider not found: %s", name)
+        }</span>
+        
+        <span class="cov8" title="1">s.config.Providers = providers
+        return s.Save()</span>
+}
+
+// setDefaults sets default configuration values
+func setDefaults(v *viper.Viper) <span class="cov8" title="1">{
+        v.SetDefault("host", "127.0.0.1")
+        v.SetDefault("port", 3456)
+        v.SetDefault("log", false)
+        v.SetDefault("log_file", "")
+        // Don't set default routes - let user configure them
+}</span>
+
+// loadEnvFile loads environment variables from .env file
+func (s *Service) loadEnvFile() error <span class="cov8" title="1">{
+        // Check common locations for .env file
+        locations := []string{
+                ".env",
+                filepath.Join(".ccproxy", ".env"),
+        }
+        
+        if home, err := os.UserHomeDir(); err == nil </span><span class="cov8" title="1">{
+                locations = append(locations, filepath.Join(home, ".ccproxy", ".env"))
+        }</span>
+        
+        <span class="cov8" title="1">for _, loc := range locations </span><span class="cov8" title="1">{
+                data, err := os.ReadFile(loc)
+                if err == nil </span><span class="cov0" title="0">{
+                        // Parse .env file
+                        lines := strings.Split(string(data), "\n")
+                        for _, line := range lines </span><span class="cov0" title="0">{
+                                line = strings.TrimSpace(line)
+                                if line == "" || strings.HasPrefix(line, "#") </span><span class="cov0" title="0">{
+                                        continue</span>
+                                }
+                                
+                                <span class="cov0" title="0">parts := strings.SplitN(line, "=", 2)
+                                if len(parts) == 2 </span><span class="cov0" title="0">{
+                                        key := strings.TrimSpace(parts[0])
+                                        value := strings.TrimSpace(parts[1])
+                                        // Remove quotes if present
+                                        value = strings.Trim(value, `"'`)
+                                        os.Setenv(key, value)
+                                }</span>
+                        }
+                        <span class="cov0" title="0">return nil</span>
+                }
+        }
+        
+        <span class="cov8" title="1">return os.ErrNotExist</span>
+}
+
+// applyEnvironmentMappings applies special environment variable mappings
+func (s *Service) applyEnvironmentMappings() <span class="cov8" title="1">{
+        // Map common environment variables to config
+        if apiKey := os.Getenv("APIKEY"); apiKey != "" </span><span class="cov0" title="0">{
+                s.config.APIKey = apiKey
+        }</span>
+        
+        <span class="cov8" title="1">if port := os.Getenv("PORT"); port != "" </span>{<span class="cov0" title="0">
+                // PORT env var is already handled by viper's AutomaticEnv
+                // This is just for documentation purposes
+        }</span>
+        
+        // Check for corporate proxy settings
+        <span class="cov8" title="1">proxyVars := []string{"HTTPS_PROXY", "https_proxy", "httpsProxy", "PROXY_URL"}
+        for _, v := range proxyVars </span><span class="cov8" title="1">{
+                if proxy := os.Getenv(v); proxy != "" </span><span class="cov0" title="0">{
+                        s.config.ProxyURL = proxy
+                        break</span>
+                }
+        }
+}</pre>
+		
+		<pre class="file" id="file1" style="display: none">package config
+
+import (
+        "encoding/json"
+        "fmt"
+        "os"
+)
+
+// LoadFromFile loads configuration from a specific file
+func LoadFromFile(path string) (*Config, error) <span class="cov8" title="1">{
+        // Read the file
+        data, err := os.ReadFile(path)
+        if err != nil </span><span class="cov8" title="1">{
+                return nil, fmt.Errorf("failed to read config file: %w", err)
+        }</span>
+        
+        // Parse JSON
+        <span class="cov8" title="1">var cfg Config
+        if err := json.Unmarshal(data, &amp;cfg); err != nil </span><span class="cov8" title="1">{
+                return nil, fmt.Errorf("failed to parse config file: %w", err)
+        }</span>
+        
+        // Set defaults for empty fields before validation
+        <span class="cov8" title="1">if cfg.Host == "" </span><span class="cov8" title="1">{
+                cfg.Host = "127.0.0.1"
+        }</span>
+        <span class="cov8" title="1">if cfg.Port == 0 </span><span class="cov8" title="1">{
+                cfg.Port = 3456
+        }</span>
+        
+        // Validate configuration
+        <span class="cov8" title="1">if err := cfg.Validate(); err != nil </span><span class="cov8" title="1">{
+                return nil, fmt.Errorf("invalid configuration: %w", err)
+        }</span>
+        
+        <span class="cov8" title="1">return &amp;cfg, nil</span>
+}</pre>
+		
+		<pre class="file" id="file2" style="display: none">package config
+
+import (
+        "time"
+)
+
+// Config represents the main configuration structure for CCProxy
+type Config struct {
+        Providers        []Provider           `json:"providers" mapstructure:"providers"`
+        Routes           map[string]Route     `json:"routes" mapstructure:"routes"`
+        Log              bool                 `json:"log" mapstructure:"log"`
+        LogFile          string               `json:"log_file" mapstructure:"log_file"`
+        Host             string               `json:"host" mapstructure:"host"`
+        Port             int                  `json:"port" mapstructure:"port"`
+        APIKey           string               `json:"apikey" mapstructure:"apikey"`
+        ProxyURL         string               `json:"proxy_url" mapstructure:"proxy_url"`
+        Performance      PerformanceConfig    `json:"performance" mapstructure:"performance"`
+        ShutdownTimeout  time.Duration        `json:"shutdown_timeout" mapstructure:"shutdown_timeout"`
+}
+
+// Provider represents a LLM provider configuration
+type Provider struct {
+        Name         string               `json:"name" mapstructure:"name"`
+        APIBaseURL   string               `json:"api_base_url" mapstructure:"api_base_url"`
+        APIKey       string               `json:"api_key" mapstructure:"api_key"`
+        Models       []string             `json:"models" mapstructure:"models"`
+        Enabled      bool                 `json:"enabled" mapstructure:"enabled"`
+        Transformers []TransformerConfig  `json:"transformers" mapstructure:"transformers"`
+        CreatedAt    time.Time            `json:"created_at" mapstructure:"created_at"`
+        UpdatedAt    time.Time            `json:"updated_at" mapstructure:"updated_at"`
+        MessageFormat string              `json:"message_format,omitempty" mapstructure:"message_format"` // Message format used by provider
+}
+
+// Route represents a routing configuration
+type Route struct {
+        Provider   string      `json:"provider" mapstructure:"provider"`
+        Model      string      `json:"model" mapstructure:"model"`
+        Conditions []Condition `json:"conditions" mapstructure:"conditions"`
+}
+
+// Condition represents a routing condition
+type Condition struct {
+        Type     string      `json:"type" mapstructure:"type"`         // "tokenCount", "parameter", "model"
+        Operator string      `json:"operator" mapstructure:"operator"` // "&gt;", "&lt;", "==", "contains"
+        Value    interface{} `json:"value" mapstructure:"value"`
+}
+
+// TransformerConfig represents transformer configuration
+type TransformerConfig struct {
+        Name   string                 `json:"name" mapstructure:"name"`
+        Config map[string]interface{} `json:"config,omitempty" mapstructure:"config"`
+}
+
+// PerformanceConfig represents performance monitoring configuration
+type PerformanceConfig struct {
+        MetricsEnabled          bool          `json:"metrics_enabled" mapstructure:"metrics_enabled"`
+        RateLimitEnabled        bool          `json:"rate_limit_enabled" mapstructure:"rate_limit_enabled"`
+        RateLimitRequestsPerMin int           `json:"rate_limit_requests_per_min" mapstructure:"rate_limit_requests_per_min"`
+        CircuitBreakerEnabled   bool          `json:"circuit_breaker_enabled" mapstructure:"circuit_breaker_enabled"`
+        RequestTimeout          time.Duration `json:"request_timeout" mapstructure:"request_timeout"`
+        MaxRequestBodySize      int64         `json:"max_request_body_size" mapstructure:"max_request_body_size"`
+}
+
+// Default configuration values
+func DefaultConfig() *Config <span class="cov8" title="1">{
+        return &amp;Config{
+                Host:      "127.0.0.1",
+                Port:      3456,
+                Log:       false,
+                LogFile:   "",
+                Routes:    map[string]Route{},
+                Providers: []Provider{},
+                Performance: PerformanceConfig{
+                        MetricsEnabled:          true,
+                        RateLimitEnabled:        false,
+                        RateLimitRequestsPerMin: 1000,
+                        CircuitBreakerEnabled:   true,
+                        RequestTimeout:          30 * time.Second, // Much more reasonable default
+                        MaxRequestBodySize:      10 * 1024 * 1024, // 10MB limit
+                },
+                ShutdownTimeout: 30 * time.Second,
+        }
+}</pre>
+		
+		<pre class="file" id="file3" style="display: none">package config
+
+import (
+        "fmt"
+        "net/url"
+        "strings"
+)
+
+// Validate checks if the configuration is valid
+func (c *Config) Validate() error <span class="cov8" title="1">{
+        // Validate host
+        if c.Host == "" </span><span class="cov8" title="1">{
+                c.Host = "127.0.0.1"
+        }</span>
+        
+        // Validate port
+        <span class="cov8" title="1">if c.Port &lt;= 0 || c.Port &gt; 65535 </span><span class="cov8" title="1">{
+                return fmt.Errorf("invalid port number: %d", c.Port)
+        }</span>
+        
+        // Validate providers
+        <span class="cov8" title="1">providerNames := make(map[string]bool)
+        for i, provider := range c.Providers </span><span class="cov8" title="1">{
+                // Check for duplicate names
+                if providerNames[provider.Name] </span><span class="cov8" title="1">{
+                        return fmt.Errorf("duplicate provider name: %s", provider.Name)
+                }</span>
+                <span class="cov8" title="1">providerNames[provider.Name] = true
+                
+                // Validate provider
+                if err := validateProvider(&amp;c.Providers[i]); err != nil </span><span class="cov8" title="1">{
+                        return fmt.Errorf("invalid provider %s: %w", provider.Name, err)
+                }</span>
+        }
+        
+        // Validate routes
+        <span class="cov8" title="1">for routeName, route := range c.Routes </span><span class="cov8" title="1">{
+                // Check if provider exists
+                if route.Provider != "" &amp;&amp; !providerNames[route.Provider] </span><span class="cov8" title="1">{
+                        return fmt.Errorf("route %s references unknown provider: %s", routeName, route.Provider)
+                }</span>
+                
+                // Validate conditions
+                <span class="cov8" title="1">for _, condition := range route.Conditions </span><span class="cov8" title="1">{
+                        if err := validateCondition(&amp;condition); err != nil </span><span class="cov8" title="1">{
+                                return fmt.Errorf("invalid condition in route %s: %w", routeName, err)
+                        }</span>
+                }
+        }
+        
+        // Validate log file path if logging is enabled
+        <span class="cov8" title="1">if c.Log &amp;&amp; c.LogFile != "" </span><span class="cov8" title="1">{
+                // Just check if it's a valid path format
+                if strings.ContainsAny(c.LogFile, "\x00") </span><span class="cov8" title="1">{
+                        return fmt.Errorf("invalid log file path")
+                }</span>
+        }
+        
+        <span class="cov8" title="1">return nil</span>
+}
+
+// validateProvider validates a provider configuration
+func validateProvider(p *Provider) error <span class="cov8" title="1">{
+        // Name is required
+        if p.Name == "" </span><span class="cov8" title="1">{
+                return fmt.Errorf("provider name is required")
+        }</span>
+        
+        // API base URL is required and must be valid
+        <span class="cov8" title="1">if p.APIBaseURL == "" </span><span class="cov8" title="1">{
+                return fmt.Errorf("API base URL is required")
+        }</span>
+        
+        // Parse and validate URL
+        <span class="cov8" title="1">u, err := url.Parse(p.APIBaseURL)
+        if err != nil </span><span class="cov8" title="1">{
+                return fmt.Errorf("invalid API base URL: %w", err)
+        }</span>
+        
+        // Ensure it's HTTP or HTTPS
+        <span class="cov8" title="1">if u.Scheme != "http" &amp;&amp; u.Scheme != "https" </span><span class="cov8" title="1">{
+                return fmt.Errorf("API base URL must use http or https scheme")
+        }</span>
+        
+        // API key validation - warn if empty but don't fail
+        <span class="cov8" title="1">if p.APIKey == "" &amp;&amp; p.Enabled </span>{<span class="cov8" title="1">
+                // This is just a warning, not an error
+                // The provider health check will handle this
+        }</span>
+        
+        // Validate models list
+        <span class="cov8" title="1">if len(p.Models) == 0 &amp;&amp; p.Enabled </span><span class="cov8" title="1">{
+                return fmt.Errorf("at least one model must be specified for enabled provider")
+        }</span>
+        
+        // Validate transformer configs
+        <span class="cov8" title="1">for _, transformer := range p.Transformers </span><span class="cov8" title="1">{
+                if transformer.Name == "" </span><span class="cov8" title="1">{
+                        return fmt.Errorf("transformer name is required")
+                }</span>
+        }
+        
+        <span class="cov8" title="1">return nil</span>
+}
+
+// validateCondition validates a routing condition
+func validateCondition(c *Condition) error <span class="cov8" title="1">{
+        // Validate condition type
+        switch c.Type </span>{
+        case "tokenCount", "parameter", "model":<span class="cov8" title="1"></span>
+                // Valid types
+        default:<span class="cov8" title="1">
+                return fmt.Errorf("invalid condition type: %s", c.Type)</span>
+        }
+        
+        // Validate operator
+        <span class="cov8" title="1">switch c.Operator </span>{
+        case "&gt;", "&lt;", "==", "!=", "&gt;=", "&lt;=", "contains":<span class="cov8" title="1"></span>
+                // Valid operators
+        default:<span class="cov8" title="1">
+                return fmt.Errorf("invalid operator: %s", c.Operator)</span>
+        }
+        
+        // Value is required
+        <span class="cov8" title="1">if c.Value == nil </span><span class="cov8" title="1">{
+                return fmt.Errorf("condition value is required")
+        }</span>
+        
+        <span class="cov8" title="1">return nil</span>
+}</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>

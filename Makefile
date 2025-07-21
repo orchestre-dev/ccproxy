@@ -36,7 +36,7 @@ PLATFORMS := darwin/amd64 darwin/arm64 linux/amd64 linux/arm64 windows/amd64
 .DEFAULT_GOAL := help
 
 # Phony targets
-.PHONY: all build clean help install lint fmt release docker version
+.PHONY: all build test test-unit test-integration test-coverage test-coverage-comprehensive test-coverage-package test-race test-benchmark clean help install lint fmt release docker version
 
 ## help: Show this help message
 help:
@@ -47,8 +47,8 @@ help:
 	@echo "Targets:"
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  %-15s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
-## all: Build for all platforms
-all: clean lint build-all
+## all: Build and test for all platforms
+all: clean lint test build-all
 
 ## build: Build binary for current platform
 build:
@@ -81,7 +81,39 @@ install: build
 	@chmod +x /usr/local/bin/$(BINARY_NAME)
 	@echo "$(BINARY_NAME) installed to /usr/local/bin/"
 
+## test: Run all tests
+test:
+	@echo "Running tests..."
+	$(GOTEST) -v -race -timeout 5m ./...
 
+## test-unit: Run unit tests only
+test-unit:
+	@echo "Running unit tests..."
+	$(GOTEST) -v -race -timeout 2m ./internal/...
+
+## test-integration: Run integration tests
+test-integration:
+	@echo "Running integration tests..."
+	$(GOTEST) -v -race -timeout 10m ./tests/...
+
+## test-coverage: Generate test coverage report
+test-coverage:
+	@echo "Generating coverage report..."
+	@mkdir -p $(COVERAGE_DIR)
+	$(GOTEST) -v -race -coverprofile=$(COVERAGE_DIR)/coverage.out -covermode=atomic ./...
+	$(GOCMD) tool cover -html=$(COVERAGE_DIR)/coverage.out -o $(COVERAGE_DIR)/coverage.html
+	$(GOCMD) tool cover -func=$(COVERAGE_DIR)/coverage.out | grep total:
+	@echo "Coverage report generated at $(COVERAGE_DIR)/coverage.html"
+
+## test-watch: Run tests in watch mode (requires entr)
+test-watch:
+	@echo "Running tests in watch mode..."
+	@if command -v entr >/dev/null 2>&1; then \
+		find . -name "*.go" | entr -c make test-unit; \
+	else \
+		echo "entr not installed. Install with: brew install entr"; \
+		exit 1; \
+	fi
 
 ## lint: Run linters
 lint:
@@ -222,6 +254,41 @@ version-check:
 ## changelog: Generate changelog
 changelog:
 	@./scripts/version.sh changelog
+
+# Enhanced coverage targets for comprehensive test suites
+## test-coverage-comprehensive: Run comprehensive tests with detailed coverage
+test-coverage-comprehensive:
+	@echo "Running comprehensive test coverage..."
+	@mkdir -p $(COVERAGE_DIR)
+	$(GOTEST) -v -race -coverprofile=$(COVERAGE_DIR)/coverage-comprehensive.out -covermode=atomic ./...
+	$(GOCMD) tool cover -html=$(COVERAGE_DIR)/coverage-comprehensive.out -o $(COVERAGE_DIR)/coverage-comprehensive.html
+	$(GOCMD) tool cover -func=$(COVERAGE_DIR)/coverage-comprehensive.out
+	@echo "Comprehensive coverage report generated at $(COVERAGE_DIR)/coverage-comprehensive.html"
+
+## test-coverage-package: Run coverage per package
+test-coverage-package:
+	@echo "Generating per-package coverage reports..."
+	@mkdir -p $(COVERAGE_DIR)
+	@for pkg in $$(go list ./internal/...); do \
+		pkg_name=$$(basename $$pkg); \
+		echo "Testing coverage for $$pkg_name..."; \
+		$(GOTEST) -v -race -coverprofile=$(COVERAGE_DIR)/$$pkg_name.out -covermode=atomic $$pkg; \
+		if [ -f $(COVERAGE_DIR)/$$pkg_name.out ]; then \
+			$(GOCMD) tool cover -html=$(COVERAGE_DIR)/$$pkg_name.out -o $(COVERAGE_DIR)/$$pkg_name.html; \
+			$(GOCMD) tool cover -func=$(COVERAGE_DIR)/$$pkg_name.out | grep total: | sed "s/^/$$pkg_name: /"; \
+		fi; \
+	done
+	@echo "Per-package coverage reports generated in $(COVERAGE_DIR)/"
+
+## test-race: Run tests with race detection
+test-race:
+	@echo "Running tests with race detection..."
+	$(GOTEST) -v -race -timeout 10m ./...
+
+## test-benchmark: Run benchmark tests
+test-benchmark:
+	@echo "Running benchmark tests..."
+	$(GOTEST) -v -bench=. -benchmem -run=^$$ ./...
 
 # Docker targets (if Makefile.docker exists)
 -include Makefile.docker

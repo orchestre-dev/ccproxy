@@ -18,16 +18,16 @@ type Monitor struct {
 	resourceMonitor *ResourceMonitor
 	rateLimiter     *RateLimiter
 	circuitBreakers map[string]*CircuitBreaker
-	
-	requestCount    int64
-	successCount    int64
-	failureCount    int64
-	
-	startTime       time.Time
-	ctx             context.Context
-	cancel          context.CancelFunc
-	wg              sync.WaitGroup
-	mu              sync.RWMutex
+
+	requestCount int64
+	successCount int64
+	failureCount int64
+
+	startTime time.Time
+	ctx       context.Context
+	cancel    context.CancelFunc
+	wg        sync.WaitGroup
+	mu        sync.RWMutex
 }
 
 // NewMonitor creates a new performance monitor
@@ -37,10 +37,10 @@ func NewMonitor(config *PerformanceConfig) *Monitor {
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
-	
+
 	m := &Monitor{
-		config:          config,
-		metrics:         &Metrics{
+		config: config,
+		metrics: &Metrics{
 			ProviderMetrics: make(map[string]*ProviderMetrics),
 			StartTime:       time.Now(),
 		},
@@ -218,7 +218,7 @@ func (m *Monitor) metricsCollector() {
 // collectMetrics collects current metrics
 func (m *Monitor) collectMetrics() {
 	metrics := m.GetMetrics()
-	
+
 	// Log summary
 	utils.GetLogger().Infof(
 		"Performance metrics - Requests: %d (success: %d, failed: %d), Avg latency: %v, Memory: %d MB, Goroutines: %d",

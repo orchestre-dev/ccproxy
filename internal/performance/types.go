@@ -1,37 +1,34 @@
 package performance
 
 import (
-	"sync"
 	"time"
 )
 
 // Metrics represents performance metrics for the proxy
 type Metrics struct {
 	// Request metrics
-	TotalRequests       int64         `json:"total_requests"`
-	SuccessfulRequests  int64         `json:"successful_requests"`
-	FailedRequests      int64         `json:"failed_requests"`
-	AverageLatency      time.Duration `json:"average_latency"`
-	P50Latency          time.Duration `json:"p50_latency"`
-	P95Latency          time.Duration `json:"p95_latency"`
-	P99Latency          time.Duration `json:"p99_latency"`
-	
+	TotalRequests      int64         `json:"total_requests"`
+	SuccessfulRequests int64         `json:"successful_requests"`
+	FailedRequests     int64         `json:"failed_requests"`
+	AverageLatency     time.Duration `json:"average_latency"`
+	P50Latency         time.Duration `json:"p50_latency"`
+	P95Latency         time.Duration `json:"p95_latency"`
+	P99Latency         time.Duration `json:"p99_latency"`
+
 	// Provider metrics
 	ProviderMetrics map[string]*ProviderMetrics `json:"provider_metrics"`
-	
+
 	// Resource metrics
 	MemoryUsage     uint64  `json:"memory_usage_bytes"`
 	GoroutineCount  int     `json:"goroutine_count"`
 	CPUUsagePercent float64 `json:"cpu_usage_percent"`
-	
+
 	// Rate limiting
 	RateLimitHits int64 `json:"rate_limit_hits"`
-	
+
 	// Time window
 	StartTime time.Time `json:"start_time"`
 	EndTime   time.Time `json:"end_time"`
-	
-	mu sync.RWMutex
 }
 
 // ProviderMetrics represents metrics for a specific provider
@@ -68,21 +65,21 @@ type RateLimitConfig struct {
 
 // CircuitBreakerConfig defines circuit breaker configuration
 type CircuitBreakerConfig struct {
-	Enabled              bool          `json:"enabled"`
-	ErrorThreshold       float64       `json:"error_threshold"`
-	ConsecutiveFailures  int           `json:"consecutive_failures"`
-	OpenDuration         time.Duration `json:"open_duration"`
-	HalfOpenMaxRequests  int           `json:"half_open_max_requests"`
+	Enabled             bool          `json:"enabled"`
+	ErrorThreshold      float64       `json:"error_threshold"`
+	ConsecutiveFailures int           `json:"consecutive_failures"`
+	OpenDuration        time.Duration `json:"open_duration"`
+	HalfOpenMaxRequests int           `json:"half_open_max_requests"`
 }
 
 // PerformanceConfig combines all performance-related configurations
 type PerformanceConfig struct {
-	ResourceLimits   ResourceLimits       `json:"resource_limits"`
-	RateLimit        RateLimitConfig      `json:"rate_limit"`
-	CircuitBreaker   CircuitBreakerConfig `json:"circuit_breaker"`
-	MetricsEnabled   bool                 `json:"metrics_enabled"`
-	MetricsInterval  time.Duration        `json:"metrics_interval"`
-	ProfilerEnabled  bool                 `json:"profiler_enabled"`
+	ResourceLimits  ResourceLimits       `json:"resource_limits"`
+	RateLimit       RateLimitConfig      `json:"rate_limit"`
+	CircuitBreaker  CircuitBreakerConfig `json:"circuit_breaker"`
+	MetricsEnabled  bool                 `json:"metrics_enabled"`
+	MetricsInterval time.Duration        `json:"metrics_interval"`
+	ProfilerEnabled bool                 `json:"profiler_enabled"`
 }
 
 // DefaultPerformanceConfig returns default performance configuration
@@ -119,16 +116,16 @@ func DefaultPerformanceConfig() *PerformanceConfig {
 
 // RequestMetrics represents metrics for a single request
 type RequestMetrics struct {
-	Provider      string
-	Model         string
-	StartTime     time.Time
-	EndTime       time.Time
-	Latency       time.Duration
-	TokensIn      int
-	TokensOut     int
-	Success       bool
-	Error         error
-	StatusCode    int
-	RequestSize   int64
-	ResponseSize  int64
+	Provider     string
+	Model        string
+	StartTime    time.Time
+	EndTime      time.Time
+	Latency      time.Duration
+	TokensIn     int
+	TokensOut    int
+	Success      bool
+	Error        error
+	StatusCode   int
+	RequestSize  int64
+	ResponseSize int64
 }

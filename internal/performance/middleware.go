@@ -36,7 +36,7 @@ func Middleware(monitor *Monitor) gin.HandlerFunc {
 
 		// Extract provider from request
 		provider := extractProvider(c)
-		
+
 		// Check circuit breaker if provider is known
 		if provider != "" && !monitor.CheckCircuitBreaker(provider) {
 			c.JSON(http.StatusServiceUnavailable, gin.H{
@@ -73,7 +73,7 @@ func Middleware(monitor *Monitor) gin.HandlerFunc {
 				requestSize = int64(len(bodyBytes))
 				// Restore body for downstream handlers
 				c.Request.Body = io.NopCloser(bytes.NewReader(bodyBytes))
-				
+
 				// Check request size limit
 				if err := monitor.resourceMonitor.CheckRequestSize(requestSize); err != nil {
 					c.JSON(http.StatusRequestEntityTooLarge, gin.H{
@@ -104,7 +104,7 @@ func Middleware(monitor *Monitor) gin.HandlerFunc {
 
 		// Calculate metrics
 		latency := time.Since(startTime)
-		
+
 		// Extract model from request context
 		model := c.GetString("model")
 		if model == "" {
@@ -182,7 +182,7 @@ func extractModel(c *gin.Context) string {
 		if err == nil {
 			// Restore body
 			c.Request.Body = io.NopCloser(bytes.NewReader(bodyBytes))
-			
+
 			// Try to parse
 			if err := json.Unmarshal(bodyBytes, &body); err == nil {
 				if model, ok := body["model"].(string); ok {

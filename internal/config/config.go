@@ -21,31 +21,31 @@ type Service struct {
 // NewService creates a new configuration service
 func NewService() *Service {
 	v := viper.New()
-	
+
 	// Set default values
 	setDefaults(v)
-	
+
 	// Set up configuration search paths
 	v.SetConfigName("config")
 	v.SetConfigType("json")
-	
+
 	// Add configuration paths in order of priority
 	// 1. Current directory
 	v.AddConfigPath(".")
-	
+
 	// 2. User's home directory under .ccproxy
 	if home, err := os.UserHomeDir(); err == nil {
 		v.AddConfigPath(filepath.Join(home, ".ccproxy"))
 	}
-	
+
 	// 3. System configuration directory
 	v.AddConfigPath("/etc/ccproxy")
-	
+
 	// Enable environment variable binding
 	v.SetEnvPrefix("CCPROXY")
 	v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	v.AutomaticEnv()
-	
+
 	return &Service{
 		viper:  v,
 		config: DefaultConfig(),
@@ -55,7 +55,7 @@ func NewService() *Service {
 // Load reads and parses the configuration from all sources
 func (s *Service) Load() error {
 	// Step 1: Load defaults (already set in NewService)
-	
+
 	// Step 2: Load from JSON config file if exists
 	if err := s.viper.ReadInConfig(); err != nil {
 		// It's okay if config file doesn't exist
@@ -63,7 +63,7 @@ func (s *Service) Load() error {
 			return fmt.Errorf("error reading config file: %w", err)
 		}
 	}
-	
+
 	// Step 3: Load from .env file if exists
 	if err := s.loadEnvFile(); err != nil {
 		// Log but don't fail if .env file doesn't exist
@@ -71,36 +71,36 @@ func (s *Service) Load() error {
 			return fmt.Errorf("error loading .env file: %w", err)
 		}
 	}
-	
+
 	// Step 4: Environment variables are automatically loaded by Viper
-	
+
 	// Step 5: Unmarshal into config struct with custom decoder
 	decoderConfig := &mapstructure.DecoderConfig{
 		DecodeHook: mapstructure.ComposeDecodeHookFunc(
 			mapstructure.StringToTimeHookFunc(time.RFC3339),
 			mapstructure.StringToTimeDurationHookFunc(),
 		),
-		Result: s.config,
+		Result:           s.config,
 		WeaklyTypedInput: true,
 	}
-	
+
 	decoder, err := mapstructure.NewDecoder(decoderConfig)
 	if err != nil {
 		return fmt.Errorf("error creating decoder: %w", err)
 	}
-	
+
 	if err := decoder.Decode(s.viper.AllSettings()); err != nil {
 		return fmt.Errorf("error unmarshaling config: %w", err)
 	}
-	
+
 	// Step 6: Validate configuration
 	if err := s.config.Validate(); err != nil {
 		return fmt.Errorf("invalid configuration: %w", err)
 	}
-	
+
 	// Step 7: Apply special environment variable mappings
 	s.applyEnvironmentMappings()
-	
+
 	return nil
 }
 
@@ -120,7 +120,7 @@ func (s *Service) Validate() error {
 	if s.config.Port < 1 || s.config.Port > 65535 {
 		return fmt.Errorf("invalid port number: %d", s.config.Port)
 	}
-	
+
 	// Validate providers
 	providerNames := make(map[string]bool)
 	for _, provider := range s.config.Providers {
@@ -131,12 +131,12 @@ func (s *Service) Validate() error {
 			return fmt.Errorf("duplicate provider name: %s", provider.Name)
 		}
 		providerNames[provider.Name] = true
-		
+
 		if provider.APIBaseURL == "" {
 			return fmt.Errorf("provider %s: api_base_url cannot be empty", provider.Name)
 		}
 	}
-	
+
 	// Validate routes
 	for routeName, route := range s.config.Routes {
 		if route.Provider == "" {
@@ -146,7 +146,7 @@ func (s *Service) Validate() error {
 			return fmt.Errorf("route %s: model cannot be empty", routeName)
 		}
 	}
-	
+
 	return nil
 }
 
@@ -157,11 +157,11 @@ func (s *Service) Reload() error {
 	if err := newService.Load(); err != nil {
 		return err
 	}
-	
+
 	// Update the configuration atomically
 	s.config = newService.config
 	s.viper = newService.viper
-	
+
 	return nil
 }
 
@@ -172,24 +172,24 @@ func (s *Service) Save() error {
 	if err != nil {
 		return fmt.Errorf("cannot get home directory: %w", err)
 	}
-	
+
 	configDir := filepath.Join(home, ".ccproxy")
 	if err := os.MkdirAll(configDir, 0755); err != nil {
 		return fmt.Errorf("cannot create config directory: %w", err)
 	}
-	
+
 	// Marshal configuration to JSON
 	data, err := json.MarshalIndent(s.config, "", "  ")
 	if err != nil {
 		return fmt.Errorf("cannot marshal config: %w", err)
 	}
-	
+
 	// Write to file
 	configPath := filepath.Join(configDir, "config.json")
 	if err := os.WriteFile(configPath, data, 0644); err != nil {
 		return fmt.Errorf("cannot write config file: %w", err)
 	}
-	
+
 	return nil
 }
 
@@ -206,7 +206,7 @@ func (s *Service) GetProvider(name string) (*Provider, error) {
 // UpdateProvider updates a provider by name
 func (s *Service) UpdateProvider(name string, provider *Provider) error {
 	provider.UpdatedAt = time.Now()
-	
+
 	// Find and update existing provider
 	for i, p := range s.config.Providers {
 		if p.Name == name {
@@ -217,7 +217,7 @@ func (s *Service) UpdateProvider(name string, provider *Provider) error {
 			return s.Save()
 		}
 	}
-	
+
 	return fmt.Errorf("provider not found: %s", name)
 }
 
@@ -229,7 +229,7 @@ func (s *Service) SaveProvider(provider *Provider) error {
 			return fmt.Errorf("provider already exists: %s", provider.Name)
 		}
 	}
-	
+
 	// Add new provider
 	if provider.CreatedAt.IsZero() {
 		provider.CreatedAt = time.Now()
@@ -243,7 +243,7 @@ func (s *Service) SaveProvider(provider *Provider) error {
 func (s *Service) DeleteProvider(name string) error {
 	providers := make([]Provider, 0, len(s.config.Providers))
 	found := false
-	
+
 	for _, p := range s.config.Providers {
 		if p.Name != name {
 			providers = append(providers, p)
@@ -251,11 +251,11 @@ func (s *Service) DeleteProvider(name string) error {
 			found = true
 		}
 	}
-	
+
 	if !found {
 		return fmt.Errorf("provider not found: %s", name)
 	}
-	
+
 	s.config.Providers = providers
 	return s.Save()
 }
@@ -276,11 +276,11 @@ func (s *Service) loadEnvFile() error {
 		".env",
 		filepath.Join(".ccproxy", ".env"),
 	}
-	
+
 	if home, err := os.UserHomeDir(); err == nil {
 		locations = append(locations, filepath.Join(home, ".ccproxy", ".env"))
 	}
-	
+
 	for _, loc := range locations {
 		data, err := os.ReadFile(loc)
 		if err == nil {
@@ -291,7 +291,7 @@ func (s *Service) loadEnvFile() error {
 				if line == "" || strings.HasPrefix(line, "#") {
 					continue
 				}
-				
+
 				parts := strings.SplitN(line, "=", 2)
 				if len(parts) == 2 {
 					key := strings.TrimSpace(parts[0])
@@ -304,7 +304,7 @@ func (s *Service) loadEnvFile() error {
 			return nil
 		}
 	}
-	
+
 	return os.ErrNotExist
 }
 
@@ -314,12 +314,9 @@ func (s *Service) applyEnvironmentMappings() {
 	if apiKey := os.Getenv("APIKEY"); apiKey != "" {
 		s.config.APIKey = apiKey
 	}
-	
-	if port := os.Getenv("PORT"); port != "" {
-		// PORT env var is already handled by viper's AutomaticEnv
-		// This is just for documentation purposes
-	}
-	
+
+	// PORT env var is already handled by viper's AutomaticEnv
+
 	// Check for corporate proxy settings
 	proxyVars := []string{"HTTPS_PROXY", "https_proxy", "httpsProxy", "PROXY_URL"}
 	for _, v := range proxyVars {

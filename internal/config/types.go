@@ -6,28 +6,28 @@ import (
 
 // Config represents the main configuration structure for CCProxy
 type Config struct {
-	Providers        []Provider           `json:"providers" mapstructure:"providers"`
-	Routes           map[string]Route     `json:"routes" mapstructure:"routes"`
-	Log              bool                 `json:"log" mapstructure:"log"`
-	LogFile          string               `json:"log_file" mapstructure:"log_file"`
-	Host             string               `json:"host" mapstructure:"host"`
-	Port             int                  `json:"port" mapstructure:"port"`
-	APIKey           string               `json:"apikey" mapstructure:"apikey"`
-	ProxyURL         string               `json:"proxy_url" mapstructure:"proxy_url"`
-	Performance      PerformanceConfig    `json:"performance" mapstructure:"performance"`
-	ShutdownTimeout  time.Duration        `json:"shutdown_timeout" mapstructure:"shutdown_timeout"`
+	Providers       []Provider        `json:"providers" mapstructure:"providers"`
+	Routes          map[string]Route  `json:"routes" mapstructure:"routes"`
+	Log             bool              `json:"log" mapstructure:"log"`
+	LogFile         string            `json:"log_file" mapstructure:"log_file"`
+	Host            string            `json:"host" mapstructure:"host"`
+	Port            int               `json:"port" mapstructure:"port"`
+	APIKey          string            `json:"apikey" mapstructure:"apikey"`
+	ProxyURL        string            `json:"proxy_url" mapstructure:"proxy_url"`
+	Performance     PerformanceConfig `json:"performance" mapstructure:"performance"`
+	ShutdownTimeout time.Duration     `json:"shutdown_timeout" mapstructure:"shutdown_timeout"`
 }
 
 // Provider represents a LLM provider configuration
 type Provider struct {
-	Name         string               `json:"name" mapstructure:"name"`
-	APIBaseURL   string               `json:"api_base_url" mapstructure:"api_base_url"`
-	APIKey       string               `json:"api_key" mapstructure:"api_key"`
-	Models       []string             `json:"models" mapstructure:"models"`
-	Enabled      bool                 `json:"enabled" mapstructure:"enabled"`
-	Transformers []TransformerConfig  `json:"transformers" mapstructure:"transformers"`
-	CreatedAt    time.Time            `json:"created_at" mapstructure:"created_at"`
-	UpdatedAt    time.Time            `json:"updated_at" mapstructure:"updated_at"`
+	Name          string              `json:"name" mapstructure:"name"`
+	APIBaseURL    string              `json:"api_base_url" mapstructure:"api_base_url"`
+	APIKey        string              `json:"api_key" mapstructure:"api_key"`
+	Models        []string            `json:"models" mapstructure:"models"`
+	Enabled       bool                `json:"enabled" mapstructure:"enabled"`
+	Transformers  []TransformerConfig `json:"transformers" mapstructure:"transformers"`
+	CreatedAt     time.Time           `json:"created_at" mapstructure:"created_at"`
+	UpdatedAt     time.Time           `json:"updated_at" mapstructure:"updated_at"`
 	MessageFormat string              `json:"message_format,omitempty" mapstructure:"message_format"` // Message format used by provider
 }
 

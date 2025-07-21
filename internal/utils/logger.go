@@ -28,17 +28,17 @@ type LogConfig struct {
 // InitLogger initializes the global logger
 func InitLogger(config *LogConfig) error {
 	var err error
-	
+
 	loggerOnce.Do(func() {
 		logger = logrus.New()
-		
+
 		// Set log level
 		level, parseErr := logrus.ParseLevel(config.Level)
 		if parseErr != nil {
 			level = logrus.InfoLevel
 		}
 		logger.SetLevel(level)
-		
+
 		// Set formatter
 		if config.Format == "json" {
 			logger.SetFormatter(&logrus.JSONFormatter{
@@ -50,7 +50,7 @@ func InitLogger(config *LogConfig) error {
 				FullTimestamp:   true,
 			})
 		}
-		
+
 		// Configure output
 		if config.Enabled && config.FilePath != "" {
 			// Resolve log file path
@@ -59,21 +59,21 @@ func InitLogger(config *LogConfig) error {
 				err = fmt.Errorf("failed to resolve log path: %w", resolveErr)
 				return
 			}
-			
+
 			// Ensure log directory exists
 			logDir := filepath.Dir(logPath)
 			if mkdirErr := os.MkdirAll(logDir, 0755); mkdirErr != nil {
 				err = fmt.Errorf("failed to create log directory: %w", mkdirErr)
 				return
 			}
-			
+
 			// Open log file
 			logFile, err = os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 			if err != nil {
 				err = fmt.Errorf("failed to open log file: %w", err)
 				return
 			}
-			
+
 			// Set multi-writer for both file and stdout
 			multiWriter := io.MultiWriter(os.Stdout, logFile)
 			logger.SetOutput(multiWriter)
@@ -82,7 +82,7 @@ func InitLogger(config *LogConfig) error {
 			logger.SetOutput(os.Stdout)
 		}
 	})
-	
+
 	return err
 }
 
@@ -90,7 +90,8 @@ func InitLogger(config *LogConfig) error {
 func GetLogger() *logrus.Logger {
 	if logger == nil {
 		// Initialize with defaults if not initialized
-		InitLogger(&LogConfig{
+		// Safe to ignore error here as we're using default safe configuration
+		_ = InitLogger(&LogConfig{
 			Enabled: false,
 			Level:   "info",
 			Format:  "text",
@@ -103,7 +104,7 @@ func GetLogger() *logrus.Logger {
 func CloseLogger() error {
 	logMutex.Lock()
 	defer logMutex.Unlock()
-	
+
 	if logFile != nil {
 		err := logFile.Close()
 		logFile = nil
@@ -116,48 +117,48 @@ func CloseLogger() error {
 func RotateLogFile(maxSize int64) error {
 	logMutex.Lock()
 	defer logMutex.Unlock()
-	
+
 	if logFile == nil {
 		return nil
 	}
-	
+
 	// Get file info
 	info, err := logFile.Stat()
 	if err != nil {
 		return fmt.Errorf("failed to stat log file: %w", err)
 	}
-	
+
 	// Check if rotation needed
 	if info.Size() < maxSize {
 		return nil
 	}
-	
+
 	// Get file path
 	logPath := logFile.Name()
-	
+
 	// Close current file
 	if err := logFile.Close(); err != nil {
 		return fmt.Errorf("failed to close log file: %w", err)
 	}
-	
+
 	// Rename to backup
 	backupPath := fmt.Sprintf("%s.%d", logPath, info.ModTime().Unix())
 	if err := os.Rename(logPath, backupPath); err != nil {
 		return fmt.Errorf("failed to rename log file: %w", err)
 	}
-	
+
 	// Open new file
 	logFile, err = os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 	if err != nil {
 		return fmt.Errorf("failed to open new log file: %w", err)
 	}
-	
+
 	// Update logger output
 	if logger != nil {
 		multiWriter := io.MultiWriter(os.Stdout, logFile)
 		logger.SetOutput(multiWriter)
 	}
-	
+
 	return nil
 }
 
@@ -170,11 +171,11 @@ func LogRequest(method, path string, fields map[string]interface{}) {
 		"path":   path,
 		"type":   "request",
 	})
-	
+
 	for k, v := range fields {
 		log = log.WithField(k, v)
 	}
-	
+
 	log.Info("HTTP request received")
 }
 
@@ -185,11 +186,11 @@ func LogResponse(statusCode int, duration float64, fields map[string]interface{}
 		"duration": duration,
 		"type":     "response",
 	})
-	
+
 	for k, v := range fields {
 		log = log.WithField(k, v)
 	}
-	
+
 	if statusCode >= 400 {
 		log.Error("HTTP response error")
 	} else {
@@ -215,7 +216,7 @@ func LogTransformer(name, direction string, success bool, err error) {
 		"success":     success,
 		"type":        "transformer",
 	})
-	
+
 	if err != nil {
 		log.WithError(err).Error("Transformer error")
 	} else if success {

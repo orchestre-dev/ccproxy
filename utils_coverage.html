@@ -1,0 +1,1294 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>utils: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">github.com/orchestre-dev/ccproxy/internal/utils/env_validation.go (92.2%)</option>
+				
+				<option value="file1">github.com/orchestre-dev/ccproxy/internal/utils/json.go (100.0%)</option>
+				
+				<option value="file2">github.com/orchestre-dev/ccproxy/internal/utils/logger.go (89.6%)</option>
+				
+				<option value="file3">github.com/orchestre-dev/ccproxy/internal/utils/paths.go (75.6%)</option>
+				
+				<option value="file4">github.com/orchestre-dev/ccproxy/internal/utils/token_counter.go (100.0%)</option>
+				
+				<option value="file5">github.com/orchestre-dev/ccproxy/internal/utils/tokenizer.go (10.2%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package utils
+
+import (
+        "fmt"
+        "os"
+        "strconv"
+        "strings"
+)
+
+// EnvVar represents an environment variable with validation rules
+type EnvVar struct {
+        Name         string
+        Description  string
+        Required     bool
+        DefaultValue string
+        ValidateFunc func(value string) error
+}
+
+// EnvironmentVariables defines all CCProxy environment variables
+var EnvironmentVariables = []EnvVar{
+        // Core environment variables
+        {
+                Name:         "CCPROXY_SPAWN_DEPTH",
+                Description:  "Tracks the depth of process spawning to prevent infinite loops",
+                Required:     false,
+                DefaultValue: "0",
+                ValidateFunc: ValidateSpawnDepth,
+        },
+        {
+                Name:         "CCPROXY_FOREGROUND",
+                Description:  "Set to '1' to indicate the process is running in foreground mode",
+                Required:     false,
+                DefaultValue: "0",
+                ValidateFunc: ValidateBooleanFlag,
+        },
+        {
+                Name:         "CCPROXY_TEST_MODE",
+                Description:  "Set to '1' to enable test mode which disables background spawning",
+                Required:     false,
+                DefaultValue: "0",
+                ValidateFunc: ValidateBooleanFlag,
+        },
+        {
+                Name:         "CCPROXY_VERSION",
+                Description:  "Override the version string reported by the server",
+                Required:     false,
+                DefaultValue: "",
+                ValidateFunc: nil, // No validation needed
+        },
+        {
+                Name:         "CCPROXY_HOST",
+                Description:  "Host address to bind the server to",
+                Required:     false,
+                DefaultValue: "127.0.0.1",
+                ValidateFunc: ValidateHostAddress,
+        },
+        {
+                Name:         "CCPROXY_PORT",
+                Description:  "Port number to bind the server to",
+                Required:     false,
+                DefaultValue: "3456",
+                ValidateFunc: ValidatePort,
+        },
+        {
+                Name:         "CCPROXY_LOG",
+                Description:  "Enable logging (true/false)",
+                Required:     false,
+                DefaultValue: "false",
+                ValidateFunc: ValidateBoolean,
+        },
+        {
+                Name:         "CCPROXY_LOG_FILE",
+                Description:  "Path to the log file",
+                Required:     false,
+                DefaultValue: "",
+                ValidateFunc: ValidateFilePath,
+        },
+        {
+                Name:         "CCPROXY_API_KEY",
+                Description:  "API key for authentication",
+                Required:     false,
+                DefaultValue: "",
+                ValidateFunc: nil, // No validation needed
+        },
+        {
+                Name:         "CCPROXY_PROXY_URL",
+                Description:  "HTTP/HTTPS proxy URL for outbound connections",
+                Required:     false,
+                DefaultValue: "",
+                ValidateFunc: ValidateURL,
+        },
+        // Test-specific environment variables
+        {
+                Name:         "CCPROXY_HOME",
+                Description:  "Home directory for CCProxy (used in tests)",
+                Required:     false,
+                DefaultValue: "",
+                ValidateFunc: ValidateDirectoryPath,
+        },
+        {
+                Name:         "CCPROXY_CONFIG_DIR",
+                Description:  "Configuration directory path (used in tests)",
+                Required:     false,
+                DefaultValue: "",
+                ValidateFunc: ValidateDirectoryPath,
+        },
+        {
+                Name:         "CCPROXY_DATA_DIR",
+                Description:  "Data directory path (used in tests)",
+                Required:     false,
+                DefaultValue: "",
+                ValidateFunc: ValidateDirectoryPath,
+        },
+        {
+                Name:         "CCPROXY_LOG_DIR",
+                Description:  "Log directory path (used in tests)",
+                Required:     false,
+                DefaultValue: "",
+                ValidateFunc: ValidateDirectoryPath,
+        },
+        {
+                Name:         "CCPROXY_PID_FILE",
+                Description:  "PID file path (used in tests)",
+                Required:     false,
+                DefaultValue: "",
+                ValidateFunc: ValidateFilePath,
+        },
+}
+
+// ValidateSpawnDepth validates the CCPROXY_SPAWN_DEPTH environment variable
+func ValidateSpawnDepth(value string) error <span class="cov8" title="1">{
+        if value == "" </span><span class="cov8" title="1">{
+                return nil
+        }</span>
+
+        // Trim whitespace to prevent issues
+        <span class="cov8" title="1">value = strings.TrimSpace(value)
+        
+        // Check for extremely long values that might cause overflow
+        if len(value) &gt; 10 </span><span class="cov8" title="1">{
+                return fmt.Errorf("value too long to be a valid spawn depth")
+        }</span>
+
+        // Use ParseInt with base 10 and 32-bit size to prevent overflow
+        <span class="cov8" title="1">depth64, err := strconv.ParseInt(value, 10, 32)
+        if err != nil </span><span class="cov8" title="1">{
+                // Provide more specific error messages
+                if numErr, ok := err.(*strconv.NumError); ok </span><span class="cov8" title="1">{
+                        switch numErr.Err </span>{
+                        case strconv.ErrRange:<span class="cov8" title="1">
+                                return fmt.Errorf("value out of range for 32-bit integer")</span>
+                        case strconv.ErrSyntax:<span class="cov8" title="1">
+                                return fmt.Errorf("invalid integer format: %q", value)</span>
+                        }
+                }
+                <span class="cov0" title="0">return fmt.Errorf("must be a valid integer: %v", err)</span>
+        }
+
+        <span class="cov8" title="1">depth := int(depth64)
+
+        if depth &lt; 0 </span><span class="cov8" title="1">{
+                return fmt.Errorf("must be non-negative, got %d", depth)
+        }</span>
+
+        <span class="cov8" title="1">if depth &gt; 10 </span><span class="cov8" title="1">{
+                return fmt.Errorf("exceeds maximum allowed depth of 10, got %d", depth)
+        }</span>
+
+        <span class="cov8" title="1">return nil</span>
+}
+
+// ValidateBooleanFlag validates environment variables that should be "0" or "1"
+func ValidateBooleanFlag(value string) error <span class="cov8" title="1">{
+        if value == "" || value == "0" || value == "1" </span><span class="cov8" title="1">{
+                return nil
+        }</span>
+        <span class="cov8" title="1">return fmt.Errorf("must be '0' or '1', got '%s'", value)</span>
+}
+
+// ValidateBoolean validates boolean environment variables
+func ValidateBoolean(value string) error <span class="cov8" title="1">{
+        if value == "" </span><span class="cov8" title="1">{
+                return nil
+        }</span>
+        
+        <span class="cov8" title="1">lower := strings.ToLower(value)
+        if lower == "true" || lower == "false" || lower == "1" || lower == "0" </span><span class="cov8" title="1">{
+                return nil
+        }</span>
+        <span class="cov8" title="1">return fmt.Errorf("must be 'true', 'false', '1', or '0', got '%s'", value)</span>
+}
+
+// ValidatePort validates port number
+func ValidatePort(value string) error <span class="cov8" title="1">{
+        if value == "" </span><span class="cov8" title="1">{
+                return nil
+        }</span>
+
+        <span class="cov8" title="1">port, err := strconv.Atoi(value)
+        if err != nil </span><span class="cov8" title="1">{
+                return fmt.Errorf("must be a valid integer: %v", err)
+        }</span>
+
+        <span class="cov8" title="1">if port &lt; 1 || port &gt; 65535 </span><span class="cov8" title="1">{
+                return fmt.Errorf("must be between 1 and 65535, got %d", port)
+        }</span>
+
+        <span class="cov8" title="1">return nil</span>
+}
+
+// ValidateHostAddress validates host address (basic validation)
+func ValidateHostAddress(value string) error <span class="cov8" title="1">{
+        if value == "" </span><span class="cov8" title="1">{
+                return nil
+        }</span>
+
+        // Basic validation - just check it's not empty after trimming
+        <span class="cov8" title="1">trimmed := strings.TrimSpace(value)
+        if trimmed == "" </span><span class="cov8" title="1">{
+                return fmt.Errorf("host address cannot be empty or whitespace")
+        }</span>
+
+        <span class="cov8" title="1">return nil</span>
+}
+
+// ValidateFilePath validates file path (basic validation)
+func ValidateFilePath(value string) error <span class="cov8" title="1">{
+        if value == "" </span><span class="cov8" title="1">{
+                return nil
+        }</span>
+
+        // Check if path contains invalid characters
+        <span class="cov8" title="1">if strings.ContainsAny(value, "\x00") </span><span class="cov8" title="1">{
+                return fmt.Errorf("file path contains null characters")
+        }</span>
+
+        <span class="cov8" title="1">return nil</span>
+}
+
+// ValidateDirectoryPath validates directory path (basic validation)
+func ValidateDirectoryPath(value string) error <span class="cov8" title="1">{
+        if value == "" </span><span class="cov8" title="1">{
+                return nil
+        }</span>
+
+        // Check if path contains invalid characters
+        <span class="cov8" title="1">if strings.ContainsAny(value, "\x00") </span><span class="cov8" title="1">{
+                return fmt.Errorf("directory path contains null characters")
+        }</span>
+
+        // Basic validation - just check it's not empty after trimming
+        <span class="cov8" title="1">trimmed := strings.TrimSpace(value)
+        if trimmed == "" </span><span class="cov8" title="1">{
+                return fmt.Errorf("directory path cannot be empty or whitespace")
+        }</span>
+
+        <span class="cov8" title="1">return nil</span>
+}
+
+// ValidateURL validates URL format (basic validation)
+func ValidateURL(value string) error <span class="cov8" title="1">{
+        if value == "" </span><span class="cov8" title="1">{
+                return nil
+        }</span>
+
+        <span class="cov8" title="1">lower := strings.ToLower(value)
+        if !strings.HasPrefix(lower, "http://") &amp;&amp; !strings.HasPrefix(lower, "https://") </span><span class="cov8" title="1">{
+                return fmt.Errorf("must start with http:// or https://")
+        }</span>
+
+        <span class="cov8" title="1">return nil</span>
+}
+
+// ValidateEnvironmentVariables validates all defined environment variables
+func ValidateEnvironmentVariables() error <span class="cov8" title="1">{
+        var errors []string
+
+        for _, envVar := range EnvironmentVariables </span><span class="cov8" title="1">{
+                value := os.Getenv(envVar.Name)
+                
+                // Check if required variable is missing
+                if envVar.Required &amp;&amp; value == "" </span><span class="cov0" title="0">{
+                        errors = append(errors, fmt.Sprintf("%s: required environment variable not set", envVar.Name))
+                        continue</span>
+                }
+
+                // Skip validation if no value and not required
+                <span class="cov8" title="1">if value == "" </span><span class="cov8" title="1">{
+                        continue</span>
+                }
+
+                // Run validation function if defined
+                <span class="cov8" title="1">if envVar.ValidateFunc != nil </span><span class="cov8" title="1">{
+                        if err := envVar.ValidateFunc(value); err != nil </span><span class="cov8" title="1">{
+                                errors = append(errors, fmt.Sprintf("%s: %v", envVar.Name, err))
+                        }</span>
+                }
+        }
+
+        <span class="cov8" title="1">if len(errors) &gt; 0 </span><span class="cov8" title="1">{
+                return fmt.Errorf("environment variable validation failed:\n  %s", strings.Join(errors, "\n  "))
+        }</span>
+
+        <span class="cov8" title="1">return nil</span>
+}
+
+// GetEnvironmentVariableDocumentation returns a formatted string documenting all environment variables
+func GetEnvironmentVariableDocumentation() string <span class="cov8" title="1">{
+        var sb strings.Builder
+        
+        sb.WriteString("CCProxy Environment Variables\n")
+        sb.WriteString("============================\n\n")
+        
+        for _, envVar := range EnvironmentVariables </span><span class="cov8" title="1">{
+                sb.WriteString(fmt.Sprintf("%-25s %s\n", envVar.Name, envVar.Description))
+                if envVar.Required </span><span class="cov0" title="0">{
+                        sb.WriteString(fmt.Sprintf("%-25s Required: Yes\n", ""))
+                }</span>
+                <span class="cov8" title="1">if envVar.DefaultValue != "" </span><span class="cov8" title="1">{
+                        sb.WriteString(fmt.Sprintf("%-25s Default: %s\n", "", envVar.DefaultValue))
+                }</span>
+                <span class="cov8" title="1">sb.WriteString("\n")</span>
+        }
+        
+        <span class="cov8" title="1">return sb.String()</span>
+}
+
+// ValidationReport represents the result of environment variable validation
+type ValidationReport struct {
+        Valid   bool
+        Errors  []string
+        Details map[string]ValidationDetail
+}
+
+// ValidationDetail contains details about a specific environment variable validation
+type ValidationDetail struct {
+        Name    string
+        Value   string
+        Valid   bool
+        Error   string
+        Default string
+}
+
+// ValidateEnvironmentVariablesWithReport validates all environment variables and returns a detailed report
+func ValidateEnvironmentVariablesWithReport() *ValidationReport <span class="cov8" title="1">{
+        report := &amp;ValidationReport{
+                Valid:   true,
+                Errors:  []string{},
+                Details: make(map[string]ValidationDetail),
+        }
+
+        for _, envVar := range EnvironmentVariables </span><span class="cov8" title="1">{
+                value := os.Getenv(envVar.Name)
+                detail := ValidationDetail{
+                        Name:    envVar.Name,
+                        Value:   value,
+                        Valid:   true,
+                        Default: envVar.DefaultValue,
+                }
+                
+                // Check if required variable is missing
+                if envVar.Required &amp;&amp; value == "" </span><span class="cov0" title="0">{
+                        detail.Valid = false
+                        detail.Error = "required environment variable not set"
+                        report.Errors = append(report.Errors, fmt.Sprintf("%s: %s", envVar.Name, detail.Error))
+                        report.Valid = false
+                }</span> else<span class="cov8" title="1"> if value != "" &amp;&amp; envVar.ValidateFunc != nil </span><span class="cov8" title="1">{
+                        // Run validation function if defined
+                        if err := envVar.ValidateFunc(value); err != nil </span><span class="cov8" title="1">{
+                                detail.Valid = false
+                                detail.Error = err.Error()
+                                report.Errors = append(report.Errors, fmt.Sprintf("%s: %v", envVar.Name, err))
+                                report.Valid = false
+                        }</span>
+                }
+                
+                <span class="cov8" title="1">report.Details[envVar.Name] = detail</span>
+        }
+
+        <span class="cov8" title="1">return report</span>
+}</pre>
+		
+		<pre class="file" id="file1" style="display: none">package utils
+
+import (
+        "encoding/json"
+        "time"
+)
+
+// ToJSONString converts an interface{} to a JSON string
+func ToJSONString(v interface{}) string <span class="cov8" title="1">{
+        if v == nil </span><span class="cov8" title="1">{
+                return "{}"
+        }</span>
+        
+        <span class="cov8" title="1">data, err := json.Marshal(v)
+        if err != nil </span><span class="cov8" title="1">{
+                return "{}"
+        }</span>
+        
+        <span class="cov8" title="1">return string(data)</span>
+}
+
+// GetTimestamp returns the current Unix timestamp
+func GetTimestamp() int64 <span class="cov8" title="1">{
+        return time.Now().Unix()
+}</pre>
+		
+		<pre class="file" id="file2" style="display: none">package utils
+
+import (
+        "fmt"
+        "io"
+        "os"
+        "path/filepath"
+        "sync"
+
+        "github.com/sirupsen/logrus"
+)
+
+var (
+        logger     *logrus.Logger
+        loggerOnce sync.Once
+        logFile    *os.File
+        logMutex   sync.Mutex
+)
+
+// LogConfig represents logging configuration
+type LogConfig struct {
+        Enabled  bool
+        FilePath string
+        Level    string
+        Format   string // "json" or "text"
+}
+
+// InitLogger initializes the global logger
+func InitLogger(config *LogConfig) error <span class="cov8" title="1">{
+        var err error
+        
+        loggerOnce.Do(func() </span><span class="cov8" title="1">{
+                logger = logrus.New()
+                
+                // Set log level
+                level, parseErr := logrus.ParseLevel(config.Level)
+                if parseErr != nil </span><span class="cov8" title="1">{
+                        level = logrus.InfoLevel
+                }</span>
+                <span class="cov8" title="1">logger.SetLevel(level)
+                
+                // Set formatter
+                if config.Format == "json" </span><span class="cov8" title="1">{
+                        logger.SetFormatter(&amp;logrus.JSONFormatter{
+                                TimestampFormat: "2006-01-02T15:04:05.000Z07:00",
+                        })
+                }</span> else<span class="cov8" title="1"> {
+                        logger.SetFormatter(&amp;logrus.TextFormatter{
+                                TimestampFormat: "2006-01-02 15:04:05",
+                                FullTimestamp:   true,
+                        })
+                }</span>
+                
+                // Configure output
+                <span class="cov8" title="1">if config.Enabled &amp;&amp; config.FilePath != "" </span><span class="cov8" title="1">{
+                        // Resolve log file path
+                        logPath, resolveErr := ResolvePath(config.FilePath)
+                        if resolveErr != nil </span><span class="cov0" title="0">{
+                                err = fmt.Errorf("failed to resolve log path: %w", resolveErr)
+                                return
+                        }</span>
+                        
+                        // Ensure log directory exists
+                        <span class="cov8" title="1">logDir := filepath.Dir(logPath)
+                        if mkdirErr := os.MkdirAll(logDir, 0755); mkdirErr != nil </span><span class="cov8" title="1">{
+                                err = fmt.Errorf("failed to create log directory: %w", mkdirErr)
+                                return
+                        }</span>
+                        
+                        // Open log file
+                        <span class="cov8" title="1">logFile, err = os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+                        if err != nil </span><span class="cov0" title="0">{
+                                err = fmt.Errorf("failed to open log file: %w", err)
+                                return
+                        }</span>
+                        
+                        // Set multi-writer for both file and stdout
+                        <span class="cov8" title="1">multiWriter := io.MultiWriter(os.Stdout, logFile)
+                        logger.SetOutput(multiWriter)</span>
+                } else<span class="cov8" title="1"> {
+                        // Log to stdout only
+                        logger.SetOutput(os.Stdout)
+                }</span>
+        })
+        
+        <span class="cov8" title="1">return err</span>
+}
+
+// GetLogger returns the global logger instance
+func GetLogger() *logrus.Logger <span class="cov8" title="1">{
+        if logger == nil </span><span class="cov8" title="1">{
+                // Initialize with defaults if not initialized
+                InitLogger(&amp;LogConfig{
+                        Enabled: false,
+                        Level:   "info",
+                        Format:  "text",
+                })
+        }</span>
+        <span class="cov8" title="1">return logger</span>
+}
+
+// CloseLogger closes the log file if open
+func CloseLogger() error <span class="cov8" title="1">{
+        logMutex.Lock()
+        defer logMutex.Unlock()
+        
+        if logFile != nil </span><span class="cov8" title="1">{
+                err := logFile.Close()
+                logFile = nil
+                return err
+        }</span>
+        <span class="cov8" title="1">return nil</span>
+}
+
+// RotateLogFile rotates the log file
+func RotateLogFile(maxSize int64) error <span class="cov8" title="1">{
+        logMutex.Lock()
+        defer logMutex.Unlock()
+        
+        if logFile == nil </span><span class="cov8" title="1">{
+                return nil
+        }</span>
+        
+        // Get file info
+        <span class="cov8" title="1">info, err := logFile.Stat()
+        if err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to stat log file: %w", err)
+        }</span>
+        
+        // Check if rotation needed
+        <span class="cov8" title="1">if info.Size() &lt; maxSize </span><span class="cov8" title="1">{
+                return nil
+        }</span>
+        
+        // Get file path
+        <span class="cov8" title="1">logPath := logFile.Name()
+        
+        // Close current file
+        if err := logFile.Close(); err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to close log file: %w", err)
+        }</span>
+        
+        // Rename to backup
+        <span class="cov8" title="1">backupPath := fmt.Sprintf("%s.%d", logPath, info.ModTime().Unix())
+        if err := os.Rename(logPath, backupPath); err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to rename log file: %w", err)
+        }</span>
+        
+        // Open new file
+        <span class="cov8" title="1">logFile, err = os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+        if err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to open new log file: %w", err)
+        }</span>
+        
+        // Update logger output
+        <span class="cov8" title="1">if logger != nil </span><span class="cov8" title="1">{
+                multiWriter := io.MultiWriter(os.Stdout, logFile)
+                logger.SetOutput(multiWriter)
+        }</span>
+        
+        <span class="cov8" title="1">return nil</span>
+}
+
+// Helper functions for common logging patterns
+
+// LogRequest logs an HTTP request
+func LogRequest(method, path string, fields map[string]interface{}) <span class="cov8" title="1">{
+        log := GetLogger().WithFields(logrus.Fields{
+                "method": method,
+                "path":   path,
+                "type":   "request",
+        })
+        
+        for k, v := range fields </span><span class="cov8" title="1">{
+                log = log.WithField(k, v)
+        }</span>
+        
+        <span class="cov8" title="1">log.Info("HTTP request received")</span>
+}
+
+// LogResponse logs an HTTP response
+func LogResponse(statusCode int, duration float64, fields map[string]interface{}) <span class="cov8" title="1">{
+        log := GetLogger().WithFields(logrus.Fields{
+                "status":   statusCode,
+                "duration": duration,
+                "type":     "response",
+        })
+        
+        for k, v := range fields </span><span class="cov8" title="1">{
+                log = log.WithField(k, v)
+        }</span>
+        
+        <span class="cov8" title="1">if statusCode &gt;= 400 </span><span class="cov8" title="1">{
+                log.Error("HTTP response error")
+        }</span> else<span class="cov8" title="1"> {
+                log.Info("HTTP response sent")
+        }</span>
+}
+
+// LogRouting logs routing decisions
+func LogRouting(model, provider, reason string) <span class="cov8" title="1">{
+        GetLogger().WithFields(logrus.Fields{
+                "model":    model,
+                "provider": provider,
+                "reason":   reason,
+                "type":     "routing",
+        }).Info("Routing decision made")
+}</span>
+
+// LogTransformer logs transformer operations
+func LogTransformer(name, direction string, success bool, err error) <span class="cov8" title="1">{
+        log := GetLogger().WithFields(logrus.Fields{
+                "transformer": name,
+                "direction":   direction,
+                "success":     success,
+                "type":        "transformer",
+        })
+        
+        if err != nil </span><span class="cov8" title="1">{
+                log.WithError(err).Error("Transformer error")
+        }</span> else<span class="cov8" title="1"> if success </span><span class="cov8" title="1">{
+                log.Debug("Transformer applied")
+        }</span>
+}
+
+// LogStartup logs service startup
+func LogStartup(port int, version string) <span class="cov8" title="1">{
+        GetLogger().WithFields(logrus.Fields{
+                "port":    port,
+                "version": version,
+                "type":    "startup",
+        }).Info("CCProxy started")
+}</span>
+
+// LogShutdown logs service shutdown
+func LogShutdown(reason string) <span class="cov8" title="1">{
+        GetLogger().WithFields(logrus.Fields{
+                "reason": reason,
+                "type":   "shutdown",
+        }).Info("CCProxy shutting down")
+}</pre>
+		
+		<pre class="file" id="file3" style="display: none">package utils
+
+import (
+        "fmt"
+        "os"
+        "path/filepath"
+        "runtime"
+)
+
+// HomeDir represents the CCProxy home directory structure
+type HomeDir struct {
+        Root       string
+        ConfigPath string
+        LogPath    string
+        PIDPath    string
+        PluginsDir string
+        TempDir    string
+}
+
+// GetHomeDir returns the CCProxy home directory path
+func GetHomeDir() (string, error) <span class="cov8" title="1">{
+        // Get user home directory
+        home, err := os.UserHomeDir()
+        if err != nil </span><span class="cov0" title="0">{
+                return "", fmt.Errorf("failed to get user home directory: %w", err)
+        }</span>
+        
+        // Return ~/.ccproxy path
+        <span class="cov8" title="1">return filepath.Join(home, ".ccproxy"), nil</span>
+}
+
+// InitializeHomeDir creates and initializes the CCProxy home directory structure
+func InitializeHomeDir() (*HomeDir, error) <span class="cov8" title="1">{
+        // Get home directory path
+        rootDir, err := GetHomeDir()
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        
+        // Create home directory structure
+        <span class="cov8" title="1">homeDir := &amp;HomeDir{
+                Root:       rootDir,
+                ConfigPath: filepath.Join(rootDir, "config.json"),
+                LogPath:    filepath.Join(rootDir, "ccproxy.log"),
+                PIDPath:    filepath.Join(rootDir, ".ccproxy.pid"),
+                PluginsDir: filepath.Join(rootDir, "plugins"),
+                TempDir:    filepath.Join(rootDir, "tmp"),
+        }
+        
+        // Create directories with appropriate permissions
+        directories := []string{
+                homeDir.Root,
+                homeDir.PluginsDir,
+                homeDir.TempDir,
+        }
+        
+        for _, dir := range directories </span><span class="cov8" title="1">{
+                if err := os.MkdirAll(dir, 0755); err != nil </span><span class="cov0" title="0">{
+                        return nil, fmt.Errorf("failed to create directory %s: %w", dir, err)
+                }</span>
+        }
+        
+        <span class="cov8" title="1">return homeDir, nil</span>
+}
+
+// ResolvePath resolves a path, handling both absolute and relative paths
+func ResolvePath(path string) (string, error) <span class="cov8" title="1">{
+        // If path is empty, return error
+        if path == "" </span><span class="cov8" title="1">{
+                return "", fmt.Errorf("path cannot be empty")
+        }</span>
+        
+        // If path is already absolute, clean and return it
+        <span class="cov8" title="1">if filepath.IsAbs(path) </span><span class="cov8" title="1">{
+                return filepath.Clean(path), nil
+        }</span>
+        
+        // For relative paths, resolve relative to current working directory
+        <span class="cov8" title="1">cwd, err := os.Getwd()
+        if err != nil </span><span class="cov0" title="0">{
+                return "", fmt.Errorf("failed to get current directory: %w", err)
+        }</span>
+        
+        <span class="cov8" title="1">return filepath.Clean(filepath.Join(cwd, path)), nil</span>
+}
+
+// ResolveConfigPath resolves a configuration file path
+func ResolveConfigPath(path string) (string, error) <span class="cov8" title="1">{
+        // If path is empty, use default config path
+        if path == "" </span><span class="cov8" title="1">{
+                homeDir, err := InitializeHomeDir()
+                if err != nil </span><span class="cov0" title="0">{
+                        return "", err
+                }</span>
+                <span class="cov8" title="1">return homeDir.ConfigPath, nil</span>
+        }
+        
+        // Resolve the provided path
+        <span class="cov8" title="1">return ResolvePath(path)</span>
+}
+
+// FileExists checks if a file exists
+func FileExists(path string) bool <span class="cov8" title="1">{
+        info, err := os.Stat(path)
+        if err != nil </span><span class="cov8" title="1">{
+                return false
+        }</span>
+        <span class="cov8" title="1">return !info.IsDir()</span>
+}
+
+// DirExists checks if a directory exists
+func DirExists(path string) bool <span class="cov8" title="1">{
+        info, err := os.Stat(path)
+        if err != nil </span><span class="cov8" title="1">{
+                return false
+        }</span>
+        <span class="cov8" title="1">return info.IsDir()</span>
+}
+
+// EnsureDir ensures a directory exists, creating it if necessary
+func EnsureDir(path string) error <span class="cov8" title="1">{
+        if DirExists(path) </span><span class="cov8" title="1">{
+                return nil
+        }</span>
+        <span class="cov8" title="1">return os.MkdirAll(path, 0755)</span>
+}
+
+// GetTempFile returns a path for a temporary file in the CCProxy temp directory
+func GetTempFile(prefix string) (string, error) <span class="cov8" title="1">{
+        homeDir, err := InitializeHomeDir()
+        if err != nil </span><span class="cov0" title="0">{
+                return "", err
+        }</span>
+        
+        // Create temp file path
+        <span class="cov8" title="1">filename := fmt.Sprintf("%s_%d", prefix, os.Getpid())
+        return filepath.Join(homeDir.TempDir, filename), nil</span>
+}
+
+// CleanupTempFiles removes old temporary files from the temp directory
+func CleanupTempFiles() error <span class="cov8" title="1">{
+        homeDir, err := InitializeHomeDir()
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        
+        // Read temp directory
+        <span class="cov8" title="1">entries, err := os.ReadDir(homeDir.TempDir)
+        if err != nil </span><span class="cov0" title="0">{
+                // If directory doesn't exist, that's fine
+                if os.IsNotExist(err) </span><span class="cov0" title="0">{
+                        return nil
+                }</span>
+                <span class="cov0" title="0">return fmt.Errorf("failed to read temp directory: %w", err)</span>
+        }
+        
+        // Remove all files in temp directory
+        <span class="cov8" title="1">for _, entry := range entries </span><span class="cov8" title="1">{
+                if !entry.IsDir() </span><span class="cov8" title="1">{
+                        path := filepath.Join(homeDir.TempDir, entry.Name())
+                        if err := os.Remove(path); err != nil </span><span class="cov0" title="0">{
+                                // Log but don't fail on individual file errors
+                                continue</span>
+                        }
+                }
+        }
+        
+        <span class="cov8" title="1">return nil</span>
+}
+
+// GetExecutablePath returns the path to the current executable
+func GetExecutablePath() (string, error) <span class="cov8" title="1">{
+        if runtime.GOOS == "windows" </span><span class="cov0" title="0">{
+                return os.Executable()
+        }</span>
+        
+        // For Unix-like systems, use readlink on /proc/self/exe if available
+        <span class="cov8" title="1">if runtime.GOOS == "linux" </span><span class="cov0" title="0">{
+                if path, err := os.Readlink("/proc/self/exe"); err == nil </span><span class="cov0" title="0">{
+                        return path, nil
+                }</span>
+        }
+        
+        // Fallback to os.Executable
+        <span class="cov8" title="1">return os.Executable()</span>
+}
+
+// GetReferenceCountPath returns the path to the reference count file
+func GetReferenceCountPath() (string, error) <span class="cov8" title="1">{
+        // Use system temp directory for reference counting
+        tempDir := os.TempDir()
+        return filepath.Join(tempDir, "ccproxy_ref_count"), nil
+}</span>
+
+// WriteFileAtomic writes data to a file atomically
+func WriteFileAtomic(path string, data []byte, perm os.FileMode) error <span class="cov8" title="1">{
+        // Create temp file in same directory
+        dir := filepath.Dir(path)
+        tempFile, err := os.CreateTemp(dir, ".tmp_")
+        if err != nil </span><span class="cov8" title="1">{
+                return fmt.Errorf("failed to create temp file: %w", err)
+        }</span>
+        <span class="cov8" title="1">tempPath := tempFile.Name()
+        
+        // Clean up on error
+        defer func() </span><span class="cov8" title="1">{
+                if tempFile != nil </span><span class="cov0" title="0">{
+                        tempFile.Close()
+                        os.Remove(tempPath)
+                }</span>
+        }()
+        
+        // Write data
+        <span class="cov8" title="1">if _, err := tempFile.Write(data); err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to write data: %w", err)
+        }</span>
+        
+        // Sync to disk
+        <span class="cov8" title="1">if err := tempFile.Sync(); err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to sync file: %w", err)
+        }</span>
+        
+        // Close file
+        <span class="cov8" title="1">if err := tempFile.Close(); err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to close file: %w", err)
+        }</span>
+        <span class="cov8" title="1">tempFile = nil
+        
+        // Set permissions
+        if err := os.Chmod(tempPath, perm); err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to set permissions: %w", err)
+        }</span>
+        
+        // Atomic rename
+        <span class="cov8" title="1">if err := os.Rename(tempPath, path); err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to rename file: %w", err)
+        }</span>
+        
+        <span class="cov8" title="1">return nil</span>
+}</pre>
+		
+		<pre class="file" id="file4" style="display: none">package utils
+
+import (
+        "strings"
+)
+
+// CountRequestTokens estimates token count for a request
+// This is a simplified implementation - in production you would use tiktoken-go
+func CountRequestTokens(bodyMap map[string]interface{}) int <span class="cov8" title="1">{
+        // Simple estimation based on message content
+        tokenCount := 0
+        
+        // Count tokens in messages
+        if messages, ok := bodyMap["messages"].([]interface{}); ok </span><span class="cov8" title="1">{
+                for _, msg := range messages </span><span class="cov8" title="1">{
+                        if msgMap, ok := msg.(map[string]interface{}); ok </span><span class="cov8" title="1">{
+                                if content, ok := msgMap["content"].(string); ok </span><span class="cov8" title="1">{
+                                        // Rough estimation: 1 token per 4 characters
+                                        tokenCount += len(content) / 4
+                                }</span>
+                        }
+                }
+        }
+        
+        // Count tokens in system message
+        <span class="cov8" title="1">if system, ok := bodyMap["system"].(string); ok </span><span class="cov8" title="1">{
+                tokenCount += len(system) / 4
+        }</span>
+        
+        // Add base tokens for request structure
+        <span class="cov8" title="1">tokenCount += 50
+        
+        return tokenCount</span>
+}
+
+// CountResponseTokens estimates token count for a response
+func CountResponseTokens(content string) int <span class="cov8" title="1">{
+        // Remove common formatting
+        content = strings.TrimSpace(content)
+        
+        // Rough estimation: 1 token per 4 characters
+        return len(content) / 4
+}</pre>
+		
+		<pre class="file" id="file5" style="display: none">package utils
+
+import (
+        "encoding/json"
+        "fmt"
+        "sync"
+
+        "github.com/pkoukk/tiktoken-go"
+)
+
+var (
+        encoder     *tiktoken.Tiktoken
+        encoderOnce sync.Once
+        encoderErr  error
+)
+
+// InitTokenizer initializes the tiktoken encoder with cl100k_base encoding
+func InitTokenizer() error <span class="cov8" title="1">{
+        encoderOnce.Do(func() </span><span class="cov8" title="1">{
+                encoder, encoderErr = tiktoken.GetEncoding("cl100k_base")
+        }</span>)
+        <span class="cov8" title="1">return encoderErr</span>
+}
+
+// GetEncoder returns the initialized encoder
+func GetEncoder() (*tiktoken.Tiktoken, error) <span class="cov8" title="1">{
+        if err := InitTokenizer(); err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov8" title="1">return encoder, nil</span>
+}
+
+// CountTokens counts the number of tokens in a string
+func CountTokens(text string) (int, error) <span class="cov8" title="1">{
+        enc, err := GetEncoder()
+        if err != nil </span><span class="cov0" title="0">{
+                return 0, fmt.Errorf("failed to get encoder: %w", err)
+        }</span>
+        
+        <span class="cov8" title="1">tokens := enc.Encode(text, nil, nil)
+        return len(tokens), nil</span>
+}
+
+// MessageContent represents content that can be either string or array
+type MessageContent interface{}
+
+// TextContent represents text content in a message
+type TextContent struct {
+        Type string `json:"type"`
+        Text string `json:"text"`
+}
+
+// ToolUseContent represents tool use in a message
+type ToolUseContent struct {
+        Type  string      `json:"type"`
+        ID    string      `json:"id"`
+        Name  string      `json:"name"`
+        Input interface{} `json:"input"`
+}
+
+// ToolResultContent represents tool result in a message
+type ToolResultContent struct {
+        Type    string      `json:"type"`
+        ToolUse string      `json:"tool_use_id"`
+        Content interface{} `json:"content"`
+}
+
+// SystemContent represents system message content
+type SystemContent struct {
+        Type string   `json:"type"`
+        Text []string `json:"text"`
+}
+
+// Tool represents a tool with its schema
+type Tool struct {
+        Name        string      `json:"name"`
+        Description string      `json:"description,omitempty"`
+        InputSchema interface{} `json:"input_schema,omitempty"`
+}
+
+// MessageCreateParams represents the parameters for creating a message
+type MessageCreateParams struct {
+        Model    string         `json:"model"`
+        Messages []Message      `json:"messages"`
+        System   interface{}    `json:"system,omitempty"` // Can be string or []SystemContent
+        Tools    []Tool         `json:"tools,omitempty"`
+        Stream   bool           `json:"stream,omitempty"`
+}
+
+// Message represents a message in the conversation
+type Message struct {
+        Role    string      `json:"role"`
+        Content interface{} `json:"content"` // Can be string or array of content objects
+}
+
+// CountMessageTokens counts tokens in a MessageCreateParams structure
+func CountMessageTokens(params *MessageCreateParams) (int, error) <span class="cov0" title="0">{
+        enc, err := GetEncoder()
+        if err != nil </span><span class="cov0" title="0">{
+                return 0, fmt.Errorf("failed to get encoder: %w", err)
+        }</span>
+        
+        <span class="cov0" title="0">tokenCount := 0
+        
+        // Count tokens in messages
+        for _, message := range params.Messages </span><span class="cov0" title="0">{
+                count, err := countMessageContentTokens(enc, message.Content)
+                if err != nil </span><span class="cov0" title="0">{
+                        return 0, fmt.Errorf("failed to count message tokens: %w", err)
+                }</span>
+                <span class="cov0" title="0">tokenCount += count</span>
+        }
+        
+        // Count tokens in system prompt
+        <span class="cov0" title="0">if params.System != nil </span><span class="cov0" title="0">{
+                count, err := countSystemTokens(enc, params.System)
+                if err != nil </span><span class="cov0" title="0">{
+                        return 0, fmt.Errorf("failed to count system tokens: %w", err)
+                }</span>
+                <span class="cov0" title="0">tokenCount += count</span>
+        }
+        
+        // Count tokens in tools
+        <span class="cov0" title="0">if params.Tools != nil </span><span class="cov0" title="0">{
+                for _, tool := range params.Tools </span><span class="cov0" title="0">{
+                        // Count name + description
+                        if tool.Description != "" </span><span class="cov0" title="0">{
+                                tokens := enc.Encode(tool.Name+tool.Description, nil, nil)
+                                tokenCount += len(tokens)
+                        }</span>
+                        
+                        // Count input schema as JSON
+                        <span class="cov0" title="0">if tool.InputSchema != nil </span><span class="cov0" title="0">{
+                                schemaJSON, err := json.Marshal(tool.InputSchema)
+                                if err != nil </span><span class="cov0" title="0">{
+                                        return 0, fmt.Errorf("failed to marshal tool schema: %w", err)
+                                }</span>
+                                <span class="cov0" title="0">tokens := enc.Encode(string(schemaJSON), nil, nil)
+                                tokenCount += len(tokens)</span>
+                        }
+                }
+        }
+        
+        <span class="cov0" title="0">return tokenCount, nil</span>
+}
+
+// countMessageContentTokens counts tokens in message content
+func countMessageContentTokens(enc *tiktoken.Tiktoken, content interface{}) (int, error) <span class="cov0" title="0">{
+        tokenCount := 0
+        
+        switch c := content.(type) </span>{
+        case string:<span class="cov0" title="0">
+                // Simple string content
+                tokens := enc.Encode(c, nil, nil)
+                tokenCount += len(tokens)</span>
+                
+        case []interface{}:<span class="cov0" title="0">
+                // Array of content objects
+                for _, item := range c </span><span class="cov0" title="0">{
+                        itemMap, ok := item.(map[string]interface{})
+                        if !ok </span><span class="cov0" title="0">{
+                                continue</span>
+                        }
+                        
+                        <span class="cov0" title="0">contentType, ok := itemMap["type"].(string)
+                        if !ok </span><span class="cov0" title="0">{
+                                continue</span>
+                        }
+                        
+                        <span class="cov0" title="0">switch contentType </span>{
+                        case "text":<span class="cov0" title="0">
+                                if text, ok := itemMap["text"].(string); ok </span><span class="cov0" title="0">{
+                                        tokens := enc.Encode(text, nil, nil)
+                                        tokenCount += len(tokens)
+                                }</span>
+                                
+                        case "tool_use":<span class="cov0" title="0">
+                                if input, ok := itemMap["input"]; ok </span><span class="cov0" title="0">{
+                                        inputJSON, err := json.Marshal(input)
+                                        if err != nil </span><span class="cov0" title="0">{
+                                                return 0, fmt.Errorf("failed to marshal tool input: %w", err)
+                                        }</span>
+                                        <span class="cov0" title="0">tokens := enc.Encode(string(inputJSON), nil, nil)
+                                        tokenCount += len(tokens)</span>
+                                }
+                                
+                        case "tool_result":<span class="cov0" title="0">
+                                if content, ok := itemMap["content"]; ok </span><span class="cov0" title="0">{
+                                        var text string
+                                        if str, ok := content.(string); ok </span><span class="cov0" title="0">{
+                                                text = str
+                                        }</span> else<span class="cov0" title="0"> {
+                                                contentJSON, err := json.Marshal(content)
+                                                if err != nil </span><span class="cov0" title="0">{
+                                                        return 0, fmt.Errorf("failed to marshal tool result: %w", err)
+                                                }</span>
+                                                <span class="cov0" title="0">text = string(contentJSON)</span>
+                                        }
+                                        <span class="cov0" title="0">tokens := enc.Encode(text, nil, nil)
+                                        tokenCount += len(tokens)</span>
+                                }
+                        }
+                }
+        }
+        
+        <span class="cov0" title="0">return tokenCount, nil</span>
+}
+
+// countSystemTokens counts tokens in system content
+func countSystemTokens(enc *tiktoken.Tiktoken, system interface{}) (int, error) <span class="cov0" title="0">{
+        tokenCount := 0
+        
+        switch s := system.(type) </span>{
+        case string:<span class="cov0" title="0">
+                // Simple string system prompt
+                tokens := enc.Encode(s, nil, nil)
+                tokenCount += len(tokens)</span>
+                
+        case []interface{}:<span class="cov0" title="0">
+                // Array of system content objects
+                for _, item := range s </span><span class="cov0" title="0">{
+                        itemMap, ok := item.(map[string]interface{})
+                        if !ok </span><span class="cov0" title="0">{
+                                continue</span>
+                        }
+                        
+                        <span class="cov0" title="0">if itemMap["type"] != "text" </span><span class="cov0" title="0">{
+                                continue</span>
+                        }
+                        
+                        // Handle text which can be string or array
+                        <span class="cov0" title="0">if text, ok := itemMap["text"].(string); ok </span><span class="cov0" title="0">{
+                                tokens := enc.Encode(text, nil, nil)
+                                tokenCount += len(tokens)
+                        }</span> else<span class="cov0" title="0"> if textArray, ok := itemMap["text"].([]interface{}); ok </span><span class="cov0" title="0">{
+                                for _, textPart := range textArray </span><span class="cov0" title="0">{
+                                        if str, ok := textPart.(string); ok </span><span class="cov0" title="0">{
+                                                tokens := enc.Encode(str, nil, nil)
+                                                tokenCount += len(tokens)
+                                        }</span>
+                                }
+                        }
+                }
+        }
+        
+        <span class="cov0" title="0">return tokenCount, nil</span>
+}</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>

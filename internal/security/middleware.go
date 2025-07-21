@@ -88,14 +88,14 @@ func RateLimitMiddleware(limiter *IPRateLimiter) gin.HandlerFunc {
 		ip := getClientIP(c)
 		if !limiter.Allow(ip) {
 			info := limiter.GetLimit(ip)
-			
+
 			// Set rate limit headers
 			c.Header("X-RateLimit-Limit", fmt.Sprintf("%d", info.Limit))
 			c.Header("X-RateLimit-Remaining", fmt.Sprintf("%d", info.Remaining))
 			c.Header("X-RateLimit-Reset", fmt.Sprintf("%d", info.Reset.Unix()))
-			
+
 			c.JSON(http.StatusTooManyRequests, gin.H{
-				"error": "rate limit exceeded",
+				"error":       "rate limit exceeded",
 				"retry_after": info.Reset.Unix(),
 			})
 			c.Abort()
@@ -110,7 +110,7 @@ func RateLimitMiddleware(limiter *IPRateLimiter) gin.HandlerFunc {
 func CORSMiddleware(allowedOrigins []string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		origin := c.GetHeader("Origin")
-		
+
 		// Check if origin is allowed
 		allowed := false
 		for _, allowedOrigin := range allowedOrigins {
@@ -184,7 +184,7 @@ func RequestIDMiddleware() gin.HandlerFunc {
 
 		c.Set("request_id", requestID)
 		c.Header("X-Request-ID", requestID)
-		
+
 		c.Next()
 	}
 }
@@ -194,11 +194,11 @@ func SanitizationMiddleware(sanitizer *DataSanitizer) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Store original writer
 		originalWriter := c.Writer
-		
+
 		// Create response capture writer
 		captureWriter := &responseCapture{
 			ResponseWriter: c.Writer,
-			body:          []byte{},
+			body:           []byte{},
 		}
 		c.Writer = captureWriter
 
@@ -218,7 +218,8 @@ func SanitizationMiddleware(sanitizer *DataSanitizer) gin.HandlerFunc {
 		}
 
 		// Write original response
-		c.Writer.Write(captureWriter.body)
+		// Safe to ignore write error at this point as response is already processed
+		_, _ = c.Writer.Write(captureWriter.body)
 	}
 }
 
@@ -230,7 +231,7 @@ func addSecurityHeaders(c *gin.Context, config *SecurityConfig) {
 	c.Header("X-Frame-Options", "DENY")
 	c.Header("X-XSS-Protection", "1; mode=block")
 	c.Header("Referrer-Policy", "strict-origin-when-cross-origin")
-	
+
 	// HSTS header for HTTPS
 	if config.EnableTLS {
 		c.Header("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
@@ -258,7 +259,7 @@ func handleSecurityError(c *gin.Context, err error) {
 	}
 
 	c.JSON(statusCode, gin.H{
-		"error": message,
+		"error":      message,
 		"request_id": c.GetString("request_id"),
 	})
 	c.Abort()
@@ -267,7 +268,7 @@ func handleSecurityError(c *gin.Context, err error) {
 func handleAuthError(c *gin.Context, message string) {
 	c.Header("WWW-Authenticate", `Bearer realm="ccproxy"`)
 	c.JSON(http.StatusUnauthorized, gin.H{
-		"error": message,
+		"error":      message,
 		"request_id": c.GetString("request_id"),
 	})
 	c.Abort()

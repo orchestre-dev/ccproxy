@@ -28,12 +28,12 @@ type Message struct {
 
 // Message response structure
 type MessageResponse struct {
-	ID       string   `json:"id"`
-	Type     string   `json:"type"`
-	Role     string   `json:"role"`
-	Content  []Content `json:"content"`
-	Model    string   `json:"model"`
-	Usage    Usage    `json:"usage,omitempty"`
+	ID      string    `json:"id"`
+	Type    string    `json:"type"`
+	Role    string    `json:"role"`
+	Content []Content `json:"content"`
+	Model   string    `json:"model"`
+	Usage   Usage     `json:"usage,omitempty"`
 }
 
 // Content structure
@@ -52,7 +52,7 @@ type Usage struct {
 func (s *Server) handleMessages(c *gin.Context) {
 	// Increment request counter
 	atomic.AddInt64(&s.requestsServed, 1)
-	
+
 	// Parse raw body for pipeline processing
 	var rawBody interface{}
 	if err := c.ShouldBindJSON(&rawBody); err != nil {
@@ -66,26 +66,26 @@ func (s *Server) handleMessages(c *gin.Context) {
 		BadRequest(c, "Invalid request format")
 		return
 	}
-	
+
 	// Check required fields
 	if _, hasModel := bodyMap["model"]; !hasModel {
 		BadRequest(c, "Field 'model' is required")
 		return
 	}
-	
+
 	messages, hasMessages := bodyMap["messages"]
 	if !hasMessages {
 		BadRequest(c, "Field 'messages' is required")
 		return
 	}
-	
+
 	// Validate messages array
 	messagesArray, ok := messages.([]interface{})
 	if !ok || len(messagesArray) == 0 {
 		BadRequest(c, "Field 'messages' must be a non-empty array")
 		return
 	}
-	
+
 	// Validate each message
 	for _, msg := range messagesArray {
 		msgMap, ok := msg.(map[string]interface{})
@@ -93,12 +93,12 @@ func (s *Server) handleMessages(c *gin.Context) {
 			BadRequest(c, "Invalid message format")
 			return
 		}
-		
+
 		if _, hasRole := msgMap["role"]; !hasRole {
 			BadRequest(c, "Message missing required field 'role'")
 			return
 		}
-		
+
 		if _, hasContent := msgMap["content"]; !hasContent {
 			BadRequest(c, "Message missing required field 'content'")
 			return
@@ -124,18 +124,18 @@ func (s *Server) handleMessages(c *gin.Context) {
 	respCtx, err := s.pipeline.ProcessRequest(ctx, reqCtx)
 	if err != nil {
 		utils.GetLogger().Errorf("Pipeline processing failed: %v", err)
-		
+
 		// Return appropriate error response
-		var statusCode int = http.StatusInternalServerError
-		var errorType string = "api_error"
-		
+		statusCode := http.StatusInternalServerError
+		errorType := "api_error"
+
 		// Check for specific error types
-		if strings.Contains(err.Error(), "connection refused") || 
-		   strings.Contains(err.Error(), "provider request failed") {
+		if strings.Contains(err.Error(), "connection refused") ||
+			strings.Contains(err.Error(), "provider request failed") {
 			statusCode = http.StatusBadGateway
 			errorType = "provider_error"
 		}
-		
+
 		errResp := pipeline.NewErrorResponse(
 			err.Error(),
 			errorType,
@@ -168,7 +168,7 @@ func (s *Server) handleMessages(c *gin.Context) {
 // extractHeaders extracts relevant headers from the request
 func extractHeaders(c *gin.Context) map[string]string {
 	headers := make(map[string]string)
-	
+
 	// Extract relevant headers
 	relevantHeaders := []string{
 		"Authorization",
@@ -177,12 +177,12 @@ func extractHeaders(c *gin.Context) map[string]string {
 		"Accept",
 		"User-Agent",
 	}
-	
+
 	for _, header := range relevantHeaders {
 		if value := c.GetHeader(header); value != "" {
 			headers[header] = value
 		}
 	}
-	
+
 	return headers
 }

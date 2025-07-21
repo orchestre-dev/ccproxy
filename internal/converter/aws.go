@@ -33,14 +33,14 @@ type AWSMessage struct {
 
 // AWSResponse represents AWS Bedrock's response format
 type AWSResponse struct {
-	ID               string          `json:"id"`
-	Model            string          `json:"model"`
-	Type             string          `json:"type"`
-	Role             string          `json:"role"`
-	Content          json.RawMessage `json:"content"`
-	StopReason       string          `json:"stop_reason,omitempty"`
-	StopSequence     string          `json:"stop_sequence,omitempty"`
-	Usage            *AWSUsage       `json:"usage,omitempty"`
+	ID           string          `json:"id"`
+	Model        string          `json:"model"`
+	Type         string          `json:"type"`
+	Role         string          `json:"role"`
+	Content      json.RawMessage `json:"content"`
+	StopReason   string          `json:"stop_reason,omitempty"`
+	StopSequence string          `json:"stop_sequence,omitempty"`
+	Usage        *AWSUsage       `json:"usage,omitempty"`
 }
 
 // AWSUsage represents AWS Bedrock's usage format

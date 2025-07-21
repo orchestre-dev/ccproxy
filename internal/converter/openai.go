@@ -16,13 +16,13 @@ func NewOpenAIConverter() *OpenAIConverter {
 
 // OpenAIRequest represents OpenAI's request format
 type OpenAIRequest struct {
-	Model       string            `json:"model"`
-	Messages    []OpenAIMessage   `json:"messages"`
-	MaxTokens   int               `json:"max_tokens,omitempty"`
-	Temperature float64           `json:"temperature,omitempty"`
-	Stream      bool              `json:"stream,omitempty"`
-	N           int               `json:"n,omitempty"`
-	Stop        []string          `json:"stop,omitempty"`
+	Model       string          `json:"model"`
+	Messages    []OpenAIMessage `json:"messages"`
+	MaxTokens   int             `json:"max_tokens,omitempty"`
+	Temperature float64         `json:"temperature,omitempty"`
+	Stream      bool            `json:"stream,omitempty"`
+	N           int             `json:"n,omitempty"`
+	Stop        []string        `json:"stop,omitempty"`
 }
 
 // OpenAIMessage represents OpenAI's message format
@@ -44,9 +44,9 @@ type OpenAIResponse struct {
 
 // OpenAIChoice represents a response choice
 type OpenAIChoice struct {
-	Index        int            `json:"index"`
-	Message      OpenAIMessage  `json:"message"`
-	FinishReason string         `json:"finish_reason"`
+	Index        int           `json:"index"`
+	Message      OpenAIMessage `json:"message"`
+	FinishReason string        `json:"finish_reason"`
 }
 
 // OpenAIUsage represents OpenAI's usage format
@@ -67,7 +67,7 @@ func (oc *OpenAIConverter) ToGeneric(data json.RawMessage, isRequest bool) (json
 		// Convert messages
 		messages := make([]Message, 0, len(req.Messages))
 		var system string
-		
+
 		for _, msg := range req.Messages {
 			if msg.Role == "system" {
 				// Extract system message
@@ -78,7 +78,7 @@ func (oc *OpenAIConverter) ToGeneric(data json.RawMessage, isRequest bool) (json
 				if err != nil {
 					return nil, fmt.Errorf("failed to marshal content: %w", err)
 				}
-				
+
 				messages = append(messages, Message{
 					Role:    msg.Role,
 					Content: content,
@@ -112,7 +112,7 @@ func (oc *OpenAIConverter) ToGeneric(data json.RawMessage, isRequest bool) (json
 	}
 
 	choice := resp.Choices[0]
-	
+
 	// Convert content to Anthropic-style content array
 	content, err := json.Marshal([]map[string]interface{}{
 		{
@@ -154,7 +154,7 @@ func (oc *OpenAIConverter) FromGeneric(data json.RawMessage, isRequest bool) (js
 
 		// Convert messages
 		messages := make([]OpenAIMessage, 0, len(req.Messages)+1)
-		
+
 		// Add system message if present
 		if req.System != "" {
 			messages = append(messages, OpenAIMessage{
@@ -167,7 +167,7 @@ func (oc *OpenAIConverter) FromGeneric(data json.RawMessage, isRequest bool) (js
 		for _, msg := range req.Messages {
 			// Parse content - handle both string and Anthropic content array format
 			var content string
-			
+
 			// First try as string
 			if err := json.Unmarshal(msg.Content, &content); err == nil {
 				// It's already a string
@@ -195,7 +195,7 @@ func (oc *OpenAIConverter) FromGeneric(data json.RawMessage, isRequest bool) (js
 					}
 				}
 			}
-			
+
 			messages = append(messages, OpenAIMessage{
 				Role:    msg.Role,
 				Content: content,
@@ -223,7 +223,7 @@ func (oc *OpenAIConverter) FromGeneric(data json.RawMessage, isRequest bool) (js
 
 	// Parse content - handle both string and Anthropic content array
 	var content string
-	
+
 	// First try as string
 	if err := json.Unmarshal(resp.Content, &content); err != nil {
 		// Try as Anthropic content array
@@ -246,9 +246,9 @@ func (oc *OpenAIConverter) FromGeneric(data json.RawMessage, isRequest bool) (js
 
 	// Create OpenAI response
 	openAIResp := OpenAIResponse{
-		ID:      resp.ID,
-		Object:  "chat.completion",
-		Model:   resp.Model,
+		ID:     resp.ID,
+		Object: "chat.completion",
+		Model:  resp.Model,
 		Choices: []OpenAIChoice{
 			{
 				Index: 0,

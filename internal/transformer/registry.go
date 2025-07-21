@@ -13,7 +13,7 @@ var (
 func GetRegistry() *Service {
 	registryOnce.Do(func() {
 		globalRegistry = NewService()
-		
+
 		// Register built-in transformers
 		if err := RegisterBuiltinTransformers(globalRegistry); err != nil {
 			// Log error but continue - registry is still usable
@@ -30,46 +30,46 @@ func RegisterBuiltinTransformers(service *Service) error {
 	if err := service.Register(NewAnthropicTransformer()); err != nil {
 		return err
 	}
-	
+
 	// Register DeepSeek transformer
 	if err := service.Register(NewDeepSeekTransformer()); err != nil {
 		return err
 	}
-	
+
 	// Register Gemini transformer
 	if err := service.Register(NewGeminiTransformer()); err != nil {
 		return err
 	}
-	
+
 	// Register OpenRouter transformer
 	if err := service.Register(NewOpenRouterTransformer()); err != nil {
 		return err
 	}
-	
+
 	// Register ToolUse transformer
 	if err := service.Register(NewToolUseTransformer()); err != nil {
 		return err
 	}
-	
+
 	// Register Tool transformer (for general tool handling)
 	if err := service.Register(NewToolTransformer()); err != nil {
 		return err
 	}
-	
+
 	// Register OpenAI transformer
 	if err := service.Register(NewOpenAITransformer()); err != nil {
 		return err
 	}
-	
+
 	// Register MaxToken transformer
 	if err := service.Register(NewMaxTokenTransformer()); err != nil {
 		return err
 	}
-	
+
 	// Register Parameters transformer
 	if err := service.Register(NewParametersTransformer()); err != nil {
 		return err
 	}
-	
+
 	return nil
 }

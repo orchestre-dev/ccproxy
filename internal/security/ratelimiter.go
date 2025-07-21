@@ -118,16 +118,16 @@ func (rl *IPRateLimiter) Stop() {
 
 // TokenBucketRateLimiter implements a token bucket rate limiter
 type TokenBucketRateLimiter struct {
-	buckets  map[string]*tokenBucket
-	capacity int
+	buckets    map[string]*tokenBucket
+	capacity   int
 	refillRate int
-	mu       sync.RWMutex
-	cleanup  *time.Ticker
+	mu         sync.RWMutex
+	cleanup    *time.Ticker
 }
 
 // tokenBucket represents a token bucket for rate limiting
 type tokenBucket struct {
-	tokens    int
+	tokens     int
 	lastRefill time.Time
 }
 
@@ -174,7 +174,7 @@ func (rl *TokenBucketRateLimiter) Allow(key string, tokens int) bool {
 func (rl *TokenBucketRateLimiter) refillTokens(bucket *tokenBucket) {
 	now := time.Now()
 	elapsed := now.Sub(bucket.lastRefill)
-	
+
 	// Calculate tokens to add
 	tokensToAdd := int(elapsed.Seconds()) * rl.refillRate
 	if tokensToAdd > 0 {
@@ -200,7 +200,7 @@ func (rl *TokenBucketRateLimiter) GetTokens(key string) int {
 	now := time.Now()
 	elapsed := now.Sub(bucket.lastRefill)
 	tokensToAdd := int(elapsed.Seconds()) * rl.refillRate
-	
+
 	tokens := bucket.tokens + tokensToAdd
 	if tokens > rl.capacity {
 		tokens = rl.capacity

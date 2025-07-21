@@ -10,12 +10,12 @@ func ToJSONString(v interface{}) string {
 	if v == nil {
 		return "{}"
 	}
-	
+
 	data, err := json.Marshal(v)
 	if err != nil {
 		return "{}"
 	}
-	
+
 	return string(data)
 }
 

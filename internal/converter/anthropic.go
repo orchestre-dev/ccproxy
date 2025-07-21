@@ -3,7 +3,6 @@ package converter
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
 )
 
 // AnthropicConverter handles Anthropic format conversions
@@ -16,19 +15,19 @@ func NewAnthropicConverter() *AnthropicConverter {
 
 // AnthropicRequest represents Anthropic's request format
 type AnthropicRequest struct {
-	Model       string                   `json:"model"`
-	Messages    []AnthropicMessage       `json:"messages"`
-	System      string                   `json:"system,omitempty"`
-	MaxTokens   int                      `json:"max_tokens,omitempty"`
-	Temperature float64                  `json:"temperature,omitempty"`
-	Stream      bool                     `json:"stream,omitempty"`
-	Metadata    map[string]interface{}   `json:"metadata,omitempty"`
+	Model       string                 `json:"model"`
+	Messages    []AnthropicMessage     `json:"messages"`
+	System      string                 `json:"system,omitempty"`
+	MaxTokens   int                    `json:"max_tokens,omitempty"`
+	Temperature float64                `json:"temperature,omitempty"`
+	Stream      bool                   `json:"stream,omitempty"`
+	Metadata    map[string]interface{} `json:"metadata,omitempty"`
 }
 
 // AnthropicMessage represents Anthropic's message format
 type AnthropicMessage struct {
-	Role    string                 `json:"role"`
-	Content []AnthropicContent     `json:"content"`
+	Role    string             `json:"role"`
+	Content []AnthropicContent `json:"content"`
 }
 
 // AnthropicContent represents Anthropic's content format
@@ -69,7 +68,7 @@ func (ac *AnthropicConverter) ToGeneric(data json.RawMessage, isRequest bool) (j
 			if err != nil {
 				return nil, fmt.Errorf("failed to marshal content: %w", err)
 			}
-			
+
 			messages[i] = Message{
 				Role:    msg.Role,
 				Content: content,
@@ -151,7 +150,7 @@ func (ac *AnthropicConverter) FromGeneric(data json.RawMessage, isRequest bool) 
 					return nil, fmt.Errorf("failed to parse content: %w", err)
 				}
 			}
-			
+
 			messages[i] = AnthropicMessage{
 				Role:    msg.Role,
 				Content: content,
@@ -214,20 +213,4 @@ func (ac *AnthropicConverter) ConvertStreamEvent(data []byte, toFormat MessageFo
 	// For now, just pass through stream events
 	// In a full implementation, this would parse and convert SSE events
 	return data, nil
-}
-
-// Helper function to convert string content to Anthropic format
-func stringToAnthropicContent(text string) []AnthropicContent {
-	return []AnthropicContent{{Type: "text", Text: text}}
-}
-
-// Helper function to convert Anthropic content to string
-func anthropicContentToString(content []AnthropicContent) string {
-	var texts []string
-	for _, c := range content {
-		if c.Type == "text" && c.Text != "" {
-			texts = append(texts, c.Text)
-		}
-	}
-	return strings.Join(texts, " ")
 }

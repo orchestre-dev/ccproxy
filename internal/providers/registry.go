@@ -17,13 +17,13 @@ type Registry struct {
 type Provider interface {
 	// GetName returns the provider name
 	GetName() string
-	
+
 	// IsHealthy checks if the provider is operational
 	IsHealthy() bool
-	
+
 	// SupportsModel checks if the provider supports a specific model
 	SupportsModel(model string) bool
-	
+
 	// GetModels returns all supported models
 	GetModels() []string
 }
@@ -73,12 +73,12 @@ func GetRegistry() *Registry {
 func (r *Registry) Register(provider Provider) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
-	
+
 	name := provider.GetName()
 	if _, exists := r.providers[name]; exists {
 		return fmt.Errorf("provider already registered: %s", name)
 	}
-	
+
 	r.providers[name] = provider
 	return nil
 }
@@ -87,7 +87,7 @@ func (r *Registry) Register(provider Provider) error {
 func (r *Registry) Unregister(name string) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
-	
+
 	delete(r.providers, name)
 }
 
@@ -95,12 +95,12 @@ func (r *Registry) Unregister(name string) {
 func (r *Registry) Get(name string) (Provider, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
-	
+
 	provider, exists := r.providers[name]
 	if !exists {
 		return nil, fmt.Errorf("provider not found: %s", name)
 	}
-	
+
 	return provider, nil
 }
 
@@ -108,12 +108,12 @@ func (r *Registry) Get(name string) (Provider, error) {
 func (r *Registry) GetAll() []Provider {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
-	
+
 	providers := make([]Provider, 0, len(r.providers))
 	for _, p := range r.providers {
 		providers = append(providers, p)
 	}
-	
+
 	return providers
 }
 
@@ -121,14 +121,14 @@ func (r *Registry) GetAll() []Provider {
 func (r *Registry) GetByModel(model string) []Provider {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
-	
+
 	var providers []Provider
 	for _, p := range r.providers {
 		if p.SupportsModel(model) {
 			providers = append(providers, p)
 		}
 	}
-	
+
 	return providers
 }
 
@@ -136,6 +136,6 @@ func (r *Registry) GetByModel(model string) []Provider {
 func (r *Registry) Clear() {
 	r.mu.Lock()
 	defer r.mu.Unlock()
-	
+
 	r.providers = make(map[string]Provider)
 }

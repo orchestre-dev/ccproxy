@@ -131,7 +131,7 @@ func NewCircuitBreakerEvent(open bool, provider string, errorRate float64) Event
 	} else {
 		eventType = EventCircuitBreakerClose
 	}
-	
+
 	event := NewPerformanceEvent(eventType, "circuit_breaker", errorRate)
 	event.Data["provider"] = provider
 	event.Data["open"] = open

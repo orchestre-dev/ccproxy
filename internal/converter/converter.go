@@ -11,10 +11,10 @@ import (
 type Converter interface {
 	// ConvertRequest converts a request from one format to another
 	ConvertRequest(data json.RawMessage, from, to MessageFormat) (json.RawMessage, error)
-	
+
 	// ConvertResponse converts a response from one format to another
 	ConvertResponse(data json.RawMessage, from, to MessageFormat) (json.RawMessage, error)
-	
+
 	// ConvertStreamEvent converts a streaming event from one format to another
 	ConvertStreamEvent(data []byte, from, to MessageFormat) ([]byte, error)
 }
@@ -28,10 +28,10 @@ type MessageConverter struct {
 type FormatConverter interface {
 	// ToGeneric converts from the specific format to generic format
 	ToGeneric(data json.RawMessage, isRequest bool) (json.RawMessage, error)
-	
+
 	// FromGeneric converts from generic format to the specific format
 	FromGeneric(data json.RawMessage, isRequest bool) (json.RawMessage, error)
-	
+
 	// ConvertStreamEvent handles streaming event conversion
 	ConvertStreamEvent(data []byte, toFormat MessageFormat) ([]byte, error)
 }

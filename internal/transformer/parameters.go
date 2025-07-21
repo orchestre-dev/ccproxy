@@ -127,7 +127,7 @@ func (t *ParametersTransformer) processParameters(bodyMap map[string]interface{}
 
 	// Process common parameters
 	commonParams := []string{"temperature", "top_p", "top_k", "presence_penalty", "frequency_penalty", "max_tokens"}
-	
+
 	for _, param := range commonParams {
 		if value, exists := bodyMap[param]; exists {
 			// Determine actual parameter name (might be mapped)
@@ -163,13 +163,13 @@ func (t *ParametersTransformer) processParameters(bodyMap map[string]interface{}
 		// Anthropic doesn't support presence_penalty or frequency_penalty
 		delete(bodyMap, "presence_penalty")
 		delete(bodyMap, "frequency_penalty")
-		
+
 	case "gemini":
 		// Gemini parameters need to be in generationConfig
 		if err := t.wrapGeminiParameters(bodyMap); err != nil {
 			return err
 		}
-		
+
 	case "openai":
 		// Ensure logprobs is boolean if present
 		if logprobs, exists := bodyMap["logprobs"]; exists {
@@ -183,7 +183,7 @@ func (t *ParametersTransformer) processParameters(bodyMap map[string]interface{}
 // validateParameter checks if a parameter value is within valid range
 func (t *ParametersTransformer) validateParameter(name string, value interface{}, limit Range) error {
 	var floatVal float64
-	
+
 	switch v := value.(type) {
 	case float64:
 		floatVal = v
@@ -206,7 +206,7 @@ func (t *ParametersTransformer) validateParameter(name string, value interface{}
 func (t *ParametersTransformer) wrapGeminiParameters(bodyMap map[string]interface{}) error {
 	// Parameters that should be in generationConfig
 	configParams := []string{"temperature", "topP", "topK", "maxOutputTokens"}
-	
+
 	// Check if generationConfig exists
 	genConfig, exists := bodyMap["generationConfig"].(map[string]interface{})
 	if !exists {

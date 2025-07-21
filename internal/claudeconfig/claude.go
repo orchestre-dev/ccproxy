@@ -14,25 +14,25 @@ import (
 
 // ClaudeConfig represents the ~/.claude.json configuration
 type ClaudeConfig struct {
-	NumStartups              int                    `json:"numStartups"`
-	AutoUpdaterStatus        string                 `json:"autoUpdaterStatus"`
-	UserID                   string                 `json:"userID"`
-	HasCompletedOnboarding   bool                   `json:"hasCompletedOnboarding"`
-	LastOnboardingVersion    string                 `json:"lastOnboardingVersion"`
-	Projects                 map[string]interface{} `json:"projects"`
-	LastActiveProject        string                 `json:"lastActiveProject,omitempty"`
-	LastUpdateCheck          *time.Time             `json:"lastUpdateCheck,omitempty"`
-	TelemetryEnabled         bool                   `json:"telemetryEnabled"`
-	PreferredModel           string                 `json:"preferredModel,omitempty"`
-	ExperimentalFeatures     []string               `json:"experimentalFeatures,omitempty"`
-	CustomInstructions       string                 `json:"customInstructions,omitempty"`
-	FirstLaunchDate          *time.Time             `json:"firstLaunchDate,omitempty"`
-	LastLaunchDate           *time.Time             `json:"lastLaunchDate,omitempty"`
-	TotalUsageMinutes        int                    `json:"totalUsageMinutes,omitempty"`
-	FeedbackSubmitted        bool                   `json:"feedbackSubmitted,omitempty"`
-	InstalledExtensions      []string               `json:"installedExtensions,omitempty"`
-	KeyboardShortcuts        map[string]string      `json:"keyboardShortcuts,omitempty"`
-	Theme                    string                 `json:"theme,omitempty"`
+	NumStartups            int                    `json:"numStartups"`
+	AutoUpdaterStatus      string                 `json:"autoUpdaterStatus"`
+	UserID                 string                 `json:"userID"`
+	HasCompletedOnboarding bool                   `json:"hasCompletedOnboarding"`
+	LastOnboardingVersion  string                 `json:"lastOnboardingVersion"`
+	Projects               map[string]interface{} `json:"projects"`
+	LastActiveProject      string                 `json:"lastActiveProject,omitempty"`
+	LastUpdateCheck        *time.Time             `json:"lastUpdateCheck,omitempty"`
+	TelemetryEnabled       bool                   `json:"telemetryEnabled"`
+	PreferredModel         string                 `json:"preferredModel,omitempty"`
+	ExperimentalFeatures   []string               `json:"experimentalFeatures,omitempty"`
+	CustomInstructions     string                 `json:"customInstructions,omitempty"`
+	FirstLaunchDate        *time.Time             `json:"firstLaunchDate,omitempty"`
+	LastLaunchDate         *time.Time             `json:"lastLaunchDate,omitempty"`
+	TotalUsageMinutes      int                    `json:"totalUsageMinutes,omitempty"`
+	FeedbackSubmitted      bool                   `json:"feedbackSubmitted,omitempty"`
+	InstalledExtensions    []string               `json:"installedExtensions,omitempty"`
+	KeyboardShortcuts      map[string]string      `json:"keyboardShortcuts,omitempty"`
+	Theme                  string                 `json:"theme,omitempty"`
 }
 
 // DefaultClaudeConfig returns a new default Claude configuration
@@ -94,7 +94,7 @@ func (m *Manager) Initialize() error {
 
 	// Update launch info
 	m.updateLaunchInfo()
-	
+
 	return m.Save()
 }
 
@@ -151,7 +151,7 @@ func (m *Manager) IncrementStartups() error {
 			return err
 		}
 	}
-	
+
 	m.config.NumStartups++
 	return m.Save()
 }
@@ -163,7 +163,7 @@ func (m *Manager) SetUserID(userID string) error {
 			return err
 		}
 	}
-	
+
 	m.config.UserID = userID
 	return m.Save()
 }
@@ -175,7 +175,7 @@ func (m *Manager) CompleteOnboarding(version string) error {
 			return err
 		}
 	}
-	
+
 	m.config.HasCompletedOnboarding = true
 	m.config.LastOnboardingVersion = version
 	return m.Save()
@@ -188,7 +188,7 @@ func (m *Manager) AddProject(projectID string, projectData interface{}) error {
 			return err
 		}
 	}
-	
+
 	m.config.Projects[projectID] = projectData
 	m.config.LastActiveProject = projectID
 	return m.Save()
@@ -199,7 +199,7 @@ func (m *Manager) updateLaunchInfo() {
 	now := time.Now()
 	m.config.LastLaunchDate = &now
 	m.config.NumStartups++
-	
+
 	// Calculate usage time if last launch date exists
 	if m.config.LastLaunchDate != nil {
 		// This is a simplified calculation

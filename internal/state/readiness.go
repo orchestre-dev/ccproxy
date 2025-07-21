@@ -77,10 +77,10 @@ func (rp *ReadinessProbe) Start(ctx context.Context) {
 	rp.wg.Add(1)
 	go func() {
 		defer rp.wg.Done()
-		
+
 		ticker := time.NewTicker(rp.interval)
 		defer ticker.Stop()
-		
+
 		for {
 			select {
 			case <-ctx.Done():

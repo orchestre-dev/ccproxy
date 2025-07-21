@@ -36,7 +36,7 @@ func CountTokens(text string) (int, error) {
 	if err != nil {
 		return 0, fmt.Errorf("failed to get encoder: %w", err)
 	}
-	
+
 	tokens := enc.Encode(text, nil, nil)
 	return len(tokens), nil
 }
@@ -80,11 +80,11 @@ type Tool struct {
 
 // MessageCreateParams represents the parameters for creating a message
 type MessageCreateParams struct {
-	Model    string         `json:"model"`
-	Messages []Message      `json:"messages"`
-	System   interface{}    `json:"system,omitempty"` // Can be string or []SystemContent
-	Tools    []Tool         `json:"tools,omitempty"`
-	Stream   bool           `json:"stream,omitempty"`
+	Model    string      `json:"model"`
+	Messages []Message   `json:"messages"`
+	System   interface{} `json:"system,omitempty"` // Can be string or []SystemContent
+	Tools    []Tool      `json:"tools,omitempty"`
+	Stream   bool        `json:"stream,omitempty"`
 }
 
 // Message represents a message in the conversation
@@ -99,9 +99,9 @@ func CountMessageTokens(params *MessageCreateParams) (int, error) {
 	if err != nil {
 		return 0, fmt.Errorf("failed to get encoder: %w", err)
 	}
-	
+
 	tokenCount := 0
-	
+
 	// Count tokens in messages
 	for _, message := range params.Messages {
 		count, err := countMessageContentTokens(enc, message.Content)
@@ -110,16 +110,13 @@ func CountMessageTokens(params *MessageCreateParams) (int, error) {
 		}
 		tokenCount += count
 	}
-	
+
 	// Count tokens in system prompt
 	if params.System != nil {
-		count, err := countSystemTokens(enc, params.System)
-		if err != nil {
-			return 0, fmt.Errorf("failed to count system tokens: %w", err)
-		}
+		count := countSystemTokens(enc, params.System)
 		tokenCount += count
 	}
-	
+
 	// Count tokens in tools
 	if params.Tools != nil {
 		for _, tool := range params.Tools {
@@ -128,7 +125,7 @@ func CountMessageTokens(params *MessageCreateParams) (int, error) {
 				tokens := enc.Encode(tool.Name+tool.Description, nil, nil)
 				tokenCount += len(tokens)
 			}
-			
+
 			// Count input schema as JSON
 			if tool.InputSchema != nil {
 				schemaJSON, err := json.Marshal(tool.InputSchema)
@@ -140,20 +137,20 @@ func CountMessageTokens(params *MessageCreateParams) (int, error) {
 			}
 		}
 	}
-	
+
 	return tokenCount, nil
 }
 
 // countMessageContentTokens counts tokens in message content
 func countMessageContentTokens(enc *tiktoken.Tiktoken, content interface{}) (int, error) {
 	tokenCount := 0
-	
+
 	switch c := content.(type) {
 	case string:
 		// Simple string content
 		tokens := enc.Encode(c, nil, nil)
 		tokenCount += len(tokens)
-		
+
 	case []interface{}:
 		// Array of content objects
 		for _, item := range c {
@@ -161,19 +158,19 @@ func countMessageContentTokens(enc *tiktoken.Tiktoken, content interface{}) (int
 			if !ok {
 				continue
 			}
-			
+
 			contentType, ok := itemMap["type"].(string)
 			if !ok {
 				continue
 			}
-			
+
 			switch contentType {
 			case "text":
 				if text, ok := itemMap["text"].(string); ok {
 					tokens := enc.Encode(text, nil, nil)
 					tokenCount += len(tokens)
 				}
-				
+
 			case "tool_use":
 				if input, ok := itemMap["input"]; ok {
 					inputJSON, err := json.Marshal(input)
@@ -183,7 +180,7 @@ func countMessageContentTokens(enc *tiktoken.Tiktoken, content interface{}) (int
 					tokens := enc.Encode(string(inputJSON), nil, nil)
 					tokenCount += len(tokens)
 				}
-				
+
 			case "tool_result":
 				if content, ok := itemMap["content"]; ok {
 					var text string
@@ -202,20 +199,20 @@ func countMessageContentTokens(enc *tiktoken.Tiktoken, content interface{}) (int
 			}
 		}
 	}
-	
+
 	return tokenCount, nil
 }
 
 // countSystemTokens counts tokens in system content
-func countSystemTokens(enc *tiktoken.Tiktoken, system interface{}) (int, error) {
+func countSystemTokens(enc *tiktoken.Tiktoken, system interface{}) int {
 	tokenCount := 0
-	
+
 	switch s := system.(type) {
 	case string:
 		// Simple string system prompt
 		tokens := enc.Encode(s, nil, nil)
 		tokenCount += len(tokens)
-		
+
 	case []interface{}:
 		// Array of system content objects
 		for _, item := range s {
@@ -223,11 +220,11 @@ func countSystemTokens(enc *tiktoken.Tiktoken, system interface{}) (int, error) 
 			if !ok {
 				continue
 			}
-			
+
 			if itemMap["type"] != "text" {
 				continue
 			}
-			
+
 			// Handle text which can be string or array
 			if text, ok := itemMap["text"].(string); ok {
 				tokens := enc.Encode(text, nil, nil)
@@ -242,6 +239,6 @@ func countSystemTokens(enc *tiktoken.Tiktoken, system interface{}) (int, error) 
 			}
 		}
 	}
-	
-	return tokenCount, nil
+
+	return tokenCount
 }

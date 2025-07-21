@@ -10,14 +10,14 @@ import (
 type ErrorType string
 
 const (
-	ErrorTypeInvalidRequest   ErrorType = "invalid_request"
-	ErrorTypeNotFound         ErrorType = "not_found"
-	ErrorTypeAuthentication   ErrorType = "authentication_error"
-	ErrorTypePermission       ErrorType = "permission_error"
-	ErrorTypeRateLimit        ErrorType = "rate_limit_error"
-	ErrorTypeProviderError    ErrorType = "provider_error"
-	ErrorTypeServerError      ErrorType = "server_error"
-	ErrorTypeNotImplemented   ErrorType = "not_implemented"
+	ErrorTypeInvalidRequest ErrorType = "invalid_request"
+	ErrorTypeNotFound       ErrorType = "not_found"
+	ErrorTypeAuthentication ErrorType = "authentication_error"
+	ErrorTypePermission     ErrorType = "permission_error"
+	ErrorTypeRateLimit      ErrorType = "rate_limit_error"
+	ErrorTypeProviderError  ErrorType = "provider_error"
+	ErrorTypeServerError    ErrorType = "server_error"
+	ErrorTypeNotImplemented ErrorType = "not_implemented"
 )
 
 // ErrorResponse represents a standardized error response

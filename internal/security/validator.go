@@ -55,9 +55,9 @@ func NewRequestValidator(config *SecurityConfig) (*RequestValidator, error) {
 // Validate validates generic data
 func (v *RequestValidator) Validate(data interface{}) ValidationResult {
 	result := ValidationResult{
-		Valid:  true,
-		Score:  1.0,
-		Errors: []string{},
+		Valid:    true,
+		Score:    1.0,
+		Errors:   []string{},
 		Warnings: []string{},
 	}
 
@@ -193,7 +193,7 @@ func (v *RequestValidator) validateHeaders(req *http.Request) error {
 	if v.config.RequireAuth {
 		authHeader := req.Header.Get("Authorization")
 		apiKeyHeader := req.Header.Get(v.config.APIKeyHeader)
-		
+
 		if authHeader == "" && apiKeyHeader == "" {
 			return errors.NewAuthError("missing authentication headers", nil)
 		}
@@ -226,6 +226,15 @@ func (v *RequestValidator) validateURL(u *url.URL) error {
 		}
 	}
 
+	// Check for invalid percent encoding in raw query before parsing
+	if u.RawQuery != "" {
+		// Check for invalid percent encoding patterns
+		_, err := url.QueryUnescape(u.RawQuery)
+		if err != nil {
+			return fmt.Errorf("invalid query parameter encoding")
+		}
+	}
+
 	// Check query parameters
 	for key, values := range u.Query() {
 		for _, value := range values {
@@ -233,13 +242,13 @@ func (v *RequestValidator) validateURL(u *url.URL) error {
 			if len(value) > 1000 {
 				return fmt.Errorf("query parameter %s too long", key)
 			}
-			
+
 			// Check for encoded characters that might be malicious
 			decoded, err := url.QueryUnescape(value)
 			if err != nil {
 				return fmt.Errorf("invalid query parameter encoding: %s", key)
 			}
-			
+
 			if strings.Contains(decoded, "<script") || strings.Contains(decoded, "javascript:") {
 				return fmt.Errorf("potential XSS in query parameter: %s", key)
 			}
@@ -352,6 +361,10 @@ func (v *RequestValidator) detectXSS(req *http.Request) bool {
 
 // detectPathTraversal detects path traversal attempts
 func (v *RequestValidator) detectPathTraversal(req *http.Request) bool {
+	if req == nil || req.URL == nil {
+		return false
+	}
+
 	patterns := []string{
 		`\.\.\/`,
 		`\.\.\\`,

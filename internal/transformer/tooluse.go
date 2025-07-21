@@ -198,7 +198,7 @@ func (t *ToolUseTransformer) transformStreamingResponse(ctx context.Context, res
 	go func() {
 		defer pw.Close()
 		writer := NewSSEWriter(pw)
-		
+
 		// Track state
 		state := &toolUseStreamState{
 			hasExitTool:       false,
@@ -217,14 +217,16 @@ func (t *ToolUseTransformer) transformStreamingResponse(ctx context.Context, res
 
 			// Pass through non-data events
 			if event.Data == "" || event.Data == "[DONE]" {
-				writer.WriteEvent(event)
+				// Safe to ignore error for streaming passthrough
+				_ = writer.WriteEvent(event)
 				continue
 			}
 
 			// Transform the data event
 			transformedEvent := t.transformStreamEvent(event, state)
 			if transformedEvent != nil {
-				writer.WriteEvent(transformedEvent)
+				// Safe to ignore error for streaming output
+				_ = writer.WriteEvent(transformedEvent)
 			}
 		}
 	}()
@@ -268,7 +270,7 @@ func (t *ToolUseTransformer) transformStreamEvent(event *SSEEvent, state *toolUs
 	// Check for tool calls
 	if toolCalls, ok := delta["tool_calls"].([]interface{}); ok {
 		filteredToolCalls := []interface{}{}
-		
+
 		for _, tc := range toolCalls {
 			tcMap, ok := tc.(map[string]interface{})
 			if !ok {
@@ -298,7 +300,7 @@ func (t *ToolUseTransformer) transformStreamEvent(event *SSEEvent, state *toolUs
 			delta["tool_calls"] = filteredToolCalls
 		} else {
 			delete(delta, "tool_calls")
-			
+
 			// If we filtered out ExitTool and there's no other content, add default content
 			if state.hasExitTool && delta["content"] == nil {
 				delta["content"] = "I have completed the requested task."
