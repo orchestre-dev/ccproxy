@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/orchestre-dev/ccproxy/internal/process"
@@ -9,7 +10,10 @@ import (
 
 // StopCmd returns the stop command
 func StopCmd() *cobra.Command {
-	return &cobra.Command{
+	var timeout time.Duration
+	var force bool
+	
+	cmd := &cobra.Command{
 		Use:   "stop",
 		Short: "Stop the CCProxy service",
 		Long:  "Stop the running CCProxy service and clean up resources",
@@ -31,10 +35,23 @@ func StopCmd() *cobra.Command {
 				return nil
 			}
 			
+			// If timeout is not specified, use default
+			if timeout == 0 {
+				timeout = process.DefaultShutdownTimeout
+			}
+			
 			fmt.Printf("Stopping CCProxy service (PID: %d)...\n", runningPID)
 			
-			// Stop the process
-			if err := pidManager.StopProcess(); err != nil {
+			if force {
+				fmt.Println("Force stopping with immediate SIGKILL")
+				// For force stop, use a very short timeout
+				timeout = 1 * time.Second
+			} else {
+				fmt.Printf("Attempting graceful shutdown (timeout: %v)\n", timeout)
+			}
+			
+			// Stop the process with timeout
+			if err := pidManager.StopProcessWithTimeout(timeout); err != nil {
 				// Try to clean up PID file anyway
 				pidManager.Cleanup()
 				return fmt.Errorf("failed to stop service: %w", err)
@@ -44,4 +61,9 @@ func StopCmd() *cobra.Command {
 			return nil
 		},
 	}
+	
+	cmd.Flags().DurationVarP(&timeout, "timeout", "t", 0, "Shutdown timeout (e.g., 30s, 1m)")
+	cmd.Flags().BoolVarP(&force, "force", "f", false, "Force immediate shutdown with SIGKILL")
+	
+	return cmd
 }

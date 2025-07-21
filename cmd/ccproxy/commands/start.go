@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"os/signal"
 	"strconv"
+	"syscall"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -25,6 +27,11 @@ func StartCmd() *cobra.Command {
 		Short: "Start the CCProxy service",
 		Long:  "Start the CCProxy service in the background (default) or foreground",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			// Validate environment variables
+			if err := utils.ValidateEnvironmentVariables(); err != nil {
+				return fmt.Errorf("environment variable validation failed: %w", err)
+			}
+			
 			// Initialize configuration
 			configService := config.NewService()
 			var cfg *config.Config
@@ -108,7 +115,21 @@ func runInForeground(cfg *config.Config, pidManager *process.PIDManager, configP
 	if err := pidManager.AcquireLock(); err != nil {
 		return fmt.Errorf("failed to acquire lock: %w", err)
 	}
-	defer pidManager.ReleaseLock()
+	
+	// Set up signal handling for graceful shutdown
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+	
+	// Create cleanup function
+	cleanup := func() {
+		// Stop signal notification
+		signal.Stop(sigChan)
+		// Release lock
+		pidManager.ReleaseLock()
+	}
+	
+	// Ensure cleanup happens
+	defer cleanup()
 	
 	// Log startup
 	utils.LogStartup(cfg.Port, version)
@@ -119,12 +140,26 @@ func runInForeground(cfg *config.Config, pidManager *process.PIDManager, configP
 		return fmt.Errorf("failed to create server: %w", err)
 	}
 	
-	// Run server (blocks until shutdown)
-	if err := srv.Run(); err != nil {
+	// Run server in a goroutine
+	errChan := make(chan error, 1)
+	go func() {
+		if err := srv.Run(); err != nil {
+			errChan <- err
+		}
+	}()
+	
+	// Wait for signal or error
+	select {
+	case sig := <-sigChan:
+		utils.GetLogger().Infof("Received signal: %v, shutting down gracefully...", sig)
+		// Shutdown server
+		if err := srv.Shutdown(); err != nil {
+			utils.GetLogger().Errorf("Error during shutdown: %v", err)
+		}
+		return nil
+	case err := <-errChan:
 		return fmt.Errorf("server error: %w", err)
 	}
-	
-	return nil
 }
 
 // startInBackground starts the server in the background
@@ -134,10 +169,24 @@ func startInBackground(cfg *config.Config) error {
 		return fmt.Errorf("cannot start background process from foreground mode")
 	}
 	
+	// Check if we're in test mode - tests should use --foreground
+	if os.Getenv("CCPROXY_TEST_MODE") == "1" {
+		return fmt.Errorf("background mode disabled in tests - use --foreground flag")
+	}
+	
 	// Additional safety check - if CCPROXY_SPAWN_DEPTH is set, we're in a spawn chain
 	spawnDepth := 0
 	if depthStr := os.Getenv("CCPROXY_SPAWN_DEPTH"); depthStr != "" {
-		if depth, err := strconv.Atoi(depthStr); err == nil {
+		depth, err := strconv.Atoi(depthStr)
+		if err != nil {
+			utils.GetLogger().Warnf("Invalid CCPROXY_SPAWN_DEPTH value '%s': %v, using default 0", depthStr, err)
+		} else if depth < 0 {
+			utils.GetLogger().Warnf("Negative CCPROXY_SPAWN_DEPTH value %d, using 0", depth)
+			spawnDepth = 0
+		} else if depth > 10 {
+			// Prevent overflow and unreasonable depth values
+			return fmt.Errorf("CCPROXY_SPAWN_DEPTH value %d exceeds maximum allowed depth of 10", depth)
+		} else {
 			spawnDepth = depth
 		}
 	}
@@ -145,7 +194,23 @@ func startInBackground(cfg *config.Config) error {
 		return fmt.Errorf("detected spawn chain (depth: %d), preventing infinite spawn", spawnDepth)
 	}
 	
-	// Check if service is already running
+	// Create startup lock to prevent concurrent starts
+	startupLock, err := process.NewStartupLock()
+	if err != nil {
+		return fmt.Errorf("failed to create startup lock: %w", err)
+	}
+	
+	// Try to acquire exclusive startup lock
+	locked, err := startupLock.TryLock()
+	if err != nil {
+		return fmt.Errorf("failed to check startup lock: %w", err)
+	}
+	if !locked {
+		return fmt.Errorf("another ccproxy startup is already in progress")
+	}
+	defer startupLock.Unlock()
+	
+	// Check if service is already running (while holding startup lock)
 	pidManager, err := process.NewPIDManager()
 	if err != nil {
 		return fmt.Errorf("failed to create PID manager: %w", err)
@@ -161,7 +226,7 @@ func startInBackground(cfg *config.Config) error {
 		return fmt.Errorf("failed to get executable path: %w", err)
 	}
 	
-	// Start background process
+	// Prepare the background process command
 	cmd := exec.Command(execPath, "start", "--foreground")
 	cmd.Env = append(os.Environ(), 
 		"CCPROXY_FOREGROUND=1",
@@ -171,28 +236,51 @@ func startInBackground(cfg *config.Config) error {
 	cmd.Stderr = nil
 	cmd.Stdin = nil
 	
+	// Set process group to ensure child processes are cleaned up
+	cmd.SysProcAttr = &syscall.SysProcAttr{
+		Setpgid: true,
+	}
+	
+	// Start the process
 	if err := cmd.Start(); err != nil {
 		return fmt.Errorf("failed to start background process: %w", err)
 	}
 	
+	// Store the PID immediately
+	backgroundPID := cmd.Process.Pid
+	
+	// Write PID file with proper locking
+	// This will fail if another process is already running
+	if err := pidManager.WritePIDForProcess(backgroundPID); err != nil {
+		// Kill the process we just started if we can't write PID
+		cmd.Process.Kill()
+		return fmt.Errorf("failed to write PID file: %w", err)
+	}
+	
 	// Wait for service to be ready
 	fmt.Print("Starting CCProxy service")
-	
-	// PID manager already created above, no need to create again
 	
 	// Poll for up to 10 seconds
 	for i := 0; i < 100; i++ {
 		time.Sleep(100 * time.Millisecond)
 		fmt.Print(".")
 		
-		// Check if running
+		// Check if process is still running
+		if !pidManager.IsProcessRunning(backgroundPID) {
+			// Process exited prematurely
+			fmt.Println(" ❌")
+			pidManager.Cleanup()
+			return fmt.Errorf("background process exited prematurely")
+		}
+		
+		// Check if running with proper PID
 		runningPID, err := pidManager.GetRunningPID()
 		if err != nil {
 			continue
 		}
 		
-		if runningPID > 0 {
-			// Service is running
+		if runningPID == backgroundPID {
+			// Service is running with correct PID
 			fmt.Println(" ✅")
 			fmt.Println("Service started successfully!")
 			fmt.Printf("PID: %d\n", runningPID)
@@ -203,5 +291,8 @@ func startInBackground(cfg *config.Config) error {
 	}
 	
 	fmt.Println(" ❌")
+	// Clean up if startup failed
+	cmd.Process.Kill()
+	pidManager.Cleanup()
 	return fmt.Errorf("service failed to start within timeout")
 }

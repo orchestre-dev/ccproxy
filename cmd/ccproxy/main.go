@@ -37,6 +37,7 @@ func init() {
 	rootCmd.AddCommand(commands.CodeCmd())
 	rootCmd.AddCommand(commands.ClaudeCmd())
 	rootCmd.AddCommand(commands.VersionCmd())
+	rootCmd.AddCommand(commands.EnvCmd())
 }
 
 func main() {
