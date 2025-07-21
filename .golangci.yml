@@ -1,87 +1,116 @@
 run:
   timeout: 5m
-  tests: false
+  tests: true
   skip-dirs:
     - vendor
     - node_modules
+    - docs
+    - scripts
+
+output:
+  formats:
+    - format: colored-line-number
+  print-issued-lines: true
+  print-linter-name: true
+  uniq-by-line: true
 
 linters:
   enable:
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - typecheck
+    - unused
     - gofmt
     - goimports
-    - vet
+    - goconst
+    - gocyclo
+    - gosec
     - misspell
-    - ineffassign
-    - deadcode
-    - varcheck
-    - structcheck
-    - staticcheck
-    - gosimple
-    - unused
-    - typecheck
+    - nakedret
+    - prealloc
+    - unconvert
+    - unparam
+    - whitespace
   disable:
-    - errcheck      # Too many false positives for now
-    - gosec         # Security linting disabled for now  
-    - bodyclose     # HTTP response body close issues
-    - goconst       # String constants checking
-    - gocritic      # Various style issues
-    - gocyclo       # Cyclomatic complexity
-    - gocognit      # Cognitive complexity
-    - funlen        # Function length
-    - lll           # Line length
-    - nestif        # Nested if statements
-    - godox         # TODO/FIXME comments
-    - unconvert     # Unnecessary type conversions
-    - unparam       # Unused function parameters
-    - nakedret      # Naked returns
-    - prealloc      # Slice preallocation
-    - maligned      # Struct field alignment
-    - dupl          # Code duplication
-    - gomnd         # Magic numbers
-    - wsl           # Whitespace linting
+    - exhaustive
+    - exhaustivestruct
+    - gofumpt
+    - golint
+    - maligned
+    - scopelint
+    - interfacer
+    - gomnd
+    - deadcode    # Deprecated - replaced by unused
+    - varcheck    # Deprecated - replaced by unused
+    - structcheck # Deprecated - replaced by unused
 
 linters-settings:
-  gofmt:
-    simplify: true
-  goimports:
-    local-prefixes: github.com/orchestre-dev/ccproxy
+  gocyclo:
+    min-complexity: 15
+  gosec:
+    excludes:
+      - G204 # Command injection via format string
+      - G304 # File path provided as taint input
+  govet:
+    check-shadowing: true
   misspell:
     locale: US
+  nakedret:
+    max-func-lines: 30
+  prealloc:
+    simple: true
+    range-loops: true
+    for-loops: false
   staticcheck:
-    checks: ["all", "-SA1019"] # Ignore deprecation warnings for now
+    go: "1.21"
+  unparam:
+    check-exported: false
+  unused:
+    go: "1.21"
+  goimports:
+    local-prefixes: github.com/orchestre-dev/ccproxy
 
 issues:
+  exclude-dirs:
+    - vendor
+    - node_modules
+    - docs
+    - scripts
   exclude-rules:
     # Exclude some linters from running on tests files
     - path: _test\.go
       linters:
-        - gocyclo
-        - errcheck
-        - dupl
         - gosec
-        - funlen
-        - goconst
-    # Disable certain checks in generated files
-    - path: ".*\\.pb\\.go"
+        - unparam
+        - prealloc
+    # Exclude staticcheck from generated files
+    - path: "internal/version/version.go"
       linters:
-        - all
-    # Allow long lines in build files
-    - path: "(Makefile|Dockerfile)"
+        - unused
+    # Exclude misspell from test files with British/US spelling variations
+    - path: _test\.go
       linters:
-        - lll
+        - misspell
   exclude:
-    # Exclude error checking for certain patterns that are acceptable
-    - "Error return value of .((os\\.)?std(out|err)\\..*|.*Close|.*Flush|os\\.Remove(All)?|.*print.*|os\\.(Un)?Setenv). is not checked"
-    # Exclude magic number complaints for common cases  
-    - "Magic number: [0-9]+, in <argument> detected"
-    # Exclude package comment requirements
-    - "at least one file in a package should have a package comment"
+    # errcheck: Almost all programs ignore errors on these functions and in most cases it's ok
+    - Error return value of .((os\.)?std(out|err)\..*|.*Close|.*Flush|os\.Remove(All)?|.*print.*|os\.(Un)?Setenv). is not checked
+    # govet: Common false positives
+    - (possible misuse of unsafe.Pointer|should have signature)
+    # staticcheck: Developers tend to write in C-style with an explicit 'break' in a 'switch', so it's ok to ignore
+    - ineffective break statement. Did you mean to break out of the outer loop
+    # gosec: Too many false-positives on 'unsafe' usage
+    - G103
+    # gosec: Too many false-positives for parametrized shell calls
+    - G204
+    # gosec: Duplicated errcheck checks
+    - G104
+  max-issues-per-linter: 0
+  max-same-issues: 0
+  new: false
 
 severity:
-  default-severity: warning
+  default-severity: error
   case-sensitive: false
-
-output:
-  format: colored-line-number
-  print-issued-line: true
-  print-linter-name: true
