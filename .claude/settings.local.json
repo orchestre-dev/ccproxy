@@ -15,7 +15,9 @@
       "WebFetch(domain:openrouter.ai)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(go test:*)",
+      "Bash(npm test:*)"
     ],
     "deny": []
   }
