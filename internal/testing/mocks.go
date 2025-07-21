@@ -193,7 +193,9 @@ func (ms *MockServer) handler(w http.ResponseWriter, r *http.Request) {
 
 	if err := json.NewEncoder(w).Encode(body); err != nil {
 		w.WriteHeader(500)
-		w.Write([]byte(`{"error": "encoding error"}`))
+		if _, err := w.Write([]byte(`{"error": "encoding error"}`)); err != nil {
+			// Ignore write error in test mock
+		}
 	}
 }
 
@@ -341,19 +343,25 @@ func NewTestLogger(t *testing.T) *TestLogger {
 
 // Info logs an info message
 func (tl *TestLogger) Info(msg string, args ...interface{}) {
-	tl.captured.Write([]byte(fmt.Sprintf("INFO: "+msg, args...)))
+	if _, err := tl.captured.Write([]byte(fmt.Sprintf("INFO: "+msg, args...))); err != nil {
+		// Ignore write error in test mock
+	}
 	tl.t.Logf("INFO: "+msg, args...)
 }
 
 // Error logs an error message
 func (tl *TestLogger) Error(msg string, args ...interface{}) {
-	tl.captured.Write([]byte(fmt.Sprintf("ERROR: "+msg, args...)))
+	if _, err := tl.captured.Write([]byte(fmt.Sprintf("ERROR: "+msg, args...))); err != nil {
+		// Ignore write error in test mock
+	}
 	tl.t.Logf("ERROR: "+msg, args...)
 }
 
 // Debug logs a debug message
 func (tl *TestLogger) Debug(msg string, args ...interface{}) {
-	tl.captured.Write([]byte(fmt.Sprintf("DEBUG: "+msg, args...)))
+	if _, err := tl.captured.Write([]byte(fmt.Sprintf("DEBUG: "+msg, args...))); err != nil {
+		// Ignore write error in test mock
+	}
 	tl.t.Logf("DEBUG: "+msg, args...)
 }
 
