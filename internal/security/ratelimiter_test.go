@@ -345,7 +345,7 @@ func TestIPRateLimiterCleanup(t *testing.T) {
 		// Create buckets
 		limiter.Allow(ip1)
 		limiter.Allow(ip2)
-		
+
 		// Check count with lock
 		limiter.mu.RLock()
 		initialCount := len(limiter.requests)
@@ -647,7 +647,7 @@ func TestTokenBucketCleanup(t *testing.T) {
 
 		key := "staletest"
 		limiter.Allow(key, 1)
-		
+
 		// Verify bucket was created
 		limiter.mu.RLock()
 		initialCount := len(limiter.buckets)

@@ -475,7 +475,7 @@ func TestStreamingProcessor_AdvancedErrorHandling(t *testing.T) {
 		if err != nil {
 			t.Logf("Context cancellation handled: %v", err)
 		}
-		
+
 		// Wait a bit to ensure goroutines complete
 		time.Sleep(100 * time.Millisecond)
 	})
@@ -679,3 +679,4 @@ func (w *safeTestWriter) Flush() {
 		flusher.Flush()
 	}
 }
+
