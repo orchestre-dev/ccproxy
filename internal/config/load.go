@@ -20,17 +20,17 @@ func LoadFromFile(path string) (*Config, error) {
 		return nil, fmt.Errorf("failed to parse config file: %w", err)
 	}
 	
-	// Validate configuration
-	if err := cfg.Validate(); err != nil {
-		return nil, fmt.Errorf("invalid configuration: %w", err)
-	}
-	
-	// Set defaults for empty fields
+	// Set defaults for empty fields before validation
 	if cfg.Host == "" {
 		cfg.Host = "127.0.0.1"
 	}
 	if cfg.Port == 0 {
 		cfg.Port = 3456
+	}
+	
+	// Validate configuration
+	if err := cfg.Validate(); err != nil {
+		return nil, fmt.Errorf("invalid configuration: %w", err)
 	}
 	
 	return &cfg, nil
