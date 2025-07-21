@@ -104,11 +104,27 @@ func (rl *RateLimiter) GetLimiterCount() int {
 
 // cleanupLoop periodically cleans up unused limiters
 func (rl *RateLimiter) cleanupLoop() {
-	ticker := time.NewTicker(rl.config.CleanupInterval)
+	// Read initial cleanup interval with lock
+	rl.mu.RLock()
+	cleanupInterval := rl.config.CleanupInterval
+	rl.mu.RUnlock()
+	
+	ticker := time.NewTicker(cleanupInterval)
 	defer ticker.Stop()
 
 	for range ticker.C {
 		rl.cleanup()
+		
+		// Update ticker interval if config changed
+		rl.mu.RLock()
+		newInterval := rl.config.CleanupInterval
+		rl.mu.RUnlock()
+		
+		if newInterval != cleanupInterval {
+			ticker.Stop()
+			ticker = time.NewTicker(newInterval)
+			cleanupInterval = newInterval
+		}
 	}
 }
 
