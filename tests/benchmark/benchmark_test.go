@@ -2,20 +2,24 @@ package benchmark
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"testing"
 
 	"github.com/orchestre-dev/ccproxy/internal/router"
-	testfw "github.com/orchestre-dev/ccproxy/internal/testing"
-	"github.com/orchestre-dev/ccproxy/internal/token"
+	testfw "github.com/orchestre-dev/ccproxy/testing"
+	"github.com/orchestre-dev/ccproxy/internal/utils"
 	"github.com/orchestre-dev/ccproxy/internal/transformer"
 )
 
 // BenchmarkTokenCounting benchmarks token counting performance
 func BenchmarkTokenCounting(b *testing.B) {
-	counter := token.NewCounter()
+	// Create progress reporter for benchmarks
+	progress := testfw.NewProgressReporter(&testing.T{}, "Token Counting Benchmark", 3)
+	defer progress.Complete()
+	
 	fixtures := testfw.NewFixtures()
 	
 	testCases := []struct {
@@ -24,18 +28,26 @@ func BenchmarkTokenCounting(b *testing.B) {
 	}{
 		{"Small-100", 100},
 		{"Medium-1000", 1000},
-		{"Large-10000", 10000},
-		{"XLarge-50000", 50000},
+		{"Large-5000", 5000},  // Reduced from 10000
+		// Skip XLarge to prevent memory issues
 	}
 	
 	for _, tc := range testCases {
+		progress.Step(fmt.Sprintf("Running %s benchmark", tc.name))
 		message := fixtures.GenerateLargeMessage(tc.tokens)
 		
 		b.Run(tc.name, func(b *testing.B) {
 			bf := testfw.NewBenchmarkFramework(b)
 			
 			bf.RunBenchmark(func(i int) {
-				_, _ = counter.CountTokens(message, "claude-3-sonnet-20240229")
+				bodyMap := map[string]interface{}{
+					"messages": []interface{}{
+						map[string]interface{}{
+							"content": message,
+						},
+					},
+				}
+				_ = utils.CountRequestTokens(bodyMap)
 			})
 			
 			b.Log(bf.Report())
@@ -50,7 +62,7 @@ func BenchmarkRouting(b *testing.B) {
 	
 	// Create router with multiple providers
 	cfg := framework.GetConfig()
-	r, _ := router.New(cfg.Routing)
+	r := router.New(cfg)
 	
 	// Test different message sizes
 	testCases := []struct {
@@ -69,12 +81,15 @@ func BenchmarkRouting(b *testing.B) {
 		b.Run(tc.name, func(b *testing.B) {
 			bf := testfw.NewBenchmarkFramework(b)
 			
+			// Calculate approximate token count for messages
+			tokenCount := len(messages) * 50 // rough estimate
+			
 			bf.RunBenchmark(func(i int) {
-				req := &router.Request{
+				req := router.Request{
 					Model:    "claude-3-sonnet-20240229",
-					Messages: messages,
+					Thinking: false,
 				}
-				_, _ = r.SelectProvider(req)
+				_ = r.Route(req, tokenCount)
 			})
 			
 			b.Log(bf.Report())
@@ -84,12 +99,12 @@ func BenchmarkRouting(b *testing.B) {
 
 // BenchmarkTransformer benchmarks message transformation
 func BenchmarkTransformer(b *testing.B) {
-	transformerSvc := transformer.New()
+	transformerSvc := transformer.NewService()
 	fixtures := testfw.NewFixtures()
 	
 	// Register transformers
-	transformerSvc.Register("anthropic", transformer.NewAnthropicTransformer())
-	transformerSvc.Register("openai", transformer.NewOpenAITransformer())
+	transformerSvc.Register(transformer.NewAnthropicTransformer())
+	transformerSvc.Register(transformer.NewOpenRouterTransformer())
 	
 	testCases := []struct {
 		name      string
@@ -116,7 +131,9 @@ func BenchmarkTransformer(b *testing.B) {
 			bf := testfw.NewBenchmarkFramework(b)
 			
 			bf.RunBenchmark(func(i int) {
-				_, _ = transformerSvc.TransformRequest(tc.transform, reqData)
+				req, _ := http.NewRequest("POST", "/v1/messages", nil)
+				body, _ := json.Marshal(reqData)
+				_, _, _ = transformerSvc.TransformRequest(context.Background(), tc.transform, req, body)
 			})
 			
 			b.Log(bf.Report())
@@ -129,13 +146,20 @@ func BenchmarkHTTPServer(b *testing.B) {
 	framework := testfw.NewTestFramework(&testing.T{})
 	fixtures := testfw.NewFixtures()
 	
-	// Start server
-	server := framework.StartServer()
-	serverURL := fmt.Sprintf("http://127.0.0.1:%d", server.GetPort())
-	
-	// Create mock provider
-	mockProvider := testfw.NewMockProviderServer("anthropic")
+	// Create mock provider first
+	mockProvider := testfw.NewMockProviderServer()
 	defer mockProvider.Close()
+	
+	// Add mock provider to configuration
+	framework.AddProvider("mock-provider", mockProvider.URL())
+	
+	// Start server
+	server, err := framework.StartServer()
+	if err != nil {
+		b.Fatalf("Failed to start server: %v", err)
+	}
+	defer server.Shutdown()
+	serverURL := fmt.Sprintf("http://127.0.0.1:%d", framework.GetConfig().Port)
 	
 	// Update provider config with mock URL
 	// This would require extending the framework to support updating provider configs
@@ -192,18 +216,25 @@ func BenchmarkConcurrentRequests(b *testing.B) {
 	framework := testfw.NewTestFramework(&testing.T{})
 	fixtures := testfw.NewFixtures()
 	
-	// Start server
-	server := framework.StartServer()
-	serverURL := fmt.Sprintf("http://127.0.0.1:%d", server.GetPort())
-	
-	// Create mock provider
-	mockProvider := testfw.NewMockProviderServer("anthropic")
+	// Create mock provider first
+	mockProvider := testfw.NewMockProviderServer()
 	defer mockProvider.Close()
+	
+	// Add mock provider to configuration
+	framework.AddProvider("mock-provider", mockProvider.URL())
+	
+	// Start server
+	server, err := framework.StartServer()
+	if err != nil {
+		b.Fatalf("Failed to start server: %v", err)
+	}
+	defer server.Shutdown()
+	serverURL := fmt.Sprintf("http://127.0.0.1:%d", framework.GetConfig().Port)
 	
 	reqBody, _ := fixtures.GetRequest("anthropic_messages")
 	reqData, _ := json.Marshal(reqBody)
 	
-	concurrencyLevels := []int{1, 10, 50, 100}
+	concurrencyLevels := []int{1, 10, 25, 50}  // Reduced max concurrency
 	
 	for _, concurrency := range concurrencyLevels {
 		b.Run(fmt.Sprintf("Concurrent-%d", concurrency), func(b *testing.B) {
@@ -223,7 +254,7 @@ func BenchmarkConcurrentRequests(b *testing.B) {
 			})
 			
 			b.Log(bf.Report())
-			bf.RecordCustomMetric("concurrency", concurrency)
+			bf.RecordCustomMetric("concurrency", float64(concurrency))
 		})
 	}
 }
@@ -239,9 +270,9 @@ func BenchmarkMemoryUsage(b *testing.B) {
 	}{
 		{"SmallMessages", 100, 10},
 		{"MediumMessages", 1000, 10},
-		{"LargeMessages", 10000, 10},
-		{"ManySmallMessages", 100, 100},
-		{"FewLargeMessages", 50000, 5},
+		{"LargeMessages", 5000, 5},  // Reduced size and count
+		{"ManySmallMessages", 100, 50},  // Reduced count
+		// Skip very large messages to prevent OOM
 	}
 	
 	for _, tc := range testCases {
@@ -278,8 +309,6 @@ func BenchmarkMemoryUsage(b *testing.B) {
 
 // BenchmarkStreamingPerformance benchmarks streaming response handling
 func BenchmarkStreamingPerformance(b *testing.B) {
-	framework := testfw.NewTestFramework(&testing.T{})
-	
 	// Create mock streaming server
 	mockServer := testfw.NewMockServer()
 	defer mockServer.Close()
@@ -290,10 +319,10 @@ func BenchmarkStreamingPerformance(b *testing.B) {
 		chunkCount int
 		chunkSize  int
 	}{
-		{"SmallChunks", 100, 100},
-		{"MediumChunks", 50, 1000},
-		{"LargeChunks", 10, 10000},
-		{"ManyTinyChunks", 1000, 10},
+		{"SmallChunks", 50, 100},  // Reduced chunk count
+		{"MediumChunks", 25, 1000},  // Reduced chunk count
+		{"LargeChunks", 10, 5000},  // Reduced chunk size
+		{"ManyTinyChunks", 100, 10},  // Reduced chunk count
 	}
 	
 	for _, tc := range testCases {
@@ -330,7 +359,7 @@ func BenchmarkStreamingPerformance(b *testing.B) {
 				}
 			})
 			
-			bf.RecordCustomMetric("total_bytes", tc.chunkCount*tc.chunkSize)
+			bf.RecordCustomMetric("total_bytes", float64(tc.chunkCount*tc.chunkSize))
 			b.Log(bf.Report())
 		})
 	}

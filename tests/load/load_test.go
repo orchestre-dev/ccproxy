@@ -8,22 +8,36 @@ import (
 	"testing"
 	"time"
 
-	testfw "github.com/orchestre-dev/ccproxy/internal/testing"
+	testfw "github.com/orchestre-dev/ccproxy/testing"
 	"github.com/stretchr/testify/require"
 )
 
 // TestLoadBasicEndpoint tests basic load on the messages endpoint
 func TestLoadBasicEndpoint(t *testing.T) {
+	// Create progress reporter for load test
+	progress := testfw.NewProgressReporter(t, "Basic Load Test", 6)
+	defer progress.Complete()
+	
 	framework := testfw.NewTestFramework(t)
 	fixtures := testfw.NewFixtures()
 	
-	// Start server
-	server := framework.StartServer()
-	serverURL := fmt.Sprintf("http://127.0.0.1:%d", server.GetPort())
+	progress.Step("Setting up test framework")
 	
 	// Create mock provider
 	mockProvider := testfw.NewMockProviderServer("anthropic")
 	defer mockProvider.Close()
+	
+	progress.Step("Creating mock provider")
+	
+	// Configure provider in framework
+	framework.AddProvider("anthropic", mockProvider.URL())
+	
+	// Start server
+	server, err := framework.StartServer()
+	require.NoError(t, err)
+	serverURL := fmt.Sprintf("http://127.0.0.1:%d", server.GetPort())
+	
+	progress.Step("Starting server")
 	
 	// Configure load test
 	config := testfw.LoadTestConfig{
@@ -37,9 +51,13 @@ func TestLoadBasicEndpoint(t *testing.T) {
 	// Create load tester
 	loadTester := testfw.NewLoadTester(framework, config)
 	
+	progress.Step("Configuring load test")
+	
 	// Prepare request
 	reqBody, _ := fixtures.GetRequest("anthropic_messages")
 	reqData, _ := json.Marshal(reqBody)
+	
+	progress.Step("Running load test (30 seconds)")
 	
 	// Run load test
 	results := loadTester.Run(func() error {
@@ -65,6 +83,8 @@ func TestLoadBasicEndpoint(t *testing.T) {
 		return nil
 	})
 	
+	progress.Step("Analyzing results")
+	
 	// Assert results
 	t.Logf("Load Test Results:")
 	t.Logf("Total Requests: %d", results.TotalRequests)
@@ -83,16 +103,21 @@ func TestLoadMixedEndpoints(t *testing.T) {
 	framework := testfw.NewTestFramework(t)
 	fixtures := testfw.NewFixtures()
 	
-	// Start server
-	server := framework.StartServer()
-	serverURL := fmt.Sprintf("http://127.0.0.1:%d", server.GetPort())
-	
 	// Create mock providers
 	anthropicMock := testfw.NewMockProviderServer("anthropic")
 	defer anthropicMock.Close()
 	
 	openaiMock := testfw.NewMockProviderServer("openai")
 	defer openaiMock.Close()
+	
+	// Configure providers in framework
+	framework.AddProvider("anthropic", anthropicMock.URL())
+	framework.AddProvider("openai", openaiMock.URL())
+	
+	// Start server
+	server, err := framework.StartServer()
+	require.NoError(t, err)
+	serverURL := fmt.Sprintf("http://127.0.0.1:%d", server.GetPort())
 	
 	// Configure load test
 	config := testfw.LoadTestConfig{
@@ -167,13 +192,17 @@ func TestLoadWithFailures(t *testing.T) {
 	framework := testfw.NewTestFramework(t)
 	fixtures := testfw.NewFixtures()
 	
-	// Start server
-	server := framework.StartServer()
-	serverURL := fmt.Sprintf("http://127.0.0.1:%d", server.GetPort())
-	
 	// Create mock provider with intermittent failures
 	mockProvider := testfw.NewMockProviderServer("anthropic")
 	defer mockProvider.Close()
+	
+	// Configure provider in framework
+	framework.AddProvider("anthropic", mockProvider.URL())
+	
+	// Start server
+	server, err := framework.StartServer()
+	require.NoError(t, err)
+	serverURL := fmt.Sprintf("http://127.0.0.1:%d", server.GetPort())
 	
 	// Configure provider to fail 20% of requests
 	failureCount := 0
@@ -240,15 +269,19 @@ func TestLoadWithFailures(t *testing.T) {
 // TestLoadStreaming tests streaming endpoint under load
 func TestLoadStreaming(t *testing.T) {
 	framework := testfw.NewTestFramework(t)
-	fixtures := testfw.NewFixtures()
-	
-	// Start server
-	server := framework.StartServer()
-	serverURL := fmt.Sprintf("http://127.0.0.1:%d", server.GetPort())
+	_ = testfw.NewFixtures() // Not used in this test
 	
 	// Create mock provider with streaming
 	mockProvider := testfw.NewMockProviderServer("anthropic")
 	defer mockProvider.Close()
+	
+	// Configure provider in framework
+	framework.AddProvider("anthropic", mockProvider.URL())
+	
+	// Start server
+	server, err := framework.StartServer()
+	require.NoError(t, err)
+	serverURL := fmt.Sprintf("http://127.0.0.1:%d", server.GetPort())
 	
 	// Configure load test with fewer users for streaming
 	config := testfw.LoadTestConfig{
@@ -329,13 +362,17 @@ func TestLoadSpike(t *testing.T) {
 	framework := testfw.NewTestFramework(t)
 	fixtures := testfw.NewFixtures()
 	
-	// Start server
-	server := framework.StartServer()
-	serverURL := fmt.Sprintf("http://127.0.0.1:%d", server.GetPort())
-	
 	// Create mock provider
 	mockProvider := testfw.NewMockProviderServer("anthropic")
 	defer mockProvider.Close()
+	
+	// Configure provider in framework
+	framework.AddProvider("anthropic", mockProvider.URL())
+	
+	// Start server
+	server, err := framework.StartServer()
+	require.NoError(t, err)
+	serverURL := fmt.Sprintf("http://127.0.0.1:%d", server.GetPort())
 	
 	// Phase 1: Normal load
 	normalConfig := testfw.LoadTestConfig{
@@ -409,13 +446,17 @@ func TestLoadSustained(t *testing.T) {
 	framework := testfw.NewTestFramework(t)
 	fixtures := testfw.NewFixtures()
 	
-	// Start server
-	server := framework.StartServer()
-	serverURL := fmt.Sprintf("http://127.0.0.1:%d", server.GetPort())
-	
 	// Create mock provider
 	mockProvider := testfw.NewMockProviderServer("anthropic")
 	defer mockProvider.Close()
+	
+	// Configure provider in framework
+	framework.AddProvider("anthropic", mockProvider.URL())
+	
+	// Start server
+	server, err := framework.StartServer()
+	require.NoError(t, err)
+	serverURL := fmt.Sprintf("http://127.0.0.1:%d", server.GetPort())
 	
 	// Configure sustained load test
 	config := testfw.LoadTestConfig{
