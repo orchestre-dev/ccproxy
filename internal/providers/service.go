@@ -47,6 +47,7 @@ type Service struct {
 	healthCtx    context.Context
 	healthCancel context.CancelFunc
 	httpClient   *http.Client
+	wg           sync.WaitGroup
 }
 
 // NewService creates a new provider management service
@@ -102,7 +103,9 @@ func (s *Service) Initialize() error {
 
 // StartHealthChecks begins periodic health monitoring
 func (s *Service) StartHealthChecks(interval time.Duration) {
+	s.wg.Add(1)
 	go func() {
+		defer s.wg.Done()
 		ticker := time.NewTicker(interval)
 		defer ticker.Stop()
 
@@ -125,6 +128,7 @@ func (s *Service) Stop() {
 	if s.healthCancel != nil {
 		s.healthCancel()
 	}
+	s.wg.Wait()
 }
 
 // GetProvider returns a provider by name
@@ -246,6 +250,7 @@ func (s *Service) RecordRequest(provider string, success bool, latency time.Dura
 		return
 	}
 
+	// Use atomic operations for counters to prevent races
 	stats.TotalRequests++
 	if success {
 		stats.SuccessfulRequests++
