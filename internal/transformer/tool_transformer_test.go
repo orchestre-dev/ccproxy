@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/orchestre-dev/ccproxy/internal/config"
-	"github.com/orchestre-dev/ccproxy/internal/tools"
 	testutil "github.com/orchestre-dev/ccproxy/internal/testing"
+	"github.com/orchestre-dev/ccproxy/internal/tools"
 )
 
 func TestToolTransformer(t *testing.T) {
@@ -128,7 +128,7 @@ func TestToolTransformRequest(t *testing.T) {
 		testutil.AssertNoError(t, err)
 
 		resultMap := result.(map[string]interface{})
-		
+
 		// Should have functions instead of tools for legacy models
 		_, hasTools := resultMap["tools"]
 		testutil.AssertEqual(t, false, hasTools)
@@ -163,7 +163,7 @@ func TestToolTransformRequest(t *testing.T) {
 		testutil.AssertNoError(t, err)
 
 		resultMap := result.(map[string]interface{})
-		
+
 		// Should recognize legacy model after stripping prefix
 		_, hasTools := resultMap["tools"]
 		testutil.AssertEqual(t, false, hasTools)
@@ -263,7 +263,7 @@ func TestToolTransformResponse(t *testing.T) {
 		// Should process the tool use blocks
 		resultMap := result.(map[string]interface{})
 		content := resultMap["content"].([]interface{})
-		
+
 		// Find the tool use block
 		var toolUseBlock map[string]interface{}
 		for _, block := range content {
@@ -401,7 +401,7 @@ func TestToolCreateToolResultMessage(t *testing.T) {
 		message := transformer.CreateToolResultMessage(results)
 		messageMap := message.(map[string]interface{})
 		testutil.AssertEqual(t, "user", messageMap["role"])
-		
+
 		content := messageMap["content"].([]tools.ContentBlock)
 		testutil.AssertEqual(t, 1, len(content))
 
@@ -428,7 +428,7 @@ func TestToolCreateToolResultMessage(t *testing.T) {
 
 		testutil.AssertEqual(t, "tool_result", block.Type)
 		testutil.AssertEqual(t, "tool_456", block.ToolUseID)
-		
+
 		// Check error content format
 		var errorContent map[string]interface{}
 		json.Unmarshal(block.Content, &errorContent)
@@ -573,7 +573,7 @@ func TestToolTransformerIntegration(t *testing.T) {
 		testutil.AssertNoError(t, err)
 
 		respMap := transformedResp.(map[string]interface{})
-		
+
 		// Should have tool use metadata
 		metadata := respMap["metadata"].(map[string]interface{})
 		testutil.AssertEqual(t, true, metadata["has_tool_use"])

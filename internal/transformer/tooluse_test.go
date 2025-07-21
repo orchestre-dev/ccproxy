@@ -349,14 +349,14 @@ data: [DONE]
 		// Read the transformed stream
 		reader := NewSSEReader(result.Body)
 		events := []string{}
-		
+
 		for {
 			event, err := reader.ReadEvent()
 			if err == io.EOF {
 				break
 			}
 			testutil.AssertNoError(t, err)
-			
+
 			if event.Data != "" && event.Data != "[DONE]" {
 				events = append(events, event.Data)
 			}
@@ -409,7 +409,7 @@ func TestToolUseTransformStreamEvent(t *testing.T) {
 
 	t.Run("FilterExitToolCall", func(t *testing.T) {
 		state := &toolUseStreamState{}
-		
+
 		eventData := map[string]interface{}{
 			"choices": []interface{}{
 				map[string]interface{}{
@@ -461,7 +461,7 @@ func TestToolUseTransformStreamEvent(t *testing.T) {
 
 	t.Run("FilterOnlyExitTool", func(t *testing.T) {
 		state := &toolUseStreamState{}
-		
+
 		eventData := map[string]interface{}{
 			"choices": []interface{}{
 				map[string]interface{}{
@@ -506,7 +506,7 @@ func TestToolUseTransformStreamEvent(t *testing.T) {
 		state := &toolUseStreamState{
 			hasExitTool: true,
 		}
-		
+
 		eventData := map[string]interface{}{
 			"choices": []interface{}{
 				map[string]interface{}{
@@ -535,7 +535,7 @@ func TestToolUseTransformStreamEvent(t *testing.T) {
 
 	t.Run("RegularEventPassThrough", func(t *testing.T) {
 		state := &toolUseStreamState{}
-		
+
 		eventData := map[string]interface{}{
 			"choices": []interface{}{
 				map[string]interface{}{
@@ -569,7 +569,7 @@ func TestToolUseTransformStreamEvent(t *testing.T) {
 		event := &SSEEvent{Data: "invalid json"}
 
 		result := transformer.transformStreamEvent(event, state)
-		
+
 		// Should return original event on parse error
 		testutil.AssertEqual(t, event, result)
 	})
@@ -635,14 +635,14 @@ func TestToolUseIntegration(t *testing.T) {
 		testutil.AssertNoError(t, err)
 
 		reqMap := transformedReq.(map[string]interface{})
-		
+
 		// Should have system reminder and ExitTool
 		messages := reqMap["messages"].([]interface{})
 		testutil.AssertEqual(t, 2, len(messages))
-		
+
 		tools := reqMap["tools"].([]interface{})
 		testutil.AssertEqual(t, 2, len(tools)) // original + ExitTool
-		
+
 		testutil.AssertEqual(t, "required", reqMap["tool_choice"])
 
 		// Test response transformation with ExitTool
@@ -693,7 +693,7 @@ func TestToolUseIntegration(t *testing.T) {
 
 		// Should preserve content and filter ExitTool
 		testutil.AssertEqual(t, "Task completed!", message["content"])
-		
+
 		toolCalls := message["tool_calls"].([]interface{})
 		testutil.AssertEqual(t, 1, len(toolCalls)) // Only helper_tool, ExitTool filtered
 
@@ -723,14 +723,14 @@ data: [DONE]
 		// Read and analyze events
 		reader := NewSSEReader(result.Body)
 		events := []string{}
-		
+
 		for {
 			event, err := reader.ReadEvent()
 			if err == io.EOF {
 				break
 			}
 			testutil.AssertNoError(t, err)
-			
+
 			if event.Data != "" && event.Data != "[DONE]" {
 				events = append(events, event.Data)
 			}
@@ -742,7 +742,7 @@ data: [DONE]
 		// Verify ExitTool was filtered
 		hasExitTool := false
 		hasHelperTool := false
-		
+
 		for _, eventData := range events {
 			var event map[string]interface{}
 			json.Unmarshal([]byte(eventData), &event)
@@ -769,7 +769,7 @@ data: [DONE]
 			}
 		}
 
-		testutil.AssertEqual(t, false, hasExitTool)   // Should be filtered out
+		testutil.AssertEqual(t, false, hasExitTool)  // Should be filtered out
 		testutil.AssertEqual(t, true, hasHelperTool) // Should be preserved
 	})
 }

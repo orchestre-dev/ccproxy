@@ -106,10 +106,10 @@ func TestToJSONStringWithComplexTypes(t *testing.T) {
 	// Test with channels, which cannot be marshalled
 	input := make(chan int)
 	defer close(input)
-	
+
 	result := ToJSONString(input)
 	testutil.AssertEqual(t, "{}", result, "Should return {} for channels")
-	
+
 	// Test with complex numbers
 	complex := complex(1, 2)
 	result = ToJSONString(complex)
@@ -119,17 +119,17 @@ func TestToJSONStringWithComplexTypes(t *testing.T) {
 func TestGetTimestamp(t *testing.T) {
 	// Get current time before calling function
 	before := time.Now().Unix()
-	
+
 	// Call the function
 	timestamp := GetTimestamp()
-	
+
 	// Get current time after calling function
 	after := time.Now().Unix()
-	
+
 	// Timestamp should be between before and after
 	testutil.AssertTrue(t, timestamp >= before, "Timestamp should be >= time before call")
 	testutil.AssertTrue(t, timestamp <= after, "Timestamp should be <= time after call")
-	
+
 	// Timestamp should be a valid Unix timestamp (positive number)
 	testutil.AssertTrue(t, timestamp > 0, "Timestamp should be positive")
 }
@@ -138,10 +138,10 @@ func TestGetTimestampConsistency(t *testing.T) {
 	// Call function twice in quick succession
 	timestamp1 := GetTimestamp()
 	timestamp2 := GetTimestamp()
-	
+
 	// Second timestamp should be >= first (time moves forward)
 	testutil.AssertTrue(t, timestamp2 >= timestamp1, "Second timestamp should be >= first")
-	
+
 	// Difference should be small (less than 1 second for this test)
 	diff := timestamp2 - timestamp1
 	testutil.AssertTrue(t, diff < 2, "Timestamps should be within 2 seconds of each other")
@@ -150,7 +150,7 @@ func TestGetTimestampConsistency(t *testing.T) {
 func TestGetTimestampPrecision(t *testing.T) {
 	// Test that we get Unix timestamp (seconds since epoch)
 	timestamp := GetTimestamp()
-	
+
 	// Unix timestamp should be in reasonable range
 	// After 2020-01-01 (1577836800) and before 2040-01-01 (2208988800)
 	testutil.AssertTrue(t, timestamp > 1577836800, "Timestamp should be after 2020")
@@ -160,13 +160,13 @@ func TestGetTimestampPrecision(t *testing.T) {
 // Benchmark tests for performance verification
 func BenchmarkToJSONString(b *testing.B) {
 	testData := map[string]interface{}{
-		"name":    "benchmark test",
-		"count":   100,
-		"active":  true,
-		"items":   []string{"a", "b", "c"},
+		"name":   "benchmark test",
+		"count":  100,
+		"active": true,
+		"items":  []string{"a", "b", "c"},
 		"nested": map[string]int{"x": 1, "y": 2},
 	}
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		ToJSONString(testData)
@@ -175,7 +175,7 @@ func BenchmarkToJSONString(b *testing.B) {
 
 func BenchmarkToJSONStringSimple(b *testing.B) {
 	testData := "simple string"
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		ToJSONString(testData)

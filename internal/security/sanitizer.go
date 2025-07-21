@@ -103,10 +103,10 @@ func (s *DataSanitizer) SanitizeString(str string) string {
 
 	// URL decode to check for encoded attacks
 	decoded, _ := url.QueryUnescape(sanitized)
-	
+
 	// Remove null bytes
 	sanitized = strings.ReplaceAll(decoded, "\x00", "")
-	
+
 	// Remove control characters
 	sanitized = regexp.MustCompile(`[\x00-\x1F\x7F]`).ReplaceAllString(sanitized, "")
 
@@ -263,6 +263,6 @@ func MaskAPIKey(apiKey string) string {
 	prefix := apiKey[:4]
 	suffix := apiKey[len(apiKey)-4:]
 	masked := strings.Repeat("*", len(apiKey)-8)
-	
+
 	return prefix + masked + suffix
 }

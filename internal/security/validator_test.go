@@ -638,17 +638,17 @@ func TestValidateRequestIntegration(t *testing.T) {
 		// Request with multiple attack vectors
 		req, _ := http.NewRequest("POST", "http://example.com/../admin?cmd=DROP TABLE users;--&redirect=javascript:alert('xss')", nil)
 		req.ContentLength = 500 // Within limits
-		
+
 		result := validator.ValidateRequest(req)
 		testutil.AssertFalse(t, result.Valid)
 		testutil.AssertTrue(t, len(result.Errors) > 0)
-		
+
 		// Should detect multiple attack types
 		errorStr := strings.Join(result.Errors, " ")
-		testutil.AssertTrue(t, 
-			strings.Contains(errorStr, "XSS") || 
-			strings.Contains(errorStr, "SQL") || 
-			strings.Contains(errorStr, "path traversal"))
+		testutil.AssertTrue(t,
+			strings.Contains(errorStr, "XSS") ||
+				strings.Contains(errorStr, "SQL") ||
+				strings.Contains(errorStr, "path traversal"))
 	})
 
 	t.Run("valid request passes all checks", func(t *testing.T) {
@@ -660,7 +660,7 @@ func TestValidateRequestIntegration(t *testing.T) {
 		req, _ := http.NewRequest("GET", "http://example.com/api/users?page=1&limit=10", nil)
 		req.ContentLength = 0
 		req.Header.Set("User-Agent", "MyApp/1.0")
-		
+
 		result := validator.ValidateRequest(req)
 		testutil.AssertTrue(t, result.Valid)
 		testutil.AssertEqual(t, 1.0, result.Score)

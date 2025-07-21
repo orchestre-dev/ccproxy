@@ -173,9 +173,9 @@ func TestCCProxyError_Is(t *testing.T) {
 func TestCCProxyError_WithDetails(t *testing.T) {
 	err := New(ErrorTypeBadRequest, "test message")
 	details := map[string]interface{}{"key": "value", "number": 42}
-	
+
 	result := err.WithDetails(details)
-	
+
 	testutil.AssertEqual(t, err, result) // Should return same instance
 	testutil.AssertEqual(t, "value", err.Details["key"])
 	testutil.AssertEqual(t, 42, err.Details["number"])
@@ -184,9 +184,9 @@ func TestCCProxyError_WithDetails(t *testing.T) {
 func TestCCProxyError_WithProvider(t *testing.T) {
 	err := New(ErrorTypeBadRequest, "test message")
 	provider := "test-provider"
-	
+
 	result := err.WithProvider(provider)
-	
+
 	testutil.AssertEqual(t, err, result) // Should return same instance
 	testutil.AssertEqual(t, provider, err.Provider)
 }
@@ -194,9 +194,9 @@ func TestCCProxyError_WithProvider(t *testing.T) {
 func TestCCProxyError_WithRequestID(t *testing.T) {
 	err := New(ErrorTypeBadRequest, "test message")
 	requestID := "req-123"
-	
+
 	result := err.WithRequestID(requestID)
-	
+
 	testutil.AssertEqual(t, err, result) // Should return same instance
 	testutil.AssertEqual(t, requestID, err.RequestID)
 }
@@ -204,9 +204,9 @@ func TestCCProxyError_WithRequestID(t *testing.T) {
 func TestCCProxyError_WithRetryAfter(t *testing.T) {
 	err := New(ErrorTypeBadRequest, "test message")
 	duration := 5 * time.Second
-	
+
 	result := err.WithRetryAfter(duration)
-	
+
 	testutil.AssertEqual(t, err, result) // Should return same instance
 	testutil.AssertEqual(t, true, err.Retryable)
 	testutil.AssertEqual(t, duration, *err.RetryAfter)
@@ -215,9 +215,9 @@ func TestCCProxyError_WithRetryAfter(t *testing.T) {
 func TestCCProxyError_WithCode(t *testing.T) {
 	err := New(ErrorTypeBadRequest, "test message")
 	code := "ERROR_CODE_123"
-	
+
 	result := err.WithCode(code)
-	
+
 	testutil.AssertEqual(t, err, result) // Should return same instance
 	testutil.AssertEqual(t, code, err.Code)
 }
@@ -318,13 +318,13 @@ func TestCCProxyError_ToJSON(t *testing.T) {
 	t.Run("MinimalError", func(t *testing.T) {
 		err := New(ErrorTypeBadRequest, "test message")
 		jsonData, jsonErr := err.ToJSON()
-		
+
 		testutil.AssertNoError(t, jsonErr)
-		
+
 		var response map[string]interface{}
 		unmarshalErr := json.Unmarshal(jsonData, &response)
 		testutil.AssertNoError(t, unmarshalErr)
-		
+
 		errorObj := response["error"].(map[string]interface{})
 		testutil.AssertEqual(t, "bad_request", errorObj["type"])
 		testutil.AssertEqual(t, "test message", errorObj["message"])
@@ -336,21 +336,21 @@ func TestCCProxyError_ToJSON(t *testing.T) {
 			WithProvider("test-provider").
 			WithRequestID("req-123").
 			WithDetails(map[string]interface{}{"key": "value"})
-		
+
 		jsonData, jsonErr := err.ToJSON()
 		testutil.AssertNoError(t, jsonErr)
-		
+
 		var response map[string]interface{}
 		unmarshalErr := json.Unmarshal(jsonData, &response)
 		testutil.AssertNoError(t, unmarshalErr)
-		
+
 		errorObj := response["error"].(map[string]interface{})
 		testutil.AssertEqual(t, "bad_request", errorObj["type"])
 		testutil.AssertEqual(t, "test message", errorObj["message"])
 		testutil.AssertEqual(t, "CODE123", errorObj["code"])
 		testutil.AssertEqual(t, "test-provider", errorObj["provider"])
 		testutil.AssertEqual(t, "req-123", errorObj["request_id"])
-		
+
 		details := errorObj["details"].(map[string]interface{})
 		testutil.AssertEqual(t, "value", details["key"])
 	})
@@ -360,16 +360,16 @@ func TestCCProxyError_WriteHTTPResponse(t *testing.T) {
 	t.Run("BasicResponse", func(t *testing.T) {
 		err := New(ErrorTypeBadRequest, "test message")
 		recorder := httptest.NewRecorder()
-		
+
 		err.WriteHTTPResponse(recorder)
-		
+
 		testutil.AssertEqual(t, http.StatusBadRequest, recorder.Code)
 		testutil.AssertEqual(t, "application/json", recorder.Header().Get("Content-Type"))
-		
+
 		var response map[string]interface{}
 		unmarshalErr := json.Unmarshal(recorder.Body.Bytes(), &response)
 		testutil.AssertNoError(t, unmarshalErr)
-		
+
 		errorObj := response["error"].(map[string]interface{})
 		testutil.AssertEqual(t, "bad_request", errorObj["type"])
 		testutil.AssertEqual(t, "test message", errorObj["message"])
@@ -379,9 +379,9 @@ func TestCCProxyError_WriteHTTPResponse(t *testing.T) {
 		retryAfter := 30 * time.Second
 		err := New(ErrorTypeTooManyRequests, "rate limited").WithRetryAfter(retryAfter)
 		recorder := httptest.NewRecorder()
-		
+
 		err.WriteHTTPResponse(recorder)
-		
+
 		testutil.AssertEqual(t, http.StatusTooManyRequests, recorder.Code)
 		testutil.AssertEqual(t, "30", recorder.Header().Get("Retry-After"))
 	})
@@ -437,7 +437,7 @@ func TestGetErrorTypeFromStatusCode(t *testing.T) {
 		{http.StatusServiceUnavailable, ErrorTypeServiceUnavailable},
 		{http.StatusGatewayTimeout, ErrorTypeGatewayTimeout},
 		{http.StatusInternalServerError, ErrorTypeInternal},
-		{http.StatusTeapot, ErrorTypeBadRequest}, // 4xx default
+		{http.StatusTeapot, ErrorTypeBadRequest},         // 4xx default
 		{http.StatusBadGateway + 100, ErrorTypeInternal}, // 5xx default
 	}
 
@@ -477,7 +477,7 @@ func TestIsRetryable(t *testing.T) {
 func TestErrBadRequest(t *testing.T) {
 	message := "bad request message"
 	err := ErrBadRequest(message)
-	
+
 	testutil.AssertEqual(t, ErrorTypeBadRequest, err.Type)
 	testutil.AssertEqual(t, message, err.Message)
 	testutil.AssertEqual(t, http.StatusBadRequest, err.StatusCode)
@@ -486,7 +486,7 @@ func TestErrBadRequest(t *testing.T) {
 func TestErrUnauthorized(t *testing.T) {
 	message := "unauthorized message"
 	err := ErrUnauthorized(message)
-	
+
 	testutil.AssertEqual(t, ErrorTypeUnauthorized, err.Type)
 	testutil.AssertEqual(t, message, err.Message)
 	testutil.AssertEqual(t, http.StatusUnauthorized, err.StatusCode)
@@ -495,7 +495,7 @@ func TestErrUnauthorized(t *testing.T) {
 func TestErrNotFound(t *testing.T) {
 	resource := "user"
 	err := ErrNotFound(resource)
-	
+
 	testutil.AssertEqual(t, ErrorTypeNotFound, err.Type)
 	testutil.AssertEqual(t, "user not found", err.Message)
 	testutil.AssertEqual(t, http.StatusNotFound, err.StatusCode)
@@ -504,7 +504,7 @@ func TestErrNotFound(t *testing.T) {
 func TestErrInternal(t *testing.T) {
 	message := "internal error message"
 	err := ErrInternal(message)
-	
+
 	testutil.AssertEqual(t, ErrorTypeInternal, err.Type)
 	testutil.AssertEqual(t, message, err.Message)
 	testutil.AssertEqual(t, http.StatusInternalServerError, err.StatusCode)
@@ -514,7 +514,7 @@ func TestErrProviderError(t *testing.T) {
 	provider := "test-provider"
 	originalErr := errors.New("original error")
 	err := ErrProviderError(provider, originalErr)
-	
+
 	testutil.AssertEqual(t, ErrorTypeProviderError, err.Type)
 	testutil.AssertEqual(t, "Provider test-provider error", err.Message)
 	testutil.AssertEqual(t, provider, err.Provider)
@@ -524,7 +524,7 @@ func TestErrProviderError(t *testing.T) {
 func TestErrRateLimit(t *testing.T) {
 	retryAfter := 60 * time.Second
 	err := ErrRateLimit(retryAfter)
-	
+
 	testutil.AssertEqual(t, ErrorTypeRateLimitError, err.Type)
 	testutil.AssertEqual(t, "Rate limit exceeded", err.Message)
 	testutil.AssertEqual(t, true, err.Retryable)
@@ -535,7 +535,7 @@ func TestIsRetryableError(t *testing.T) {
 	t.Run("CCProxyError", func(t *testing.T) {
 		retryableErr := New(ErrorTypeInternal, "retryable error")
 		nonRetryableErr := New(ErrorTypeBadRequest, "non-retryable error")
-		
+
 		testutil.AssertTrue(t, IsRetryableError(retryableErr))
 		testutil.AssertFalse(t, IsRetryableError(nonRetryableErr))
 	})
@@ -569,7 +569,7 @@ func TestGetRetryAfter(t *testing.T) {
 	t.Run("CCProxyErrorWithRetryAfter", func(t *testing.T) {
 		duration := 30 * time.Second
 		err := New(ErrorTypeRateLimitError, "rate limited").WithRetryAfter(duration)
-		
+
 		result := GetRetryAfter(err)
 		testutil.AssertEqual(t, false, result == nil)
 		testutil.AssertEqual(t, duration, *result)
@@ -577,14 +577,14 @@ func TestGetRetryAfter(t *testing.T) {
 
 	t.Run("CCProxyErrorWithoutRetryAfter", func(t *testing.T) {
 		err := New(ErrorTypeBadRequest, "bad request")
-		
+
 		result := GetRetryAfter(err)
 		testutil.AssertEqual(t, true, result == nil)
 	})
 
 	t.Run("RegularError", func(t *testing.T) {
 		err := errors.New("regular error")
-		
+
 		result := GetRetryAfter(err)
 		testutil.AssertEqual(t, true, result == nil)
 	})
@@ -594,7 +594,7 @@ func TestNewAuthError(t *testing.T) {
 	t.Run("WithoutCause", func(t *testing.T) {
 		message := "authentication failed"
 		err := NewAuthError(message, nil)
-		
+
 		testutil.AssertEqual(t, ErrorTypeUnauthorized, err.Type)
 		testutil.AssertEqual(t, message, err.Message)
 		testutil.AssertEqual(t, true, err.wrapped == nil)
@@ -604,7 +604,7 @@ func TestNewAuthError(t *testing.T) {
 		message := "authentication failed"
 		cause := errors.New("invalid token")
 		err := NewAuthError(message, cause)
-		
+
 		testutil.AssertEqual(t, ErrorTypeUnauthorized, err.Type)
 		testutil.AssertEqual(t, message, err.Message)
 		testutil.AssertEqual(t, cause, err.wrapped)
@@ -615,7 +615,7 @@ func TestNewValidationError(t *testing.T) {
 	t.Run("WithoutCause", func(t *testing.T) {
 		message := "validation failed"
 		err := NewValidationError(message, nil)
-		
+
 		testutil.AssertEqual(t, ErrorTypeValidationError, err.Type)
 		testutil.AssertEqual(t, message, err.Message)
 		testutil.AssertEqual(t, true, err.wrapped == nil)
@@ -625,7 +625,7 @@ func TestNewValidationError(t *testing.T) {
 		message := "validation failed"
 		cause := errors.New("required field missing")
 		err := NewValidationError(message, cause)
-		
+
 		testutil.AssertEqual(t, ErrorTypeValidationError, err.Type)
 		testutil.AssertEqual(t, message, err.Message)
 		testutil.AssertEqual(t, cause, err.wrapped)
@@ -636,7 +636,7 @@ func TestNewRateLimitError(t *testing.T) {
 	t.Run("WithoutCause", func(t *testing.T) {
 		message := "rate limit exceeded"
 		err := NewRateLimitError(message, nil)
-		
+
 		testutil.AssertEqual(t, ErrorTypeRateLimitError, err.Type)
 		testutil.AssertEqual(t, message, err.Message)
 		testutil.AssertEqual(t, true, err.wrapped == nil)
@@ -646,7 +646,7 @@ func TestNewRateLimitError(t *testing.T) {
 		message := "rate limit exceeded"
 		cause := errors.New("too many requests")
 		err := NewRateLimitError(message, cause)
-		
+
 		testutil.AssertEqual(t, ErrorTypeRateLimitError, err.Type)
 		testutil.AssertEqual(t, message, err.Message)
 		testutil.AssertEqual(t, cause, err.wrapped)
@@ -657,7 +657,7 @@ func TestNewForbiddenError(t *testing.T) {
 	t.Run("WithoutCause", func(t *testing.T) {
 		message := "access forbidden"
 		err := NewForbiddenError(message, nil)
-		
+
 		testutil.AssertEqual(t, ErrorTypeForbidden, err.Type)
 		testutil.AssertEqual(t, message, err.Message)
 		testutil.AssertEqual(t, true, err.wrapped == nil)
@@ -667,7 +667,7 @@ func TestNewForbiddenError(t *testing.T) {
 		message := "access forbidden"
 		cause := errors.New("insufficient permissions")
 		err := NewForbiddenError(message, cause)
-		
+
 		testutil.AssertEqual(t, ErrorTypeForbidden, err.Type)
 		testutil.AssertEqual(t, message, err.Message)
 		testutil.AssertEqual(t, cause, err.wrapped)
@@ -678,7 +678,7 @@ func TestNewNotFoundError(t *testing.T) {
 	t.Run("WithoutCause", func(t *testing.T) {
 		message := "resource not found"
 		err := NewNotFoundError(message, nil)
-		
+
 		testutil.AssertEqual(t, ErrorTypeNotFound, err.Type)
 		testutil.AssertEqual(t, message, err.Message)
 		testutil.AssertEqual(t, true, err.wrapped == nil)
@@ -688,7 +688,7 @@ func TestNewNotFoundError(t *testing.T) {
 		message := "resource not found"
 		cause := errors.New("id does not exist")
 		err := NewNotFoundError(message, cause)
-		
+
 		testutil.AssertEqual(t, ErrorTypeNotFound, err.Type)
 		testutil.AssertEqual(t, message, err.Message)
 		testutil.AssertEqual(t, cause, err.wrapped)
@@ -705,7 +705,7 @@ func TestErrorsUnwrapInterface(t *testing.T) {
 	// Test that CCProxyError can be unwrapped with errors.Unwrap
 	originalErr := errors.New("original error")
 	wrappedErr := Wrap(originalErr, ErrorTypeInternal, "wrapped message")
-	
+
 	unwrapped := errors.Unwrap(wrappedErr)
 	testutil.AssertEqual(t, originalErr, unwrapped)
 }
@@ -715,7 +715,7 @@ func TestErrorsIsInterface(t *testing.T) {
 	err1 := New(ErrorTypeBadRequest, "test message")
 	err2 := New(ErrorTypeBadRequest, "different message")
 	err3 := New(ErrorTypeInternal, "test message")
-	
+
 	testutil.AssertTrue(t, errors.Is(err1, err2))
 	testutil.AssertFalse(t, errors.Is(err1, err3))
 }
@@ -724,7 +724,7 @@ func TestErrorsAsInterface(t *testing.T) {
 	// Test that CCProxyError works with errors.As
 	originalErr := New(ErrorTypeBadRequest, "test message")
 	wrappedErr := Wrap(originalErr, ErrorTypeInternal, "wrapped message")
-	
+
 	var ccErr *CCProxyError
 	testutil.AssertTrue(t, errors.As(wrappedErr, &ccErr))
 	testutil.AssertEqual(t, ErrorTypeInternal, ccErr.Type)

@@ -528,7 +528,7 @@ func TestGoogleConverter_ConvertStreamEvent(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			result, err := converter.ConvertStreamEvent(tt.input, tt.toFormat)
-			
+
 			// Current implementation just passes through
 			testutil.AssertNoError(t, err)
 			testutil.AssertEqual(t, string(tt.input), string(result))
@@ -841,7 +841,7 @@ func TestGoogleConverter_ErrorHandling(t *testing.T) {
 				}
 			]
 		}`
-		
+
 		_, err := converter.ToGeneric(json.RawMessage(input), true)
 		testutil.AssertNoError(t, err)
 	})
@@ -858,7 +858,7 @@ func TestGoogleConverter_ErrorHandling(t *testing.T) {
 				}
 			]
 		}`
-		
+
 		_, err := converter.ToGeneric(json.RawMessage(input), false)
 		testutil.AssertNoError(t, err)
 	})

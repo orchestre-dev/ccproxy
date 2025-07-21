@@ -13,7 +13,7 @@ func createTestServerWithProvider(t *testing.T, cfg *config.Config) *Server {
 	if cfg.Providers == nil {
 		cfg.Providers = []config.Provider{}
 	}
-	
+
 	// Add a default test provider
 	testProvider := config.Provider{
 		Name:       "test-provider",
@@ -24,9 +24,9 @@ func createTestServerWithProvider(t *testing.T, cfg *config.Config) *Server {
 		CreatedAt:  time.Now(),
 		UpdatedAt:  time.Now(),
 	}
-	
+
 	cfg.Providers = append(cfg.Providers, testProvider)
-	
+
 	// Also set up default route
 	if cfg.Routes == nil {
 		cfg.Routes = make(map[string]config.Route)
@@ -35,13 +35,13 @@ func createTestServerWithProvider(t *testing.T, cfg *config.Config) *Server {
 		Provider: "test-provider",
 		Model:    "claude-3-opus-20240229",
 	}
-	
+
 	// Create server
 	srv, err := New(cfg)
 	if err != nil {
 		t.Fatalf("Failed to create server: %v", err)
 	}
-	
+
 	return srv
 }
 
@@ -52,6 +52,6 @@ func createMinimalTestServer(t *testing.T) *Server {
 		Port:   3456,
 		Host:   "127.0.0.1",
 	}
-	
+
 	return createTestServerWithProvider(t, cfg)
 }

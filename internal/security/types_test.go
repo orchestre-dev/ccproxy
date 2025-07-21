@@ -338,7 +338,7 @@ func TestSecurityConfigCustomization(t *testing.T) {
 	_ = testConfig
 
 	config := DefaultSecurityConfig()
-	
+
 	// Test customizing config
 	config.Level = SecurityLevelStrict
 	config.MaxRequestSize = 1024 * 1024 // 1MB
@@ -361,7 +361,7 @@ func TestSecurityConfigEdgeCases(t *testing.T) {
 
 	t.Run("zero values", func(t *testing.T) {
 		config := &SecurityConfig{}
-		
+
 		testutil.AssertEqual(t, SecurityLevel(""), config.Level)
 		testutil.AssertFalse(t, config.EnableTLS)
 		testutil.AssertEqual(t, int64(0), config.MaxRequestSize)

@@ -96,7 +96,7 @@ func TestHandleMessages(t *testing.T) {
 		if w.Body.Len() > 0 {
 			t.Logf("Response body: %s", w.Body.String())
 		}
-		
+
 		// The main requirement is proper status code - body format is less critical
 		// Note: This test focuses on proper error handling, not specific message format
 	})
@@ -286,7 +286,7 @@ func TestHandleMessages(t *testing.T) {
 		if w.Body.Len() > 0 {
 			t.Logf("Response body: %s", w.Body.String())
 		}
-		
+
 		// The main requirement is proper status code - body format is less critical
 		// Note: This test focuses on proper error handling, not specific message format
 	})

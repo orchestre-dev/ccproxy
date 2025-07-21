@@ -16,21 +16,21 @@ type TestConfig struct {
 // SetupTest provides common test setup functionality
 func SetupTest(t *testing.T) *TestConfig {
 	t.Helper()
-	
+
 	// Create temporary directory for test files
 	tempDir, err := os.MkdirTemp("", "ccproxy-test-*")
 	if err != nil {
 		t.Fatalf("Failed to create temp dir: %v", err)
 	}
-	
+
 	// Setup cleanup function
 	cleanup := func() {
 		os.RemoveAll(tempDir)
 	}
-	
+
 	// Register cleanup to run after test
 	t.Cleanup(cleanup)
-	
+
 	return &TestConfig{
 		TempDir:     tempDir,
 		CleanupFunc: cleanup,
@@ -40,13 +40,13 @@ func SetupTest(t *testing.T) *TestConfig {
 // CreateTempFile creates a temporary file with the given content
 func CreateTempFile(t *testing.T, dir, name, content string) string {
 	t.Helper()
-	
+
 	filePath := filepath.Join(dir, name)
 	err := os.WriteFile(filePath, []byte(content), 0644)
 	if err != nil {
 		t.Fatalf("Failed to create temp file %s: %v", filePath, err)
 	}
-	
+
 	return filePath
 }
 
@@ -154,7 +154,7 @@ func ContainsString(s, substr string) bool {
 	if len(s) < len(substr) {
 		return false
 	}
-	
+
 	for i := 0; i <= len(s)-len(substr); i++ {
 		if s[i:i+len(substr)] == substr {
 			return true
@@ -166,13 +166,13 @@ func ContainsString(s, substr string) bool {
 // Eventually runs the given function repeatedly until it returns true or times out
 func Eventually(t *testing.T, condition func() bool, timeout time.Duration, interval time.Duration, msgAndArgs ...interface{}) {
 	t.Helper()
-	
+
 	start := time.Now()
 	for {
 		if condition() {
 			return
 		}
-		
+
 		if time.Since(start) > timeout {
 			if len(msgAndArgs) > 0 {
 				t.Fatalf("Condition was not met within %v - %v", timeout, msgAndArgs[0])
@@ -180,7 +180,7 @@ func Eventually(t *testing.T, condition func() bool, timeout time.Duration, inte
 				t.Fatalf("Condition was not met within %v", timeout)
 			}
 		}
-		
+
 		time.Sleep(interval)
 	}
 }
@@ -188,13 +188,13 @@ func Eventually(t *testing.T, condition func() bool, timeout time.Duration, inte
 // WithTimeout runs a function with a timeout
 func WithTimeout(t *testing.T, timeout time.Duration, fn func()) {
 	t.Helper()
-	
+
 	done := make(chan struct{})
 	go func() {
 		defer close(done)
 		fn()
 	}()
-	
+
 	select {
 	case <-done:
 		// Function completed successfully

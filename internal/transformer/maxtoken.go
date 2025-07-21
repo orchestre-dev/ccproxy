@@ -126,7 +126,7 @@ func (t *MaxTokenTransformer) processMaxTokens(bodyMap map[string]interface{}, p
 
 	// Calculate tokens already used in the request
 	requestTokens := utils.CountRequestTokens(bodyMap)
-	
+
 	// Ensure we don't exceed context window
 	// Most models have input + output <= context_window
 	// Leave some buffer for safety
@@ -134,7 +134,7 @@ func (t *MaxTokenTransformer) processMaxTokens(bodyMap map[string]interface{}, p
 	if maxAvailable < maxTokens {
 		maxTokens = maxAvailable
 	}
-	
+
 	// Ensure minimum viable response
 	if maxTokens < 10 {
 		maxTokens = 10
@@ -174,17 +174,17 @@ func (t *MaxTokenTransformer) TransformResponseOut(ctx context.Context, response
 			// Calculate total if not present
 			promptTokens := 0
 			completionTokens := 0
-			
+
 			if pt, ok := usage["prompt_tokens"].(float64); ok {
 				promptTokens = int(pt)
 			}
 			if ct, ok := usage["completion_tokens"].(float64); ok {
 				completionTokens = int(ct)
 			}
-			
+
 			usage["total_tokens"] = promptTokens + completionTokens
 		}
-		
+
 		// Add to response
 		responseData["usage"] = usage
 	}

@@ -69,7 +69,7 @@ func (t *GeminiTransformer) TransformRequestIn(ctx context.Context, request inte
 
 		// Create content parts
 		parts := []interface{}{}
-		
+
 		// Handle text content
 		if str, ok := content.(string); ok {
 			parts = append(parts, map[string]interface{}{
@@ -139,7 +139,7 @@ func (t *GeminiTransformer) TransformRequestIn(ctx context.Context, request inte
 
 	// Transform generation config
 	genConfig := make(map[string]interface{})
-	
+
 	if temperature, ok := reqMap["temperature"]; ok {
 		genConfig["temperature"] = temperature
 	}
@@ -149,7 +149,7 @@ func (t *GeminiTransformer) TransformRequestIn(ctx context.Context, request inte
 	if topP, ok := reqMap["top_p"]; ok {
 		genConfig["topP"] = topP
 	}
-	
+
 	if len(genConfig) > 0 {
 		transformed["generationConfig"] = genConfig
 	}
@@ -157,7 +157,7 @@ func (t *GeminiTransformer) TransformRequestIn(ctx context.Context, request inte
 	// Transform tools
 	if tools, ok := reqMap["tools"].([]interface{}); ok {
 		transformedTools := []interface{}{}
-		
+
 		for _, tool := range tools {
 			toolMap, ok := tool.(map[string]interface{})
 			if !ok {
@@ -180,7 +180,7 @@ func (t *GeminiTransformer) TransformRequestIn(ctx context.Context, request inte
 				"function_declarations": []interface{}{funcMap},
 			})
 		}
-		
+
 		if len(transformedTools) > 0 {
 			transformed["tools"] = transformedTools
 		}
@@ -192,13 +192,13 @@ func (t *GeminiTransformer) TransformRequestIn(ctx context.Context, request inte
 // cleanJSONSchema removes unsupported fields from JSON schema
 func (t *GeminiTransformer) cleanJSONSchema(schema map[string]interface{}) map[string]interface{} {
 	cleaned := make(map[string]interface{})
-	
+
 	for k, v := range schema {
 		// Skip unsupported fields
 		if k == "$schema" || k == "additionalProperties" {
 			continue
 		}
-		
+
 		// Recursively clean nested objects
 		if k == "properties" {
 			if props, ok := v.(map[string]interface{}); ok {
@@ -218,7 +218,7 @@ func (t *GeminiTransformer) cleanJSONSchema(schema map[string]interface{}) map[s
 			cleaned[k] = v
 		}
 	}
-	
+
 	return cleaned
 }
 
@@ -278,7 +278,7 @@ func (t *GeminiTransformer) transformGeminiToOpenAI(geminiResp map[string]interf
 
 	// Transform candidates to choices
 	choices := []interface{}{}
-	
+
 	if candidates, ok := geminiResp["candidates"].([]interface{}); ok {
 		for i, candidate := range candidates {
 			candMap, ok := candidate.(map[string]interface{})
@@ -351,7 +351,7 @@ func (t *GeminiTransformer) transformGeminiToOpenAI(geminiResp map[string]interf
 	// Transform usage metadata
 	if metadata, ok := geminiResp["usageMetadata"].(map[string]interface{}); ok {
 		usage := map[string]interface{}{}
-		
+
 		if promptTokens, ok := metadata["promptTokenCount"].(float64); ok {
 			usage["prompt_tokens"] = int(promptTokens)
 		}
@@ -361,7 +361,7 @@ func (t *GeminiTransformer) transformGeminiToOpenAI(geminiResp map[string]interf
 		if totalTokens, ok := metadata["totalTokenCount"].(float64); ok {
 			usage["total_tokens"] = int(totalTokens)
 		}
-		
+
 		openaiResp["usage"] = usage
 	}
 
@@ -490,7 +490,7 @@ func (t *GeminiTransformer) transformStreamEvent(event *SSEEvent) *SSEEvent {
 				"delta":         delta,
 				"finish_reason": nil,
 			}
-			
+
 			if finishReason != "" {
 				choice["finish_reason"] = finishReason
 			}

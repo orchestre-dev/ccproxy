@@ -23,7 +23,7 @@ func NewStartupLock() (*StartupLock, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize home directory: %w", err)
 	}
-	
+
 	lockPath := filepath.Join(homeDir.Root, ".startup.lock")
 	return &StartupLock{
 		lockPath: lockPath,
@@ -37,12 +37,12 @@ func (sl *StartupLock) TryLock() (bool, error) {
 	// Try to acquire exclusive lock with a short timeout
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 	defer cancel()
-	
+
 	locked, err := sl.flock.TryLockContext(ctx, 10*time.Millisecond)
 	if err != nil {
 		return false, fmt.Errorf("failed to acquire startup lock: %w", err)
 	}
-	
+
 	return locked, nil
 }
 
@@ -61,7 +61,7 @@ func (sl *StartupLock) WithLock(fn func() error) error {
 		return fmt.Errorf("another ccproxy startup is already in progress")
 	}
 	defer sl.Unlock()
-	
+
 	return fn()
 }
 
@@ -69,7 +69,7 @@ func (sl *StartupLock) WithLock(fn func() error) error {
 func (sl *StartupLock) Cleanup() error {
 	// Unlock first if we hold the lock
 	sl.flock.Unlock()
-	
+
 	// Remove the lock file
 	if err := os.Remove(sl.lockPath); err != nil && !os.IsNotExist(err) {
 		return fmt.Errorf("failed to remove startup lock file: %w", err)

@@ -52,7 +52,7 @@ func (t *OpenRouterTransformer) TransformResponseOut(ctx context.Context, respon
 	go func() {
 		defer pw.Close()
 		writer := NewSSEWriter(pw)
-		
+
 		// Track state for reasoning transformation
 		state := &openrouterStreamState{
 			reasoningContent:    "",
@@ -162,7 +162,7 @@ func (t *OpenRouterTransformer) transformStreamData(data string, state *openrout
 			thinkingChunk := t.createThinkingBlockChunk(chunk, state.reasoningContent, state.contentIndex)
 			thinkingData, _ := json.Marshal(thinkingChunk)
 			results = append(results, string(thinkingData))
-			
+
 			// Increment index for subsequent content
 			state.contentIndex++
 		}
@@ -186,7 +186,7 @@ func (t *OpenRouterTransformer) transformStreamData(data string, state *openrout
 	// Handle tool calls
 	if hasToolCalls {
 		state.hasToolCalls = true
-		
+
 		// Update index if we had reasoning content
 		if state.isReasoningComplete {
 			// For tool calls, we need to update the index in each tool call
@@ -213,14 +213,14 @@ func (t *OpenRouterTransformer) transformStreamData(data string, state *openrout
 	if finishReason := choice["finish_reason"]; finishReason != nil && finishReason != "" {
 		// Debug logging
 		// fmt.Printf("DEBUG: finish_reason found, isReasoningComplete=%v, reasoningContent='%s'\n", state.isReasoningComplete, state.reasoningContent)
-		
+
 		// Make sure we send any remaining reasoning content first
 		if !state.isReasoningComplete && state.reasoningContent != "" {
 			state.isReasoningComplete = true
 			thinkingChunk := t.createThinkingBlockChunk(chunk, state.reasoningContent, state.contentIndex)
 			thinkingData, _ := json.Marshal(thinkingChunk)
 			results = append(results, string(thinkingData))
-			
+
 			// Increment index for the finish reason chunk
 			state.contentIndex++
 		}
@@ -233,7 +233,7 @@ func (t *OpenRouterTransformer) transformStreamData(data string, state *openrout
 		// Pass through the finish chunk
 		modifiedData, _ := json.Marshal(chunk)
 		results = append(results, string(modifiedData))
-		
+
 		return results, nil
 	}
 

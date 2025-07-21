@@ -15,9 +15,9 @@ func TestLoadFromFile(t *testing.T) {
 	t.Run("Valid config file", func(t *testing.T) {
 		// Create a valid config file
 		config := Config{
-			Host: "0.0.0.0",
-			Port: 8080,
-			Log:  true,
+			Host:    "0.0.0.0",
+			Port:    8080,
+			Log:     true,
 			LogFile: "/var/log/ccproxy.log",
 			Providers: []Provider{
 				{
@@ -85,7 +85,7 @@ func TestLoadFromFile(t *testing.T) {
 
 	t.Run("File not found", func(t *testing.T) {
 		nonExistentPath := filepath.Join(tempDir, "nonexistent.json")
-		
+
 		config, err := LoadFromFile(nonExistentPath)
 		if err == nil {
 			t.Error("Should error for non-existent file")
@@ -185,7 +185,7 @@ func TestLoadFromFile(t *testing.T) {
 
 	t.Run("Empty file", func(t *testing.T) {
 		emptyPath := filepath.Join(tempDir, "empty.json")
-		
+
 		err := os.WriteFile(emptyPath, []byte(""), 0644)
 		if err != nil {
 			t.Fatalf("Should write empty file: %v", err)

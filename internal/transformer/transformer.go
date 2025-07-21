@@ -9,20 +9,20 @@ import (
 type Transformer interface {
 	// GetName returns the transformer name
 	GetName() string
-	
+
 	// GetEndpoint returns the endpoint this transformer handles (optional)
 	GetEndpoint() string
-	
+
 	// TransformRequestIn transforms an incoming unified request to provider-specific format
 	// Can return just the body, or RequestConfig with additional HTTP configuration
 	TransformRequestIn(ctx context.Context, request interface{}, provider string) (interface{}, error)
-	
+
 	// TransformRequestOut transforms a provider-specific request to unified format
 	TransformRequestOut(ctx context.Context, request interface{}) (interface{}, error)
-	
+
 	// TransformResponseIn transforms a provider response to internal format
 	TransformResponseIn(ctx context.Context, response *http.Response) (*http.Response, error)
-	
+
 	// TransformResponseOut transforms an internal response to client format
 	TransformResponseOut(ctx context.Context, response *http.Response) (*http.Response, error)
 }
@@ -30,7 +30,7 @@ type Transformer interface {
 // StreamTransformer defines additional methods for streaming transformers
 type StreamTransformer interface {
 	Transformer
-	
+
 	// TransformStream handles streaming response transformation
 	TransformStream(ctx context.Context, reader StreamReader, writer StreamWriter) error
 }
@@ -39,7 +39,7 @@ type StreamTransformer interface {
 type StreamReader interface {
 	// ReadEvent reads the next SSE event from the stream
 	ReadEvent() (*SSEEvent, error)
-	
+
 	// Close closes the stream reader
 	Close() error
 }
@@ -48,10 +48,10 @@ type StreamReader interface {
 type StreamWriter interface {
 	// WriteEvent writes an SSE event to the stream
 	WriteEvent(event *SSEEvent) error
-	
+
 	// Flush flushes any buffered data
 	Flush() error
-	
+
 	// Close closes the stream writer
 	Close() error
 }
@@ -66,11 +66,11 @@ type SSEEvent struct {
 
 // RequestConfig allows transformers to modify HTTP request configuration
 type RequestConfig struct {
-	Body    interface{}            `json:"body"`
-	URL     string                 `json:"url,omitempty"`
-	Headers map[string]string      `json:"headers,omitempty"`
-	Method  string                 `json:"method,omitempty"`
-	Timeout int                    `json:"timeout,omitempty"`
+	Body    interface{}       `json:"body"`
+	URL     string            `json:"url,omitempty"`
+	Headers map[string]string `json:"headers,omitempty"`
+	Method  string            `json:"method,omitempty"`
+	Timeout int               `json:"timeout,omitempty"`
 }
 
 // BaseTransformer provides default implementations

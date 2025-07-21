@@ -108,7 +108,7 @@ func (t *AnthropicTransformer) TransformRequestIn(ctx context.Context, request i
 			toolCalls, ok := msgMap["tool_calls"].([]interface{})
 			if ok {
 				contentBlocks := []interface{}{}
-				
+
 				// Add text content if present
 				if content != nil && content != "" {
 					contentBlocks = append(contentBlocks, map[string]interface{}{
@@ -213,7 +213,7 @@ func (t *AnthropicTransformer) TransformRequestIn(ctx context.Context, request i
 	// Handle thinking parameter
 	if thinking, ok := reqMap["thinking"]; ok && thinking == true {
 		transformed["thinking"] = map[string]interface{}{
-			"type":         "enabled",
+			"type":          "enabled",
 			"budget_tokens": 16000,
 		}
 	}
@@ -250,7 +250,7 @@ func (t *AnthropicTransformer) TransformResponseOut(ctx context.Context, respons
 	go func() {
 		defer pw.Close()
 		writer := NewSSEWriter(pw)
-		
+
 		// Track state for streaming transformation
 		state := &anthropicStreamState{
 			contentBlocks: make(map[int]interface{}),
@@ -326,7 +326,7 @@ func (t *AnthropicTransformer) transformAnthropicToOpenAI(anthropicResp map[stri
 	if responseID == nil || responseID == "" {
 		responseID = "chatcmpl-" + uuid.New().String()
 	}
-	
+
 	openaiResp := map[string]interface{}{
 		"id":      responseID,
 		"object":  "chat.completion",
@@ -384,8 +384,8 @@ func (t *AnthropicTransformer) transformAnthropicToOpenAI(anthropicResp map[stri
 		}
 
 		choice := map[string]interface{}{
-			"index":   0,
-			"message": message,
+			"index":         0,
+			"message":       message,
 			"finish_reason": t.convertStopReason(anthropicResp["stop_reason"]),
 		}
 		choices = append(choices, choice)
@@ -453,7 +453,7 @@ func (t *AnthropicTransformer) transformStreamEvent(event *SSEEvent, state *anth
 		if msg, ok := data["message"].(map[string]interface{}); ok {
 			state.messageID, _ = msg["id"].(string)
 			state.model, _ = msg["model"].(string)
-			
+
 			// Ensure we have a valid message ID
 			if state.messageID == "" {
 				state.messageID = "chatcmpl-" + uuid.New().String()
@@ -466,10 +466,10 @@ func (t *AnthropicTransformer) transformStreamEvent(event *SSEEvent, state *anth
 			index = int(idx)
 		}
 		state.currentIndex = index
-		
+
 		if block, ok := data["content_block"].(map[string]interface{}); ok {
 			blockType, _ := block["type"].(string)
-			
+
 			if blockType == "tool_use" {
 				// Start a tool call
 				chunk := t.createStreamChunk(state, map[string]interface{}{
@@ -494,10 +494,10 @@ func (t *AnthropicTransformer) transformStreamEvent(event *SSEEvent, state *anth
 		if idx, ok := data["index"].(float64); ok {
 			index = int(idx)
 		}
-		
+
 		if delta, ok := data["delta"].(map[string]interface{}); ok {
 			deltaType, _ := delta["type"].(string)
-			
+
 			switch deltaType {
 			case "text_delta":
 				// Stream text content
@@ -505,7 +505,7 @@ func (t *AnthropicTransformer) transformStreamEvent(event *SSEEvent, state *anth
 					"content": delta["text"],
 				})
 				transformed = append(transformed, t.createSSEEvent(chunk))
-				
+
 			case "input_json_delta":
 				// Stream tool arguments
 				chunk := t.createStreamChunk(state, map[string]interface{}{
@@ -531,7 +531,7 @@ func (t *AnthropicTransformer) transformStreamEvent(event *SSEEvent, state *anth
 				transformed = append(transformed, t.createSSEEvent(chunk))
 			}
 		}
-		
+
 		if usage, ok := data["usage"].(map[string]interface{}); ok {
 			state.usage = usage
 		}
@@ -547,7 +547,7 @@ func (t *AnthropicTransformer) transformStreamEvent(event *SSEEvent, state *anth
 			}
 			transformed = append(transformed, t.createSSEEvent(chunk))
 		}
-		
+
 		// Send [DONE] event
 		transformed = append(transformed, &SSEEvent{Data: "[DONE]"})
 	}

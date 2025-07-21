@@ -241,12 +241,12 @@ func TestSuccessWithNestedStructure(t *testing.T) {
 			"id":   123,
 			"name": "John Doe",
 			"preferences": map[string]interface{}{
-				"theme": "dark",
+				"theme":         "dark",
 				"notifications": true,
 			},
 		},
 		"metadata": map[string]interface{}{
-			"version": "1.0",
+			"version":   "1.0",
 			"timestamp": "2023-01-01T00:00:00Z",
 		},
 	}

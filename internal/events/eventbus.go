@@ -13,25 +13,25 @@ import (
 
 // EventBus manages event publishing and subscription
 type EventBus struct {
-	config          *EventBusConfig
-	subscriptions   map[string]*Subscription
-	subsByType      map[EventType][]*Subscription
-	eventChan       chan Event
-	ctx             context.Context
-	cancel          context.CancelFunc
-	wg              sync.WaitGroup
-	mu              sync.RWMutex
-	
+	config        *EventBusConfig
+	subscriptions map[string]*Subscription
+	subsByType    map[EventType][]*Subscription
+	eventChan     chan Event
+	ctx           context.Context
+	cancel        context.CancelFunc
+	wg            sync.WaitGroup
+	mu            sync.RWMutex
+
 	// Metrics
 	eventsPublished int64
 	eventsProcessed int64
 	eventsDropped   int64
 	handlerErrors   int64
-	
+
 	// Event history for debugging
-	eventHistory    []Event
-	historyMu       sync.RWMutex
-	maxHistorySize  int
+	eventHistory   []Event
+	historyMu      sync.RWMutex
+	maxHistorySize int
 }
 
 // NewEventBus creates a new event bus
@@ -39,9 +39,9 @@ func NewEventBus(config *EventBusConfig) *EventBus {
 	if config == nil {
 		config = DefaultEventBusConfig()
 	}
-	
+
 	ctx, cancel := context.WithCancel(context.Background())
-	
+
 	eb := &EventBus{
 		config:         config,
 		subscriptions:  make(map[string]*Subscription),
@@ -52,7 +52,7 @@ func NewEventBus(config *EventBusConfig) *EventBus {
 		eventHistory:   make([]Event, 0, 1000),
 		maxHistorySize: 1000,
 	}
-	
+
 	return eb
 }
 
@@ -63,29 +63,29 @@ func (eb *EventBus) Start() {
 		eb.wg.Add(1)
 		go eb.worker(i)
 	}
-	
+
 	// Start metrics reporter if enabled
 	if eb.config.EnableMetrics {
 		eb.wg.Add(1)
 		go eb.metricsReporter()
 	}
-	
+
 	utils.GetLogger().Info("Event bus started")
 }
 
 // Stop stops the event bus
 func (eb *EventBus) Stop() {
 	utils.GetLogger().Info("Stopping event bus...")
-	
+
 	// Cancel context to stop workers
 	eb.cancel()
-	
+
 	// Wait for workers to finish processing
 	eb.wg.Wait()
-	
+
 	// Now safe to close event channel
 	close(eb.eventChan)
-	
+
 	utils.GetLogger().Info("Event bus stopped")
 }
 
@@ -93,7 +93,7 @@ func (eb *EventBus) Stop() {
 func (eb *EventBus) Subscribe(types []EventType, handler EventHandler, options ...SubscriptionOption) string {
 	eb.mu.Lock()
 	defer eb.mu.Unlock()
-	
+
 	// Create subscription
 	sub := &Subscription{
 		ID:       uuid.New().String(),
@@ -102,24 +102,24 @@ func (eb *EventBus) Subscribe(types []EventType, handler EventHandler, options .
 		Priority: 0,
 		Async:    true,
 	}
-	
+
 	// Apply options
 	for _, opt := range options {
 		opt(sub)
 	}
-	
+
 	// Add to subscriptions map
 	eb.subscriptions[sub.ID] = sub
-	
+
 	// Add to type-based index
 	for _, eventType := range types {
 		eb.subsByType[eventType] = append(eb.subsByType[eventType], sub)
 		// Sort by priority
 		eb.sortSubscriptionsByPriority(eventType)
 	}
-	
+
 	utils.GetLogger().Debugf("Added subscription %s for event types: %v", sub.ID, types)
-	
+
 	return sub.ID
 }
 
@@ -127,15 +127,15 @@ func (eb *EventBus) Subscribe(types []EventType, handler EventHandler, options .
 func (eb *EventBus) Unsubscribe(subscriptionID string) error {
 	eb.mu.Lock()
 	defer eb.mu.Unlock()
-	
+
 	sub, exists := eb.subscriptions[subscriptionID]
 	if !exists {
 		return fmt.Errorf("subscription %s not found", subscriptionID)
 	}
-	
+
 	// Remove from subscriptions map
 	delete(eb.subscriptions, subscriptionID)
-	
+
 	// Remove from type-based index
 	for _, eventType := range sub.Types {
 		subs := eb.subsByType[eventType]
@@ -146,9 +146,9 @@ func (eb *EventBus) Unsubscribe(subscriptionID string) error {
 			}
 		}
 	}
-	
+
 	utils.GetLogger().Debugf("Removed subscription %s", subscriptionID)
-	
+
 	return nil
 }
 
@@ -161,17 +161,17 @@ func (eb *EventBus) Publish(eventType EventType, source string, data map[string]
 		Source:    source,
 		Data:      data,
 	}
-	
+
 	eb.PublishEvent(event)
 }
 
 // PublishEvent publishes a pre-constructed event
 func (eb *EventBus) PublishEvent(event Event) {
 	atomic.AddInt64(&eb.eventsPublished, 1)
-	
+
 	// Add to history
 	eb.addToHistory(event)
-	
+
 	// Check if channel is closed
 	select {
 	case <-eb.ctx.Done():
@@ -179,7 +179,7 @@ func (eb *EventBus) PublishEvent(event Event) {
 		return
 	default:
 	}
-	
+
 	// Try to send to channel
 	select {
 	case eb.eventChan <- event:
@@ -194,7 +194,7 @@ func (eb *EventBus) PublishEvent(event Event) {
 // worker processes events from the channel
 func (eb *EventBus) worker(id int) {
 	defer eb.wg.Done()
-	
+
 	for {
 		select {
 		case <-eb.ctx.Done():
@@ -203,7 +203,7 @@ func (eb *EventBus) worker(id int) {
 			if !ok {
 				return
 			}
-			
+
 			eb.processEvent(event)
 		}
 	}
@@ -212,17 +212,17 @@ func (eb *EventBus) worker(id int) {
 // processEvent processes a single event
 func (eb *EventBus) processEvent(event Event) {
 	atomic.AddInt64(&eb.eventsProcessed, 1)
-	
+
 	eb.mu.RLock()
 	subs := eb.subsByType[event.Type]
 	eb.mu.RUnlock()
-	
+
 	for _, sub := range subs {
 		// Apply filter if present
 		if sub.Filter != nil && !sub.Filter(event) {
 			continue
 		}
-		
+
 		if sub.Async {
 			// Handle asynchronously
 			go eb.handleEvent(sub, event)
@@ -241,18 +241,18 @@ func (eb *EventBus) handleEvent(sub *Subscription, event Event) {
 			utils.GetLogger().Errorf("Event handler panic: %v (subscription: %s, event: %s)", r, sub.ID, event.ID)
 		}
 	}()
-	
+
 	// Retry logic
 	var lastErr error
 	for attempt := 0; attempt <= eb.config.MaxRetries; attempt++ {
 		if attempt > 0 {
 			time.Sleep(eb.config.RetryDelay * time.Duration(attempt))
 		}
-		
+
 		// Create a timeout context for the handler
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-		
+
 		// Run handler in goroutine to respect timeout
 		done := make(chan error, 1)
 		go func() {
@@ -264,7 +264,7 @@ func (eb *EventBus) handleEvent(sub *Subscription, event Event) {
 			sub.Handler(event)
 			done <- nil
 		}()
-		
+
 		select {
 		case err := <-done:
 			if err == nil {
@@ -275,10 +275,10 @@ func (eb *EventBus) handleEvent(sub *Subscription, event Event) {
 			lastErr = fmt.Errorf("handler timeout")
 		}
 	}
-	
+
 	if lastErr != nil {
 		atomic.AddInt64(&eb.handlerErrors, 1)
-		utils.GetLogger().Errorf("Event handler failed after %d retries: %v (subscription: %s, event: %s)", 
+		utils.GetLogger().Errorf("Event handler failed after %d retries: %v (subscription: %s, event: %s)",
 			eb.config.MaxRetries, lastErr, sub.ID, event.ID)
 	}
 }
@@ -299,17 +299,17 @@ func (eb *EventBus) GetMetrics() map[string]int64 {
 func (eb *EventBus) GetEventHistory(limit int) []Event {
 	eb.historyMu.RLock()
 	defer eb.historyMu.RUnlock()
-	
+
 	if limit <= 0 || limit > len(eb.eventHistory) {
 		limit = len(eb.eventHistory)
 	}
-	
+
 	// Return most recent events
 	start := len(eb.eventHistory) - limit
 	if start < 0 {
 		start = 0
 	}
-	
+
 	result := make([]Event, limit)
 	copy(result, eb.eventHistory[start:])
 	return result
@@ -319,9 +319,9 @@ func (eb *EventBus) GetEventHistory(limit int) []Event {
 func (eb *EventBus) addToHistory(event Event) {
 	eb.historyMu.Lock()
 	defer eb.historyMu.Unlock()
-	
+
 	eb.eventHistory = append(eb.eventHistory, event)
-	
+
 	// Trim history if needed
 	if len(eb.eventHistory) > eb.maxHistorySize {
 		// Keep last N events
@@ -344,10 +344,10 @@ func (eb *EventBus) sortSubscriptionsByPriority(eventType EventType) {
 // metricsReporter periodically logs metrics
 func (eb *EventBus) metricsReporter() {
 	defer eb.wg.Done()
-	
+
 	ticker := time.NewTicker(1 * time.Minute)
 	defer ticker.Stop()
-	
+
 	for {
 		select {
 		case <-eb.ctx.Done():

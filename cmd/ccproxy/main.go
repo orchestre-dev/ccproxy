@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/spf13/cobra"
 	"github.com/orchestre-dev/ccproxy/cmd/ccproxy/commands"
 	"github.com/orchestre-dev/ccproxy/internal/version"
+	"github.com/spf13/cobra"
 )
 
 var (
@@ -14,7 +14,7 @@ var (
 	Version   = "dev"
 	BuildTime = "unknown"
 	Commit    = "unknown"
-	
+
 	rootCmd = &cobra.Command{
 		Use:   "ccproxy",
 		Short: "CCProxy - Intelligent LLM proxy for Claude Code",
@@ -27,7 +27,7 @@ between Claude Code and various Large Language Model (LLM) providers.`,
 func init() {
 	// Disable default completion command
 	rootCmd.CompletionOptions.DisableDefaultCmd = true
-	
+
 	// Use build-time version if available, otherwise fallback to version package
 	if Version == "dev" || Version == "" {
 		Version = version.Version
@@ -38,13 +38,13 @@ func init() {
 	if Commit == "unknown" || Commit == "" {
 		Commit = version.Commit
 	}
-	
+
 	// Update root command version
 	rootCmd.Version = Version
-	
+
 	// Set version info for commands to use
 	commands.SetVersionInfo(Version, BuildTime, Commit)
-	
+
 	// Add commands
 	rootCmd.AddCommand(commands.StartCmd())
 	rootCmd.AddCommand(commands.StopCmd())

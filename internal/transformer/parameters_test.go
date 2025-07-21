@@ -52,12 +52,12 @@ func TestParametersTransformRequestIn(t *testing.T) {
 
 	t.Run("OpenAIParameterValidation", func(t *testing.T) {
 		request := map[string]interface{}{
-			"model":              "gpt-4",
-			"temperature":        1.5,
-			"top_p":              0.8,
-			"presence_penalty":   1.0,
-			"frequency_penalty":  0.5,
-			"logprobs":           "true",
+			"model":             "gpt-4",
+			"temperature":       1.5,
+			"top_p":             0.8,
+			"presence_penalty":  1.0,
+			"frequency_penalty": 0.5,
+			"logprobs":          "true",
 		}
 
 		result, err := transformer.TransformRequestIn(ctx, request, "openai")
@@ -73,7 +73,7 @@ func TestParametersTransformRequestIn(t *testing.T) {
 
 	t.Run("GeminiParameterMapping", func(t *testing.T) {
 		request := map[string]interface{}{
-			"model":      "gemini-pro",
+			"model":       "gemini-pro",
 			"temperature": 0.7,
 			"max_tokens":  1000,
 			"top_p":       0.95,
@@ -84,7 +84,7 @@ func TestParametersTransformRequestIn(t *testing.T) {
 		testutil.AssertNoError(t, err)
 
 		resultMap := result.(map[string]interface{})
-		
+
 		// Should have generationConfig
 		genConfig := resultMap["generationConfig"].(map[string]interface{})
 		testutil.AssertEqual(t, 0.7, genConfig["temperature"])
@@ -155,7 +155,7 @@ func TestParametersTransformRequestIn(t *testing.T) {
 	t.Run("RequestConfigHandling", func(t *testing.T) {
 		reqConfig := &RequestConfig{
 			Body: map[string]interface{}{
-				"model":      "claude-3-sonnet",
+				"model":       "claude-3-sonnet",
 				"temperature": 0.5,
 			},
 			URL: "https://api.anthropic.com/v1/messages",
@@ -187,7 +187,7 @@ func TestParametersTransformRequestIn(t *testing.T) {
 
 		result, err := transformer.TransformRequestIn(ctx, request, "anthropic")
 		testutil.AssertNoError(t, err)
-		
+
 		// Should pass through unchanged for non-map requests
 		testutil.AssertEqual(t, request, result)
 	})
@@ -198,7 +198,7 @@ func TestParametersTransformRequestIn(t *testing.T) {
 
 		result, err := transformer.TransformRequestIn(ctx, request, "anthropic")
 		testutil.AssertNoError(t, err)
-		
+
 		// Should pass through unchanged when JSON operations fail
 		testutil.AssertEqual(t, request, result)
 	})
@@ -212,11 +212,11 @@ func TestParametersProcessParameters(t *testing.T) {
 
 	t.Run("ValidParameterProcessing", func(t *testing.T) {
 		bodyMap := map[string]interface{}{
-			"temperature":        0.7,
-			"top_p":              0.9,
-			"presence_penalty":   0.5,
-			"frequency_penalty":  -0.5,
-			"max_tokens":         1000,
+			"temperature":       0.7,
+			"top_p":             0.9,
+			"presence_penalty":  0.5,
+			"frequency_penalty": -0.5,
+			"max_tokens":        1000,
 		}
 
 		err := transformer.processParameters(bodyMap, "openai")
@@ -232,10 +232,10 @@ func TestParametersProcessParameters(t *testing.T) {
 
 	t.Run("AnthropicParameterFiltering", func(t *testing.T) {
 		bodyMap := map[string]interface{}{
-			"temperature":        0.8,
-			"top_p":              0.95,
-			"presence_penalty":   0.5, // Should be removed
-			"frequency_penalty":  0.3, // Should be removed
+			"temperature":       0.8,
+			"top_p":             0.95,
+			"presence_penalty":  0.5, // Should be removed
+			"frequency_penalty": 0.3, // Should be removed
 		}
 
 		err := transformer.processParameters(bodyMap, "anthropic")
@@ -253,7 +253,7 @@ func TestParametersProcessParameters(t *testing.T) {
 
 	t.Run("GeminiParameterWrapping", func(t *testing.T) {
 		bodyMap := map[string]interface{}{
-			"model":      "gemini-pro",
+			"model":       "gemini-pro",
 			"temperature": 0.6,
 			"max_tokens":  800,
 			"top_p":       0.8,
@@ -288,8 +288,8 @@ func TestParametersProcessParameters(t *testing.T) {
 		testutil.AssertNoError(t, err)
 
 		genConfig := bodyMap["generationConfig"].(map[string]interface{})
-		testutil.AssertEqual(t, 1, genConfig["candidateCount"]) // Preserved
-		testutil.AssertEqual(t, 0.7, genConfig["temperature"])  // Added
+		testutil.AssertEqual(t, 1, genConfig["candidateCount"])     // Preserved
+		testutil.AssertEqual(t, 0.7, genConfig["temperature"])      // Added
 		testutil.AssertEqual(t, 1200, genConfig["maxOutputTokens"]) // Added
 	})
 }
@@ -351,10 +351,10 @@ func TestParametersWrapGeminiParameters(t *testing.T) {
 
 	t.Run("WrapNewGenerationConfig", func(t *testing.T) {
 		bodyMap := map[string]interface{}{
-			"model":       "gemini-pro",
-			"temperature": 0.8,
-			"topP":        0.95,
-			"topK":        25.0,
+			"model":           "gemini-pro",
+			"temperature":     0.8,
+			"topP":            0.95,
+			"topK":            25.0,
 			"maxOutputTokens": 2000,
 		}
 
@@ -388,11 +388,11 @@ func TestParametersWrapGeminiParameters(t *testing.T) {
 		testutil.AssertNoError(t, err)
 
 		genConfig := bodyMap["generationConfig"].(map[string]interface{})
-		
+
 		// Should preserve existing fields
 		stopSeqs := genConfig["stopSequences"].([]string)
 		testutil.AssertEqual(t, "END", stopSeqs[0])
-		
+
 		// Should add new fields
 		testutil.AssertEqual(t, 0.9, genConfig["temperature"])
 		testutil.AssertEqual(t, 50.0, genConfig["topK"])
@@ -454,7 +454,7 @@ func TestParametersSetParameterMapping(t *testing.T) {
 
 	t.Run("SetNewMapping", func(t *testing.T) {
 		transformer.SetParameterMapping("custom_provider", "temperature", "temp")
-		
+
 		// Test the mapping
 		bodyMap := map[string]interface{}{
 			"temperature": 0.7,
@@ -471,7 +471,7 @@ func TestParametersSetParameterMapping(t *testing.T) {
 
 	t.Run("UpdateExistingMapping", func(t *testing.T) {
 		transformer.SetParameterMapping("gemini", "temperature", "customTemp")
-		
+
 		bodyMap := map[string]interface{}{
 			"temperature": 0.8,
 		}
@@ -498,7 +498,7 @@ func TestParametersSetParameterLimit(t *testing.T) {
 
 	t.Run("SetNewLimit", func(t *testing.T) {
 		transformer.SetParameterLimit("custom_provider", "temperature", 0.1, 0.9)
-		
+
 		// Test valid value
 		bodyMap := map[string]interface{}{
 			"temperature": 0.5,
@@ -517,7 +517,7 @@ func TestParametersSetParameterLimit(t *testing.T) {
 
 	t.Run("UpdateExistingLimit", func(t *testing.T) {
 		transformer.SetParameterLimit("anthropic", "temperature", 0.2, 0.8)
-		
+
 		bodyMap := map[string]interface{}{
 			"temperature": 0.9, // Would be valid with original limit (0-1) but not with new limit (0.2-0.8)
 		}
@@ -546,13 +546,13 @@ func TestParametersIntegration(t *testing.T) {
 				name:     "AnthropicWorkflow",
 				provider: "anthropic",
 				request: map[string]interface{}{
-					"model":              "claude-3-sonnet",
-					"temperature":        0.7,
-					"top_p":              0.9,
-					"top_k":              100.0,
-					"presence_penalty":   0.5, // Should be removed
-					"frequency_penalty":  0.3, // Should be removed
-					"max_tokens":         2000,
+					"model":             "claude-3-sonnet",
+					"temperature":       0.7,
+					"top_p":             0.9,
+					"top_k":             100.0,
+					"presence_penalty":  0.5, // Should be removed
+					"frequency_penalty": 0.3, // Should be removed
+					"max_tokens":        2000,
 				},
 				validate: func(t *testing.T, result interface{}) {
 					resultMap := result.(map[string]interface{})
@@ -560,7 +560,7 @@ func TestParametersIntegration(t *testing.T) {
 					testutil.AssertEqual(t, 0.9, resultMap["top_p"])
 					testutil.AssertEqual(t, 100.0, resultMap["top_k"])
 					testutil.AssertEqual(t, 2000, resultMap["max_tokens"])
-					
+
 					_, hasPresence := resultMap["presence_penalty"]
 					testutil.AssertEqual(t, false, hasPresence)
 					_, hasFrequency := resultMap["frequency_penalty"]
@@ -571,7 +571,7 @@ func TestParametersIntegration(t *testing.T) {
 				name:     "GeminiWorkflow",
 				provider: "gemini",
 				request: map[string]interface{}{
-					"model":      "gemini-pro",
+					"model":       "gemini-pro",
 					"temperature": 0.8,
 					"max_tokens":  1500,
 					"top_p":       0.95,
@@ -580,13 +580,13 @@ func TestParametersIntegration(t *testing.T) {
 				validate: func(t *testing.T, result interface{}) {
 					resultMap := result.(map[string]interface{})
 					testutil.AssertEqual(t, "gemini-pro", resultMap["model"])
-					
+
 					genConfig := resultMap["generationConfig"].(map[string]interface{})
 					testutil.AssertEqual(t, 0.8, genConfig["temperature"])
 					testutil.AssertEqual(t, 1500, genConfig["maxOutputTokens"])
 					testutil.AssertEqual(t, 0.95, genConfig["topP"])
 					testutil.AssertEqual(t, 40.0, genConfig["topK"])
-					
+
 					// Top-level parameters should be moved
 					_, hasTemp := resultMap["temperature"]
 					testutil.AssertEqual(t, false, hasTemp)
@@ -596,12 +596,12 @@ func TestParametersIntegration(t *testing.T) {
 				name:     "OpenAIWorkflow",
 				provider: "openai",
 				request: map[string]interface{}{
-					"model":              "gpt-4",
-					"temperature":        1.2,
-					"top_p":              0.85,
-					"presence_penalty":   0.6,
-					"frequency_penalty":  -0.3,
-					"logprobs":           "false",
+					"model":             "gpt-4",
+					"temperature":       1.2,
+					"top_p":             0.85,
+					"presence_penalty":  0.6,
+					"frequency_penalty": -0.3,
+					"logprobs":          "false",
 				},
 				validate: func(t *testing.T, result interface{}) {
 					resultMap := result.(map[string]interface{})
@@ -632,21 +632,21 @@ func TestParametersIntegration(t *testing.T) {
 			errorText string
 		}{
 			{
-				name:     "AnthropicTemperatureHigh",
-				provider: "anthropic",
-				request:  map[string]interface{}{"temperature": 1.5},
+				name:      "AnthropicTemperatureHigh",
+				provider:  "anthropic",
+				request:   map[string]interface{}{"temperature": 1.5},
 				errorText: "temperature must be between 0 and 1",
 			},
 			{
-				name:     "GeminiTopKHigh",
-				provider: "gemini",
-				request:  map[string]interface{}{"top_k": 150.0},
+				name:      "GeminiTopKHigh",
+				provider:  "gemini",
+				request:   map[string]interface{}{"top_k": 150.0},
 				errorText: "topK must be between 1 and 100",
 			},
 			{
-				name:     "OpenAIPresencePenaltyLow",
-				provider: "openai",
-				request:  map[string]interface{}{"presence_penalty": -3.0},
+				name:      "OpenAIPresencePenaltyLow",
+				provider:  "openai",
+				request:   map[string]interface{}{"presence_penalty": -3.0},
 				errorText: "presence_penalty must be between -2 and 2",
 			},
 		}

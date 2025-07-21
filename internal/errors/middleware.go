@@ -25,22 +25,22 @@ func ErrorHandlerMiddleware() gin.HandlerFunc {
 					"method": c.Request.Method,
 					"path":   c.Request.URL.Path,
 				}).Error("Panic recovered")
-				
+
 				// Create internal error
 				err := New(ErrorTypeInternal, "Internal server error")
 				if reqID := c.GetString("request_id"); reqID != "" {
 					err.WithRequestID(reqID)
 				}
-				
+
 				// Write error response
 				err.WriteHTTPResponse(c.Writer)
 				c.Abort()
 			}
 		}()
-		
+
 		// Process request
 		c.Next()
-		
+
 		// Check for errors set in context
 		if len(c.Errors) > 0 {
 			// Get the last error
@@ -55,9 +55,9 @@ func HandleError(c *gin.Context, err error) {
 	if err == nil {
 		return
 	}
-	
+
 	logger := utils.GetLogger()
-	
+
 	// Check if it's already a CCProxyError
 	var ccErr *CCProxyError
 	if e, ok := err.(*CCProxyError); ok {
@@ -66,12 +66,12 @@ func HandleError(c *gin.Context, err error) {
 		// Convert to CCProxyError based on error type
 		ccErr = convertToCCProxyError(err)
 	}
-	
+
 	// Add request ID if available
 	if reqID := c.GetString("request_id"); reqID != "" && ccErr.RequestID == "" {
 		ccErr.WithRequestID(reqID)
 	}
-	
+
 	// Log the error
 	fields := logrus.Fields{
 		"error_type": ccErr.Type,
@@ -80,7 +80,7 @@ func HandleError(c *gin.Context, err error) {
 		"path":       c.Request.URL.Path,
 		"retryable":  ccErr.Retryable,
 	}
-	
+
 	if ccErr.Provider != "" {
 		fields["provider"] = ccErr.Provider
 	}
@@ -90,7 +90,7 @@ func HandleError(c *gin.Context, err error) {
 	if ccErr.Details != nil {
 		fields["details"] = ccErr.Details
 	}
-	
+
 	// Log at appropriate level
 	if ccErr.StatusCode >= 500 {
 		logger.WithFields(fields).Error(ccErr.Message)
@@ -99,7 +99,7 @@ func HandleError(c *gin.Context, err error) {
 	} else {
 		logger.WithFields(fields).Info(ccErr.Message)
 	}
-	
+
 	// Write response
 	ccErr.WriteHTTPResponse(c.Writer)
 	c.Abort()
@@ -110,7 +110,7 @@ func HandleErrorWithStatus(c *gin.Context, statusCode int, err error) {
 	if err == nil {
 		return
 	}
-	
+
 	var ccErr *CCProxyError
 	if e, ok := err.(*CCProxyError); ok {
 		ccErr = e
@@ -123,7 +123,7 @@ func HandleErrorWithStatus(c *gin.Context, statusCode int, err error) {
 			Retryable:  isRetryable(getErrorTypeFromStatusCode(statusCode)),
 		}
 	}
-	
+
 	HandleError(c, ccErr)
 }
 
@@ -141,12 +141,12 @@ func AbortWithCCProxyError(c *gin.Context, errorType ErrorType, message string) 
 // handleGinError handles errors from Gin's error list
 func handleGinError(c *gin.Context, ginErr *gin.Error) {
 	err := ginErr.Err
-	
+
 	// Check if it's already handled
 	if c.Writer.Written() {
 		return
 	}
-	
+
 	// Handle the error
 	HandleError(c, err)
 }
@@ -155,46 +155,46 @@ func handleGinError(c *gin.Context, ginErr *gin.Error) {
 func convertToCCProxyError(err error) *CCProxyError {
 	errStr := err.Error()
 	errLower := strings.ToLower(errStr)
-	
+
 	// Check for specific error types
 	if err == io.EOF {
 		return New(ErrorTypeBadRequest, "Unexpected end of input")
 	}
-	
+
 	// Check for specific error patterns
 	switch {
 	case strings.Contains(errLower, "unauthorized"):
 		return New(ErrorTypeUnauthorized, err.Error())
-		
+
 	case strings.Contains(errLower, "forbidden"):
 		return New(ErrorTypeForbidden, err.Error())
-		
+
 	case strings.Contains(errLower, "not found"):
 		return New(ErrorTypeNotFound, err.Error())
-		
+
 	case strings.Contains(errLower, "bad request"):
 		return New(ErrorTypeBadRequest, err.Error())
-		
+
 	case strings.Contains(errLower, "rate limit"):
 		return New(ErrorTypeRateLimitError, err.Error())
-		
+
 	case strings.Contains(errLower, "timeout"):
 		return New(ErrorTypeGatewayTimeout, err.Error())
-		
+
 	case strings.Contains(errLower, "connection refused"),
 		strings.Contains(errLower, "connection reset"),
 		strings.Contains(errLower, "no such host"):
 		return New(ErrorTypeBadGateway, err.Error())
-		
+
 	case strings.Contains(errLower, "service unavailable"):
 		return New(ErrorTypeServiceUnavailable, err.Error())
-		
+
 	case strings.Contains(errLower, "not implemented"):
 		return New(ErrorTypeNotImplemented, err.Error())
-		
+
 	case strings.Contains(errLower, "validation"):
 		return New(ErrorTypeValidationError, err.Error())
-		
+
 	default:
 		return New(ErrorTypeInternal, err.Error())
 	}
@@ -205,7 +205,7 @@ func ExtractProviderError(resp *http.Response, body []byte, provider string) err
 	if resp.StatusCode < 400 {
 		return nil
 	}
-	
+
 	return FromProviderResponse(resp.StatusCode, body, provider)
 }
 
@@ -214,22 +214,22 @@ func WrapProviderError(err error, provider string) error {
 	if err == nil {
 		return nil
 	}
-	
+
 	// If it's already a CCProxyError with provider info, return as-is
 	if ccErr, ok := err.(*CCProxyError); ok && ccErr.Provider != "" {
 		return err
 	}
-	
+
 	// If it's a CCProxyError without provider, add provider info
 	if ccErr, ok := err.(*CCProxyError); ok {
 		ccErr.Provider = provider
 		return ccErr
 	}
-	
+
 	// Check for specific provider error patterns
 	errStr := err.Error()
 	var errorType ErrorType
-	
+
 	switch {
 	case strings.Contains(errStr, "context deadline exceeded"):
 		errorType = ErrorTypeGatewayTimeout
@@ -240,7 +240,7 @@ func WrapProviderError(err error, provider string) error {
 	default:
 		errorType = ErrorTypeProviderError
 	}
-	
+
 	return Wrap(err, errorType, fmt.Sprintf("Provider %s error", provider)).
 		WithProvider(provider)
 }

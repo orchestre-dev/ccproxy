@@ -323,7 +323,7 @@ func TestMessageConverter_RoundTripConversions(t *testing.T) {
 				"max_tokens": 100,
 				"temperature": 0.5
 			}`
-			
+
 			// Convert from Anthropic to target format
 			targetData, err := converter.ConvertRequest(json.RawMessage(anthropicBasic), FormatAnthropic, format)
 			testutil.AssertNoError(t, err)
@@ -468,7 +468,7 @@ func TestMessageConverter_EdgeCaseConversions(t *testing.T) {
 	converter := NewMessageConverter()
 
 	t.Run("Empty messages conversion", func(t *testing.T) {
-		// Convert from Anthropic to all other formats  
+		// Convert from Anthropic to all other formats
 		anthropicInput := `{
 			"model": "test-model",
 			"messages": [],
@@ -532,7 +532,7 @@ func TestMessageConverter_ErrorPropagation(t *testing.T) {
 
 	t.Run("Invalid JSON propagates error", func(t *testing.T) {
 		input := `{"model": "test", "messages": invalid_json}`
-		
+
 		_, err := converter.ConvertRequest(json.RawMessage(input), FormatAnthropic, FormatOpenAI)
 		testutil.AssertError(t, err)
 		testutil.AssertContains(t, err.Error(), "failed to convert to generic format")
@@ -540,7 +540,7 @@ func TestMessageConverter_ErrorPropagation(t *testing.T) {
 
 	t.Run("Unsupported target format", func(t *testing.T) {
 		input := `{"model": "test", "messages": []}`
-		
+
 		_, err := converter.ConvertRequest(json.RawMessage(input), FormatAnthropic, MessageFormat("unsupported"))
 		testutil.AssertError(t, err)
 		testutil.AssertContains(t, err.Error(), "unsupported target format")
@@ -548,7 +548,7 @@ func TestMessageConverter_ErrorPropagation(t *testing.T) {
 
 	t.Run("From format conversion error", func(t *testing.T) {
 		input := `{"model": "test", "messages": [{"role": "user", "content": [{"type": "text", "text": "test"}]}]}`
-		
+
 		_, err := converter.ConvertRequest(json.RawMessage(input), FormatAnthropic, MessageFormat("unsupported"))
 		testutil.AssertError(t, err)
 		testutil.AssertContains(t, err.Error(), "unsupported target format")

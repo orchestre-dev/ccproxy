@@ -256,12 +256,12 @@ func TestAWSConverter_FromGeneric_Request(t *testing.T) {
 	converter := NewAWSConverter()
 
 	tests := []struct {
-		name             string
-		input            string
-		expectedMessages int
+		name              string
+		input             string
+		expectedMessages  int
 		expectedMaxTokens int
-		expectedSystem   string
-		expectError      bool
+		expectedSystem    string
+		expectError       bool
 	}{
 		{
 			name: "basic request",
@@ -276,10 +276,10 @@ func TestAWSConverter_FromGeneric_Request(t *testing.T) {
 				"max_tokens": 100,
 				"temperature": 0.7
 			}`,
-			expectedMessages: 1,
+			expectedMessages:  1,
 			expectedMaxTokens: 100,
-			expectedSystem:   "",
-			expectError:      false,
+			expectedSystem:    "",
+			expectError:       false,
 		},
 		{
 			name: "request with system",
@@ -295,10 +295,10 @@ func TestAWSConverter_FromGeneric_Request(t *testing.T) {
 				"max_tokens": 200,
 				"temperature": 0.5
 			}`,
-			expectedMessages: 1,
+			expectedMessages:  1,
 			expectedMaxTokens: 200,
-			expectedSystem:   "You are helpful",
-			expectError:      false,
+			expectedSystem:    "You are helpful",
+			expectError:       false,
 		},
 		{
 			name: "request without max_tokens",
@@ -312,10 +312,10 @@ func TestAWSConverter_FromGeneric_Request(t *testing.T) {
 				],
 				"temperature": 0.8
 			}`,
-			expectedMessages: 1,
+			expectedMessages:  1,
 			expectedMaxTokens: 4096, // Default value
-			expectedSystem:   "",
-			expectError:      false,
+			expectedSystem:    "",
+			expectError:       false,
 		},
 		{
 			name: "request with zero max_tokens",
@@ -330,10 +330,10 @@ func TestAWSConverter_FromGeneric_Request(t *testing.T) {
 				"max_tokens": 0,
 				"temperature": 0.6
 			}`,
-			expectedMessages: 1,
+			expectedMessages:  1,
 			expectedMaxTokens: 4096, // Default applied
-			expectedSystem:   "",
-			expectError:      false,
+			expectedSystem:    "",
+			expectError:       false,
 		},
 		{
 			name: "request with multiple messages",
@@ -351,10 +351,10 @@ func TestAWSConverter_FromGeneric_Request(t *testing.T) {
 				],
 				"max_tokens": 300
 			}`,
-			expectedMessages: 2,
+			expectedMessages:  2,
 			expectedMaxTokens: 300,
-			expectedSystem:   "",
-			expectError:      false,
+			expectedSystem:    "",
+			expectError:       false,
 		},
 		{
 			name:        "malformed JSON",
@@ -507,7 +507,7 @@ func TestAWSConverter_ConvertStreamEvent(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			result, err := converter.ConvertStreamEvent(tt.input, tt.toFormat)
-			
+
 			// Current implementation just passes through
 			testutil.AssertNoError(t, err)
 			testutil.AssertEqual(t, string(tt.input), string(result))
@@ -691,7 +691,7 @@ func TestAWSConverter_ContentHandling(t *testing.T) {
 		err = json.Unmarshal(result, &genericReq)
 		testutil.AssertNoError(t, err)
 		testutil.AssertEqual(t, 1, len(genericReq.Messages))
-		
+
 		// Content should be preserved as raw JSON
 		testutil.AssertTrue(t, len(genericReq.Messages[0].Content) > 0)
 	})
@@ -714,7 +714,7 @@ func TestAWSConverter_ContentHandling(t *testing.T) {
 		err = json.Unmarshal(result, &awsReq)
 		testutil.AssertNoError(t, err)
 		testutil.AssertEqual(t, 1, len(awsReq.Messages))
-		
+
 		// Content should be preserved as raw JSON
 		testutil.AssertTrue(t, len(awsReq.Messages[0].Content) > 0)
 	})
@@ -737,7 +737,7 @@ func TestAWSConverter_ContentHandling(t *testing.T) {
 		var genericResp Response
 		err = json.Unmarshal(result, &genericResp)
 		testutil.AssertNoError(t, err)
-		
+
 		// Content should be preserved as raw JSON
 		testutil.AssertTrue(t, len(genericResp.Content) > 0)
 	})

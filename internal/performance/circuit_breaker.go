@@ -49,7 +49,7 @@ func (cb *CircuitBreaker) Allow() bool {
 	switch cb.state {
 	case StateClosed:
 		return true
-	
+
 	case StateOpen:
 		// Check if we should transition to half-open
 		if time.Since(cb.lastStateChange) > cb.config.OpenDuration {
@@ -57,10 +57,10 @@ func (cb *CircuitBreaker) Allow() bool {
 			return cb.allowHalfOpen()
 		}
 		return false
-	
+
 	case StateHalfOpen:
 		return cb.allowHalfOpen()
-	
+
 	default:
 		return false
 	}
@@ -145,11 +145,11 @@ func (cb *CircuitBreaker) recordFailure() {
 	switch cb.state {
 	case StateClosed:
 		// Check if we should open the circuit
-		if consecutive >= int64(cb.config.ConsecutiveFailures) || 
-		   (total > 10 && errorRate >= cb.config.ErrorThreshold) {
+		if consecutive >= int64(cb.config.ConsecutiveFailures) ||
+			(total > 10 && errorRate >= cb.config.ErrorThreshold) {
 			cb.transitionTo(StateOpen)
 		}
-	
+
 	case StateHalfOpen:
 		// Any failure in half-open state reopens the circuit
 		cb.transitionTo(StateOpen)
@@ -167,11 +167,11 @@ func (cb *CircuitBreaker) transitionTo(newState CircuitState) {
 	if cb.state != newState {
 		cb.state = newState
 		cb.lastStateChange = time.Now()
-		
+
 		if newState == StateHalfOpen {
 			atomic.StoreInt64(&cb.halfOpenRequests, 0)
 		}
-		
+
 		// Log state change
 		// utils.GetLogger().Infof("Circuit breaker %s: %s -> %s", cb.name, cb.stateString(), newStateString(newState))
 	}

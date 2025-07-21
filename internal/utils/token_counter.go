@@ -9,7 +9,7 @@ import (
 func CountRequestTokens(bodyMap map[string]interface{}) int {
 	// Simple estimation based on message content
 	tokenCount := 0
-	
+
 	// Count tokens in messages
 	if messages, ok := bodyMap["messages"].([]interface{}); ok {
 		for _, msg := range messages {
@@ -21,15 +21,15 @@ func CountRequestTokens(bodyMap map[string]interface{}) int {
 			}
 		}
 	}
-	
+
 	// Count tokens in system message
 	if system, ok := bodyMap["system"].(string); ok {
 		tokenCount += len(system) / 4
 	}
-	
+
 	// Add base tokens for request structure
 	tokenCount += 50
-	
+
 	return tokenCount
 }
 
@@ -37,7 +37,7 @@ func CountRequestTokens(bodyMap map[string]interface{}) int {
 func CountResponseTokens(content string) int {
 	// Remove common formatting
 	content = strings.TrimSpace(content)
-	
+
 	// Rough estimation: 1 token per 4 characters
 	return len(content) / 4
 }

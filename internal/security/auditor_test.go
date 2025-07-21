@@ -55,7 +55,7 @@ func TestNewSecurityAuditor(t *testing.T) {
 	t.Run("directory creation", func(t *testing.T) {
 		config := DefaultSecurityConfig()
 		config.EnableAuditLog = true
-		
+
 		auditDir := filepath.Join(testConfig.TempDir, "nested", "audit")
 		config.AuditLogPath = filepath.Join(auditDir, "audit.log")
 
@@ -224,7 +224,7 @@ func TestLogSecurityEvent(t *testing.T) {
 		// Verify all events logged
 		content, err := os.ReadFile(config.AuditLogPath)
 		testutil.AssertNoError(t, err)
-		
+
 		for _, severity := range severities {
 			testutil.AssertContains(t, string(content), severity)
 		}

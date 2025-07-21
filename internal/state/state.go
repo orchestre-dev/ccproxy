@@ -85,14 +85,14 @@ func (m *Manager) SetComponentState(name string, state ServiceState, err error) 
 		// Don't return early - we need to update service state
 		component = m.components[name]
 		oldState := StateStarting // Default old state for new components
-		
+
 		if err != nil {
 			m.errCount++
 		}
-		
+
 		// Update overall service state based on component states
 		m.updateServiceState()
-		
+
 		// Notify handlers of component state change
 		for _, handler := range m.handlers {
 			handler(oldState, state, name)
@@ -297,20 +297,20 @@ func (m *Manager) GetStatus() Status {
 
 // Status represents the service status
 type Status struct {
-	State      string                      `json:"state"`
-	StartTime  time.Time                   `json:"start_time"`
-	ReadyTime  time.Time                   `json:"ready_time,omitempty"`
-	Uptime     time.Duration               `json:"uptime,omitempty"`
-	Components map[string]ComponentStatus  `json:"components"`
-	ErrorCount int                         `json:"error_count"`
+	State      string                     `json:"state"`
+	StartTime  time.Time                  `json:"start_time"`
+	ReadyTime  time.Time                  `json:"ready_time,omitempty"`
+	Uptime     time.Duration              `json:"uptime,omitempty"`
+	Components map[string]ComponentStatus `json:"components"`
+	ErrorCount int                        `json:"error_count"`
 }
 
 // ComponentStatus represents the status of a component
 type ComponentStatus struct {
-	Name        string        `json:"name"`
-	State       string        `json:"state"`
-	Error       string        `json:"error,omitempty"`
-	LastChanged time.Time     `json:"last_changed"`
+	Name        string    `json:"name"`
+	State       string    `json:"state"`
+	Error       string    `json:"error,omitempty"`
+	LastChanged time.Time `json:"last_changed"`
 }
 
 // WaitForState waits for the service to reach a specific state

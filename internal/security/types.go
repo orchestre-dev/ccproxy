@@ -26,39 +26,39 @@ type ValidationResult struct {
 // SecurityConfig represents security configuration
 type SecurityConfig struct {
 	Level                SecurityLevel `json:"level"`
-	EnableRequestSigning bool         `json:"enable_request_signing"`
-	EnableTLS           bool         `json:"enable_tls"`
-	TLSMinVersion       string       `json:"tls_min_version"`
-	EnableRateLimiting  bool         `json:"enable_rate_limiting"`
-	EnableIPWhitelist   bool         `json:"enable_ip_whitelist"`
-	EnableAPIKeyRotation bool        `json:"enable_api_key_rotation"`
-	
+	EnableRequestSigning bool          `json:"enable_request_signing"`
+	EnableTLS            bool          `json:"enable_tls"`
+	TLSMinVersion        string        `json:"tls_min_version"`
+	EnableRateLimiting   bool          `json:"enable_rate_limiting"`
+	EnableIPWhitelist    bool          `json:"enable_ip_whitelist"`
+	EnableAPIKeyRotation bool          `json:"enable_api_key_rotation"`
+
 	// Request validation
-	MaxRequestSize      int64         `json:"max_request_size"`
-	MaxTokenLength      int           `json:"max_token_length"`
-	MaxPromptLength     int           `json:"max_prompt_length"`
-	RequestTimeout      time.Duration `json:"request_timeout"`
-	
+	MaxRequestSize  int64         `json:"max_request_size"`
+	MaxTokenLength  int           `json:"max_token_length"`
+	MaxPromptLength int           `json:"max_prompt_length"`
+	RequestTimeout  time.Duration `json:"request_timeout"`
+
 	// Content filtering
 	EnableContentFilter bool     `json:"enable_content_filter"`
-	BlockedPatterns    []string `json:"blocked_patterns"`
-	SensitivePatterns  []string `json:"sensitive_patterns"`
-	
+	BlockedPatterns     []string `json:"blocked_patterns"`
+	SensitivePatterns   []string `json:"sensitive_patterns"`
+
 	// Authentication
 	RequireAuth        bool     `json:"require_auth"`
 	AllowedAuthMethods []string `json:"allowed_auth_methods"`
 	APIKeyHeader       string   `json:"api_key_header"`
-	
+
 	// IP restrictions
 	AllowedIPs     []string `json:"allowed_ips"`
 	BlockedIPs     []string `json:"blocked_ips"`
 	TrustedProxies []string `json:"trusted_proxies"`
-	
+
 	// Audit and logging
-	EnableAuditLog      bool   `json:"enable_audit_log"`
-	LogSensitiveData    bool   `json:"log_sensitive_data"`
-	AuditLogPath        string `json:"audit_log_path"`
-	RetentionDays       int    `json:"retention_days"`
+	EnableAuditLog   bool   `json:"enable_audit_log"`
+	LogSensitiveData bool   `json:"log_sensitive_data"`
+	AuditLogPath     string `json:"audit_log_path"`
+	RetentionDays    int    `json:"retention_days"`
 }
 
 // Validator interface for security validation
@@ -111,12 +111,12 @@ type AccessAttempt struct {
 
 // ValidationFailure represents a validation failure
 type ValidationFailure struct {
-	ID        string           `json:"id"`
-	Timestamp time.Time        `json:"timestamp"`
-	Type      string           `json:"type"`
-	Field     string           `json:"field,omitempty"`
-	Value     interface{}      `json:"-"` // Don't log potentially sensitive values
-	Errors    []string         `json:"errors"`
+	ID        string                 `json:"id"`
+	Timestamp time.Time              `json:"timestamp"`
+	Type      string                 `json:"type"`
+	Field     string                 `json:"field,omitempty"`
+	Value     interface{}            `json:"-"` // Don't log potentially sensitive values
+	Errors    []string               `json:"errors"`
 	Context   map[string]interface{} `json:"context,omitempty"`
 }
 
@@ -172,29 +172,29 @@ func DefaultSecurityConfig() *SecurityConfig {
 	return &SecurityConfig{
 		Level:                SecurityLevelBasic,
 		EnableRequestSigning: false,
-		EnableTLS:           true,
-		TLSMinVersion:       "1.2",
-		EnableRateLimiting:  true,
-		EnableIPWhitelist:   false,
+		EnableTLS:            true,
+		TLSMinVersion:        "1.2",
+		EnableRateLimiting:   true,
+		EnableIPWhitelist:    false,
 		EnableAPIKeyRotation: false,
-		
+
 		MaxRequestSize:  10 * 1024 * 1024, // 10MB
 		MaxTokenLength:  100000,
 		MaxPromptLength: 50000,
 		RequestTimeout:  5 * time.Minute,
-		
+
 		EnableContentFilter: true,
-		BlockedPatterns:    []string{},
-		SensitivePatterns:  []string{},
-		
+		BlockedPatterns:     []string{},
+		SensitivePatterns:   []string{},
+
 		RequireAuth:        true,
 		AllowedAuthMethods: []string{"api_key", "bearer"},
 		APIKeyHeader:       "X-API-Key",
-		
+
 		AllowedIPs:     []string{},
 		BlockedIPs:     []string{},
 		TrustedProxies: []string{},
-		
+
 		EnableAuditLog:   true,
 		LogSensitiveData: false,
 		AuditLogPath:     "./audit.log",

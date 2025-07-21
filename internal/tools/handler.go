@@ -40,13 +40,13 @@ type ToolResult struct {
 
 // ContentBlock represents a content block in Claude's response
 type ContentBlock struct {
-	Type     string          `json:"type"`
-	Text     string          `json:"text,omitempty"`
-	ID       string          `json:"id,omitempty"`
-	Name     string          `json:"name,omitempty"`
-	Input    json.RawMessage `json:"input,omitempty"`
-	Content  json.RawMessage `json:"content,omitempty"`
-	ToolUseID string         `json:"tool_use_id,omitempty"`
+	Type      string          `json:"type"`
+	Text      string          `json:"text,omitempty"`
+	ID        string          `json:"id,omitempty"`
+	Name      string          `json:"name,omitempty"`
+	Input     json.RawMessage `json:"input,omitempty"`
+	Content   json.RawMessage `json:"content,omitempty"`
+	ToolUseID string          `json:"tool_use_id,omitempty"`
 }
 
 // Message represents a message with content blocks
@@ -193,22 +193,22 @@ func (h *Handler) ExtractToolUses(message interface{}) ([]ToolUse, error) {
 // CreateToolResultMessage creates a message containing tool results
 func (h *Handler) CreateToolResultMessage(results []ToolResult) Message {
 	var content []ContentBlock
-	
+
 	for _, result := range results {
 		block := ContentBlock{
 			Type:      "tool_result",
 			ToolUseID: result.ToolUseID,
 		}
-		
+
 		if result.Error != nil {
 			block.Content = json.RawMessage(fmt.Sprintf(`{"error": %q}`, *result.Error))
 		} else {
 			block.Content = result.Content
 		}
-		
+
 		content = append(content, block)
 	}
-	
+
 	return Message{
 		Role:    "user",
 		Content: content,
@@ -250,7 +250,7 @@ func (h *Handler) TransformToolsForProvider(tools []interface{}, provider string
 	}
 
 	provider = strings.ToLower(provider)
-	
+
 	switch provider {
 	case "anthropic":
 		// Anthropic format is already the standard
@@ -269,57 +269,57 @@ func (h *Handler) TransformToolsForProvider(tools []interface{}, provider string
 // transformToolsForOpenAI transforms tools to OpenAI function calling format
 func (h *Handler) transformToolsForOpenAI(tools []interface{}) ([]interface{}, error) {
 	var transformed []interface{}
-	
+
 	for _, tool := range tools {
 		toolMap, ok := tool.(map[string]interface{})
 		if !ok {
 			continue
 		}
-		
+
 		// OpenAI uses "function" type
 		function := map[string]interface{}{
 			"name":        toolMap["name"],
 			"description": toolMap["description"],
 		}
-		
+
 		if inputSchema, ok := toolMap["input_schema"]; ok {
 			function["parameters"] = inputSchema
 		}
-		
+
 		transformed = append(transformed, map[string]interface{}{
 			"type":     "function",
 			"function": function,
 		})
 	}
-	
+
 	return transformed, nil
 }
 
 // transformToolsForGoogle transforms tools to Google/Gemini format
 func (h *Handler) transformToolsForGoogle(tools []interface{}) ([]interface{}, error) {
 	var transformed []interface{}
-	
+
 	for _, tool := range tools {
 		toolMap, ok := tool.(map[string]interface{})
 		if !ok {
 			continue
 		}
-		
+
 		// Google uses a flatter structure
 		googleTool := map[string]interface{}{
 			"name":        toolMap["name"],
 			"description": toolMap["description"],
 		}
-		
+
 		if inputSchema, ok := toolMap["input_schema"].(map[string]interface{}); ok {
 			// Transform schema properties
 			if properties, ok := inputSchema["properties"]; ok {
 				googleTool["parameters"] = properties
 			}
 		}
-		
+
 		transformed = append(transformed, googleTool)
 	}
-	
+
 	return transformed, nil
 }

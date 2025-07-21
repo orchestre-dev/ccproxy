@@ -148,14 +148,14 @@ data: [DONE]
 		// Read the transformed stream
 		reader := NewSSEReader(result.Body)
 		events := []string{}
-		
+
 		for {
 			event, err := reader.ReadEvent()
 			if err == io.EOF {
 				break
 			}
 			testutil.AssertNoError(t, err)
-			
+
 			if event.Data != "" && event.Data != "[DONE]" {
 				events = append(events, event.Data)
 			}
@@ -163,21 +163,21 @@ data: [DONE]
 
 		// Should have transformed reasoning_content to thinking
 		testutil.AssertEqual(t, true, len(events) > 0)
-		
+
 		// Check that reasoning_content was transformed to thinking
 		var firstEvent map[string]interface{}
 		json.Unmarshal([]byte(events[0]), &firstEvent)
-		
+
 		choices, ok := firstEvent["choices"].([]interface{})
 		testutil.AssertEqual(t, true, ok)
 		testutil.AssertEqual(t, true, len(choices) > 0)
-		
+
 		choice, ok := choices[0].(map[string]interface{})
 		testutil.AssertEqual(t, true, ok)
-		
+
 		delta, ok := choice["delta"].(map[string]interface{})
 		testutil.AssertEqual(t, true, ok)
-		
+
 		// Should have thinking instead of reasoning_content
 		thinking, hasThinking := delta["thinking"]
 		testutil.AssertEqual(t, true, hasThinking)
@@ -199,7 +199,7 @@ func TestDeepSeekTransformStreamData(t *testing.T) {
 		}
 
 		data := `{"choices": [{"delta": {"reasoning_content": "Let me think about this..."}}]}`
-		
+
 		results, err := transformer.transformStreamData(data, state)
 		testutil.AssertNoError(t, err)
 		testutil.AssertEqual(t, 1, len(results))
@@ -211,14 +211,14 @@ func TestDeepSeekTransformStreamData(t *testing.T) {
 		// Check transformed result
 		var result map[string]interface{}
 		json.Unmarshal([]byte(results[0]), &result)
-		
+
 		choices := result["choices"].([]interface{})
 		choice := choices[0].(map[string]interface{})
 		delta := choice["delta"].(map[string]interface{})
-		
+
 		thinking := delta["thinking"].(map[string]interface{})
 		testutil.AssertEqual(t, "Let me think about this...", thinking["content"])
-		
+
 		// reasoning_content should be removed
 		_, hasReasoning := delta["reasoning_content"]
 		testutil.AssertEqual(t, false, hasReasoning)
@@ -232,10 +232,10 @@ func TestDeepSeekTransformStreamData(t *testing.T) {
 		}
 
 		data := `{"choices": [{"delta": {"content": "Hello world"}}]}`
-		
+
 		results, err := transformer.transformStreamData(data, state)
 		testutil.AssertNoError(t, err)
-		
+
 		// Should have 2 results: thinking block + regular content
 		testutil.AssertEqual(t, 2, len(results))
 		testutil.AssertEqual(t, true, state.isReasoningComplete)
@@ -244,11 +244,11 @@ func TestDeepSeekTransformStreamData(t *testing.T) {
 		// First result should be thinking block
 		var thinkingResult map[string]interface{}
 		json.Unmarshal([]byte(results[0]), &thinkingResult)
-		
+
 		choices := thinkingResult["choices"].([]interface{})
 		choice := choices[0].(map[string]interface{})
 		testutil.AssertEqual(t, 0, int(choice["index"].(float64)))
-		
+
 		delta := choice["delta"].(map[string]interface{})
 		content := delta["content"].(map[string]interface{})
 		testutil.AssertEqual(t, "Previous thinking...", content["content"])
@@ -256,11 +256,11 @@ func TestDeepSeekTransformStreamData(t *testing.T) {
 		// Second result should be regular content with updated index
 		var contentResult map[string]interface{}
 		json.Unmarshal([]byte(results[1]), &contentResult)
-		
+
 		choices2 := contentResult["choices"].([]interface{})
 		choice2 := choices2[0].(map[string]interface{})
 		testutil.AssertEqual(t, 1, int(choice2["index"].(float64)))
-		
+
 		delta2 := choice2["delta"].(map[string]interface{})
 		testutil.AssertEqual(t, "Hello world", delta2["content"])
 	})
@@ -273,13 +273,13 @@ func TestDeepSeekTransformStreamData(t *testing.T) {
 		}
 
 		data := `{"choices": [{"delta": {}, "finish_reason": "stop"}]}`
-		
+
 		results, err := transformer.transformStreamData(data, state)
 		testutil.AssertNoError(t, err)
-		
+
 		// Check we got some results
 		testutil.AssertEqual(t, true, len(results) > 0) // At least some result
-		
+
 		// Only check state if we have results
 		if len(results) > 0 {
 			testutil.AssertEqual(t, true, state.isReasoningComplete)
@@ -288,7 +288,7 @@ func TestDeepSeekTransformStreamData(t *testing.T) {
 		// First result should be thinking block
 		var thinkingResult map[string]interface{}
 		json.Unmarshal([]byte(results[0]), &thinkingResult)
-		
+
 		choices := thinkingResult["choices"].([]interface{})
 		choice := choices[0].(map[string]interface{})
 		delta := choice["delta"].(map[string]interface{})
@@ -299,7 +299,7 @@ func TestDeepSeekTransformStreamData(t *testing.T) {
 		if len(results) > 1 {
 			var finishResult map[string]interface{}
 			json.Unmarshal([]byte(results[1]), &finishResult)
-			
+
 			choices2 := finishResult["choices"].([]interface{})
 			choice2 := choices2[0].(map[string]interface{})
 			testutil.AssertEqual(t, "stop", choice2["finish_reason"])
@@ -309,10 +309,10 @@ func TestDeepSeekTransformStreamData(t *testing.T) {
 	t.Run("InvalidJSON", func(t *testing.T) {
 		state := &deepseekStreamState{}
 		data := `invalid json`
-		
+
 		results, err := transformer.transformStreamData(data, state)
 		testutil.AssertNoError(t, err)
-		
+
 		// Should pass through unchanged on parse error
 		testutil.AssertEqual(t, 1, len(results))
 		testutil.AssertEqual(t, data, results[0])
@@ -321,10 +321,10 @@ func TestDeepSeekTransformStreamData(t *testing.T) {
 	t.Run("NoChoices", func(t *testing.T) {
 		state := &deepseekStreamState{}
 		data := `{"model": "deepseek-chat"}`
-		
+
 		results, err := transformer.transformStreamData(data, state)
 		testutil.AssertNoError(t, err)
-		
+
 		// Should pass through unchanged
 		testutil.AssertEqual(t, 1, len(results))
 		testutil.AssertEqual(t, data, results[0])
@@ -344,7 +344,7 @@ func TestDeepSeekCreateThinkingBlockChunk(t *testing.T) {
 			"created": 1234567890,
 			"model":   "deepseek-chat",
 		}
-		
+
 		content := "This is my thinking process..."
 		index := 1
 

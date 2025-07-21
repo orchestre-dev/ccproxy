@@ -111,7 +111,7 @@ func (sh *StreamingHandler) processSSEEvent(ctx context.Context, event SSEEvent)
 	if delta, ok := data["delta"].(map[string]interface{}); ok {
 		if processedDelta, modified := sh.processContentDelta(ctx, delta); modified {
 			data["delta"] = processedDelta
-			
+
 			// Add metadata
 			if metadata, ok := data["metadata"].(map[string]interface{}); ok {
 				metadata["has_tool_use"] = true
@@ -120,7 +120,7 @@ func (sh *StreamingHandler) processSSEEvent(ctx context.Context, event SSEEvent)
 					"has_tool_use": true,
 				}
 			}
-			
+
 			// Marshal back to JSON
 			newData, err := json.Marshal(data)
 			if err != nil {
@@ -134,7 +134,7 @@ func (sh *StreamingHandler) processSSEEvent(ctx context.Context, event SSEEvent)
 	if content, ok := data["content"].([]interface{}); ok {
 		if processedContent, modified := sh.processStreamingContent(ctx, content); modified {
 			data["content"] = processedContent
-			
+
 			// Marshal back to JSON
 			newData, err := json.Marshal(data)
 			if err != nil {
@@ -184,12 +184,12 @@ func (sh *StreamingHandler) processStreamingContent(ctx context.Context, content
 			blockMap["_processed"] = true
 			blockMap["_processor"] = "ccproxy-streaming"
 			modified = true
-			
+
 			if name, ok := blockMap["name"].(string); ok {
 				sh.logger.Debugf("Processing streaming tool use block: %s", name)
 			}
 		}
-		
+
 		processed = append(processed, blockMap)
 	}
 
@@ -199,28 +199,28 @@ func (sh *StreamingHandler) processStreamingContent(ctx context.Context, content
 // writeSSEEvent writes an SSE event to the writer
 func (sh *StreamingHandler) writeSSEEvent(w io.Writer, event SSEEvent) error {
 	var err error
-	
+
 	if event.ID != "" {
 		_, err = fmt.Fprintf(w, "id: %s\n", event.ID)
 		if err != nil {
 			return err
 		}
 	}
-	
+
 	if event.Event != "" {
 		_, err = fmt.Fprintf(w, "event: %s\n", event.Event)
 		if err != nil {
 			return err
 		}
 	}
-	
+
 	if event.Retry != "" {
 		_, err = fmt.Fprintf(w, "retry: %s\n", event.Retry)
 		if err != nil {
 			return err
 		}
 	}
-	
+
 	if event.Data != "" {
 		// Handle multi-line data
 		lines := strings.Split(event.Data, "\n")
@@ -231,7 +231,7 @@ func (sh *StreamingHandler) writeSSEEvent(w io.Writer, event SSEEvent) error {
 			}
 		}
 	}
-	
+
 	// Empty line to end event
 	_, err = fmt.Fprintln(w)
 	return err

@@ -17,24 +17,24 @@ import (
 
 // Manager coordinates all security components
 type Manager struct {
-	config     *SecurityConfig
-	validator  *RequestValidator
-	sanitizer  *DataSanitizer
-	auditor    *SecurityAuditor
-	
+	config    *SecurityConfig
+	validator *RequestValidator
+	sanitizer *DataSanitizer
+	auditor   *SecurityAuditor
+
 	// IP management
 	ipWhitelist map[string]bool
 	ipBlacklist map[string]bool
 	ipMu        sync.RWMutex
-	
+
 	// Rate limiting
 	rateLimiter *IPRateLimiter
-	
+
 	// API key management
 	apiKeys    map[string]APIKeyInfo
 	keyMu      sync.RWMutex
 	keyRotator *time.Ticker
-	
+
 	// Metrics
 	requestCount   int64
 	blockedCount   int64
@@ -121,7 +121,7 @@ func (m *Manager) ValidateRequest(req *http.Request) error {
 	if req == nil {
 		return errors.NewValidationError("request is nil", nil)
 	}
-	
+
 	m.mu.Lock()
 	m.requestCount++
 	m.mu.Unlock()
@@ -294,11 +294,11 @@ func (m *Manager) GetMetrics() map[string]interface{} {
 	defer m.mu.RUnlock()
 
 	return map[string]interface{}{
-		"total_requests":     m.requestCount,
-		"blocked_requests":   m.blockedCount,
+		"total_requests":      m.requestCount,
+		"blocked_requests":    m.blockedCount,
 		"validation_failures": m.validationFail,
-		"active_api_keys":    m.getActiveKeyCount(),
-		"security_level":     m.config.Level,
+		"active_api_keys":     m.getActiveKeyCount(),
+		"security_level":      m.config.Level,
 	}
 }
 
@@ -392,18 +392,18 @@ func (m *Manager) getActiveKeyCount() int {
 func (m *Manager) rotateAPIKeys() {
 	for range m.keyRotator.C {
 		m.keyMu.Lock()
-		
+
 		// Check for keys that haven't been used in 30 days
 		cutoff := time.Now().AddDate(0, 0, -30)
 		for key, info := range m.apiKeys {
 			if info.Active && info.LastUsed.Before(cutoff) {
 				info.Active = false
 				m.apiKeys[key] = info
-				
+
 				utils.GetLogger().Warnf("Auto-rotated unused API key: %s", info.Hash)
 			}
 		}
-		
+
 		m.keyMu.Unlock()
 	}
 }

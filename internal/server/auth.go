@@ -15,7 +15,7 @@ func authMiddleware(apiKey string, enforceLocalhost bool) gin.HandlerFunc {
 			c.Next()
 			return
 		}
-		
+
 		// If no API key is configured
 		if apiKey == "" {
 			// Enforce localhost-only access
@@ -28,7 +28,7 @@ func authMiddleware(apiKey string, enforceLocalhost bool) gin.HandlerFunc {
 			c.Next()
 			return
 		}
-		
+
 		// Check Authorization header (Bearer token)
 		authHeader := c.GetHeader("Authorization")
 		if authHeader != "" {
@@ -40,13 +40,13 @@ func authMiddleware(apiKey string, enforceLocalhost bool) gin.HandlerFunc {
 				}
 			}
 		}
-		
+
 		// Check x-api-key header
 		if c.GetHeader("x-api-key") == apiKey {
 			c.Next()
 			return
 		}
-		
+
 		// Authentication failed
 		Unauthorized(c, "Invalid API key")
 		c.Abort()
@@ -57,19 +57,19 @@ func authMiddleware(apiKey string, enforceLocalhost bool) gin.HandlerFunc {
 func isLocalhost(c *gin.Context) bool {
 	// Get client IP
 	clientIP := c.ClientIP()
-	
+
 	// Check for localhost addresses
 	localhostAddrs := []string{
 		"127.0.0.1",
 		"::1",
 	}
-	
+
 	for _, addr := range localhostAddrs {
 		if clientIP == addr {
 			return true
 		}
 	}
-	
+
 	// Check if request is from local network (optional, more permissive)
 	// This includes 192.168.x.x, 10.x.x.x, 172.16-31.x.x
 	if strings.HasPrefix(clientIP, "192.168.") ||
@@ -78,6 +78,6 @@ func isLocalhost(c *gin.Context) bool {
 		// For now, we'll be strict and not allow local network
 		return false
 	}
-	
+
 	return false
 }

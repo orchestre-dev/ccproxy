@@ -584,7 +584,7 @@ func TestValidateCondition(t *testing.T) {
 
 	t.Run("All valid operators", func(t *testing.T) {
 		validOperators := []string{">", "<", "==", "!=", ">=", "<=", "contains"}
-		
+
 		for _, operator := range validOperators {
 			t.Run("operator_"+operator, func(t *testing.T) {
 				condition := &Condition{
@@ -722,7 +722,7 @@ func TestValidation_EdgeCases(t *testing.T) {
 			if tc.url == "" {
 				continue // Skip empty URL as it's tested by required check
 			}
-			
+
 			t.Run(tc.description, func(t *testing.T) {
 				provider := &Provider{
 					Name:       "test",

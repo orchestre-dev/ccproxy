@@ -293,7 +293,7 @@ func TestStreamEvent_EdgeCases(t *testing.T) {
 
 	t.Run("Empty stream events", func(t *testing.T) {
 		formats := []MessageFormat{FormatAnthropic, FormatOpenAI, FormatGoogle, FormatAWS}
-		
+
 		for _, from := range formats {
 			for _, to := range formats {
 				t.Run(string(from)+"_to_"+string(to), func(t *testing.T) {
@@ -324,7 +324,7 @@ func TestStreamEvent_EdgeCases(t *testing.T) {
 	t.Run("Binary data events", func(t *testing.T) {
 		// Test with binary data that might contain null bytes
 		binaryData := []byte{0x00, 0x01, 0x02, 0xFF, 0xFE, 0xFD}
-		
+
 		result, err := converter.ConvertStreamEvent(binaryData, FormatAnthropic, FormatOpenAI)
 		testutil.AssertNoError(t, err)
 		testutil.AssertEqual(t, string(binaryData), string(result))
@@ -344,7 +344,7 @@ func TestStreamEvent_EdgeCases(t *testing.T) {
 
 	t.Run("Stream events with special characters", func(t *testing.T) {
 		specialChars := []byte("data: {\"content\": \"Hello \\n\\r\\t \\\"world\\\" 🌍\"}")
-		
+
 		result, err := converter.ConvertStreamEvent(specialChars, FormatOpenAI, FormatGoogle)
 		testutil.AssertNoError(t, err)
 		testutil.AssertEqual(t, string(specialChars), string(result))
@@ -394,17 +394,17 @@ func TestStreamEvent_SSEFormat(t *testing.T) {
 func TestStreamEvent_ConcurrentAccess(t *testing.T) {
 	// Test that stream event conversion is safe for concurrent use
 	converter := NewMessageConverter()
-	
+
 	t.Run("Concurrent stream conversions", func(t *testing.T) {
 		testEvent := []byte("data: {\"concurrent\": \"test\"}")
-		
+
 		// Run multiple conversions concurrently
 		done := make(chan bool, 10)
-		
+
 		for i := 0; i < 10; i++ {
 			go func(id int) {
 				defer func() { done <- true }()
-				
+
 				for j := 0; j < 100; j++ {
 					result, err := converter.ConvertStreamEvent(testEvent, FormatAnthropic, FormatOpenAI)
 					testutil.AssertNoError(t, err)
@@ -412,7 +412,7 @@ func TestStreamEvent_ConcurrentAccess(t *testing.T) {
 				}
 			}(i)
 		}
-		
+
 		// Wait for all goroutines to complete
 		for i := 0; i < 10; i++ {
 			<-done

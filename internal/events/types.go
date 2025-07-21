@@ -13,27 +13,27 @@ const (
 	EventRequestRouted    EventType = "request.routed"
 	EventRequestCompleted EventType = "request.completed"
 	EventRequestFailed    EventType = "request.failed"
-	
+
 	// Provider events
 	EventProviderHealthy   EventType = "provider.healthy"
 	EventProviderUnhealthy EventType = "provider.unhealthy"
 	EventProviderAdded     EventType = "provider.added"
 	EventProviderRemoved   EventType = "provider.removed"
 	EventProviderUpdated   EventType = "provider.updated"
-	
+
 	// System events
 	EventSystemStarted      EventType = "system.started"
 	EventSystemStopping     EventType = "system.stopping"
 	EventSystemStopped      EventType = "system.stopped"
 	EventSystemError        EventType = "system.error"
 	EventSystemStateChanged EventType = "system.state_changed"
-	
+
 	// Performance events
 	EventRateLimitExceeded   EventType = "performance.rate_limit_exceeded"
 	EventCircuitBreakerOpen  EventType = "performance.circuit_breaker_open"
 	EventCircuitBreakerClose EventType = "performance.circuit_breaker_close"
 	EventResourceLimitHit    EventType = "performance.resource_limit_hit"
-	
+
 	// Configuration events
 	EventConfigReloaded EventType = "config.reloaded"
 	EventConfigError    EventType = "config.error"
@@ -67,40 +67,40 @@ type Subscription struct {
 
 // EventBusConfig represents configuration for the event bus
 type EventBusConfig struct {
-	BufferSize       int           `json:"buffer_size"`
-	Workers          int           `json:"workers"`
-	MaxRetries       int           `json:"max_retries"`
-	RetryDelay       time.Duration `json:"retry_delay"`
-	PersistEvents    bool          `json:"persist_events"`
-	EventTTL         time.Duration `json:"event_ttl"`
-	EnableMetrics    bool          `json:"enable_metrics"`
-	EnableAuditLog   bool          `json:"enable_audit_log"`
+	BufferSize     int           `json:"buffer_size"`
+	Workers        int           `json:"workers"`
+	MaxRetries     int           `json:"max_retries"`
+	RetryDelay     time.Duration `json:"retry_delay"`
+	PersistEvents  bool          `json:"persist_events"`
+	EventTTL       time.Duration `json:"event_ttl"`
+	EnableMetrics  bool          `json:"enable_metrics"`
+	EnableAuditLog bool          `json:"enable_audit_log"`
 }
 
 // DefaultEventBusConfig returns default event bus configuration
 func DefaultEventBusConfig() *EventBusConfig {
 	return &EventBusConfig{
-		BufferSize:    10000,
-		Workers:       10,
-		MaxRetries:    3,
-		RetryDelay:    100 * time.Millisecond,
-		PersistEvents: false,
-		EventTTL:      24 * time.Hour,
-		EnableMetrics: true,
+		BufferSize:     10000,
+		Workers:        10,
+		MaxRetries:     3,
+		RetryDelay:     100 * time.Millisecond,
+		PersistEvents:  false,
+		EventTTL:       24 * time.Hour,
+		EnableMetrics:  true,
 		EnableAuditLog: false,
 	}
 }
 
 // RequestEvent represents a request-related event
 type RequestEvent struct {
-	RequestID    string        `json:"request_id"`
-	Provider     string        `json:"provider"`
-	Model        string        `json:"model"`
-	Latency      time.Duration `json:"latency,omitempty"`
-	TokensIn     int           `json:"tokens_in,omitempty"`
-	TokensOut    int           `json:"tokens_out,omitempty"`
-	StatusCode   int           `json:"status_code,omitempty"`
-	Error        string        `json:"error,omitempty"`
+	RequestID  string        `json:"request_id"`
+	Provider   string        `json:"provider"`
+	Model      string        `json:"model"`
+	Latency    time.Duration `json:"latency,omitempty"`
+	TokensIn   int           `json:"tokens_in,omitempty"`
+	TokensOut  int           `json:"tokens_out,omitempty"`
+	StatusCode int           `json:"status_code,omitempty"`
+	Error      string        `json:"error,omitempty"`
 }
 
 // ProviderEvent represents a provider-related event

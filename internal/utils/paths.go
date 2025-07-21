@@ -24,7 +24,7 @@ func GetHomeDir() (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed to get user home directory: %w", err)
 	}
-	
+
 	// Return ~/.ccproxy path
 	return filepath.Join(home, ".ccproxy"), nil
 }
@@ -36,7 +36,7 @@ func InitializeHomeDir() (*HomeDir, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	// Create home directory structure
 	homeDir := &HomeDir{
 		Root:       rootDir,
@@ -46,20 +46,20 @@ func InitializeHomeDir() (*HomeDir, error) {
 		PluginsDir: filepath.Join(rootDir, "plugins"),
 		TempDir:    filepath.Join(rootDir, "tmp"),
 	}
-	
+
 	// Create directories with appropriate permissions
 	directories := []string{
 		homeDir.Root,
 		homeDir.PluginsDir,
 		homeDir.TempDir,
 	}
-	
+
 	for _, dir := range directories {
 		if err := os.MkdirAll(dir, 0755); err != nil {
 			return nil, fmt.Errorf("failed to create directory %s: %w", dir, err)
 		}
 	}
-	
+
 	return homeDir, nil
 }
 
@@ -69,18 +69,18 @@ func ResolvePath(path string) (string, error) {
 	if path == "" {
 		return "", fmt.Errorf("path cannot be empty")
 	}
-	
+
 	// If path is already absolute, clean and return it
 	if filepath.IsAbs(path) {
 		return filepath.Clean(path), nil
 	}
-	
+
 	// For relative paths, resolve relative to current working directory
 	cwd, err := os.Getwd()
 	if err != nil {
 		return "", fmt.Errorf("failed to get current directory: %w", err)
 	}
-	
+
 	return filepath.Clean(filepath.Join(cwd, path)), nil
 }
 
@@ -94,7 +94,7 @@ func ResolveConfigPath(path string) (string, error) {
 		}
 		return homeDir.ConfigPath, nil
 	}
-	
+
 	// Resolve the provided path
 	return ResolvePath(path)
 }
@@ -131,7 +131,7 @@ func GetTempFile(prefix string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	
+
 	// Create temp file path
 	filename := fmt.Sprintf("%s_%d", prefix, os.Getpid())
 	return filepath.Join(homeDir.TempDir, filename), nil
@@ -143,7 +143,7 @@ func CleanupTempFiles() error {
 	if err != nil {
 		return err
 	}
-	
+
 	// Read temp directory
 	entries, err := os.ReadDir(homeDir.TempDir)
 	if err != nil {
@@ -153,7 +153,7 @@ func CleanupTempFiles() error {
 		}
 		return fmt.Errorf("failed to read temp directory: %w", err)
 	}
-	
+
 	// Remove all files in temp directory
 	for _, entry := range entries {
 		if !entry.IsDir() {
@@ -164,7 +164,7 @@ func CleanupTempFiles() error {
 			}
 		}
 	}
-	
+
 	return nil
 }
 
@@ -173,14 +173,14 @@ func GetExecutablePath() (string, error) {
 	if runtime.GOOS == "windows" {
 		return os.Executable()
 	}
-	
+
 	// For Unix-like systems, use readlink on /proc/self/exe if available
 	if runtime.GOOS == "linux" {
 		if path, err := os.Readlink("/proc/self/exe"); err == nil {
 			return path, nil
 		}
 	}
-	
+
 	// Fallback to os.Executable
 	return os.Executable()
 }
@@ -201,7 +201,7 @@ func WriteFileAtomic(path string, data []byte, perm os.FileMode) error {
 		return fmt.Errorf("failed to create temp file: %w", err)
 	}
 	tempPath := tempFile.Name()
-	
+
 	// Clean up on error
 	defer func() {
 		if tempFile != nil {
@@ -209,32 +209,32 @@ func WriteFileAtomic(path string, data []byte, perm os.FileMode) error {
 			os.Remove(tempPath)
 		}
 	}()
-	
+
 	// Write data
 	if _, err := tempFile.Write(data); err != nil {
 		return fmt.Errorf("failed to write data: %w", err)
 	}
-	
+
 	// Sync to disk
 	if err := tempFile.Sync(); err != nil {
 		return fmt.Errorf("failed to sync file: %w", err)
 	}
-	
+
 	// Close file
 	if err := tempFile.Close(); err != nil {
 		return fmt.Errorf("failed to close file: %w", err)
 	}
 	tempFile = nil
-	
+
 	// Set permissions
 	if err := os.Chmod(tempPath, perm); err != nil {
 		return fmt.Errorf("failed to set permissions: %w", err)
 	}
-	
+
 	// Atomic rename
 	if err := os.Rename(tempPath, path); err != nil {
 		return fmt.Errorf("failed to rename file: %w", err)
 	}
-	
+
 	return nil
 }

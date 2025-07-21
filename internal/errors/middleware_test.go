@@ -27,7 +27,7 @@ func TestErrorHandlerMiddleware(t *testing.T) {
 
 		req := httptest.NewRequest("GET", "/test", nil)
 		router.ServeHTTP(w, req)
-		
+
 		testutil.AssertEqual(t, 200, w.Code)
 	})
 
@@ -41,14 +41,14 @@ func TestErrorHandlerMiddleware(t *testing.T) {
 
 		req := httptest.NewRequest("GET", "/test", nil)
 		router.ServeHTTP(w, req)
-		
+
 		testutil.AssertEqual(t, http.StatusBadRequest, w.Code)
 		testutil.AssertEqual(t, "application/json", w.Header().Get("Content-Type"))
-		
+
 		var response map[string]interface{}
 		err := json.Unmarshal(w.Body.Bytes(), &response)
 		testutil.AssertNoError(t, err)
-		
+
 		errorObj := response["error"].(map[string]interface{})
 		testutil.AssertEqual(t, "bad_request", errorObj["type"])
 		testutil.AssertEqual(t, "test error", errorObj["message"])
@@ -64,14 +64,14 @@ func TestErrorHandlerMiddleware(t *testing.T) {
 
 		req := httptest.NewRequest("GET", "/test", nil)
 		router.ServeHTTP(w, req)
-		
+
 		testutil.AssertEqual(t, http.StatusInternalServerError, w.Code)
 		testutil.AssertEqual(t, "application/json", w.Header().Get("Content-Type"))
-		
+
 		var response map[string]interface{}
 		err := json.Unmarshal(w.Body.Bytes(), &response)
 		testutil.AssertNoError(t, err)
-		
+
 		errorObj := response["error"].(map[string]interface{})
 		testutil.AssertEqual(t, "internal_error", errorObj["type"])
 		testutil.AssertEqual(t, "Internal server error", errorObj["message"])
@@ -91,13 +91,13 @@ func TestErrorHandlerMiddleware(t *testing.T) {
 
 		req := httptest.NewRequest("GET", "/test", nil)
 		router.ServeHTTP(w, req)
-		
+
 		testutil.AssertEqual(t, http.StatusInternalServerError, w.Code)
-		
+
 		var response map[string]interface{}
 		err := json.Unmarshal(w.Body.Bytes(), &response)
 		testutil.AssertNoError(t, err)
-		
+
 		errorObj := response["error"].(map[string]interface{})
 		testutil.AssertEqual(t, "req-123", errorObj["request_id"])
 	})
@@ -110,7 +110,7 @@ func TestHandleError(t *testing.T) {
 		c.Request = httptest.NewRequest("GET", "/test", nil)
 
 		HandleError(c, nil)
-		
+
 		testutil.AssertEqual(t, 200, w.Code) // Should not modify response
 	})
 
@@ -125,20 +125,20 @@ func TestHandleError(t *testing.T) {
 			WithDetails(map[string]interface{}{"key": "value"})
 
 		HandleError(c, err)
-		
+
 		testutil.AssertEqual(t, http.StatusBadRequest, w.Code)
 		testutil.AssertEqual(t, "application/json", w.Header().Get("Content-Type"))
-		
+
 		var response map[string]interface{}
 		unmarshalErr := json.Unmarshal(w.Body.Bytes(), &response)
 		testutil.AssertNoError(t, unmarshalErr)
-		
+
 		errorObj := response["error"].(map[string]interface{})
 		testutil.AssertEqual(t, "bad_request", errorObj["type"])
 		testutil.AssertEqual(t, "test error", errorObj["message"])
 		testutil.AssertEqual(t, "CODE123", errorObj["code"])
 		testutil.AssertEqual(t, "test-provider", errorObj["provider"])
-		
+
 		details := errorObj["details"].(map[string]interface{})
 		testutil.AssertEqual(t, "value", details["key"])
 	})
@@ -151,13 +151,13 @@ func TestHandleError(t *testing.T) {
 		err := io.EOF
 
 		HandleError(c, err)
-		
+
 		testutil.AssertEqual(t, http.StatusBadRequest, w.Code)
-		
+
 		var response map[string]interface{}
 		unmarshalErr := json.Unmarshal(w.Body.Bytes(), &response)
 		testutil.AssertNoError(t, unmarshalErr)
-		
+
 		errorObj := response["error"].(map[string]interface{})
 		testutil.AssertEqual(t, "bad_request", errorObj["type"])
 		testutil.AssertEqual(t, "Unexpected end of input", errorObj["message"])
@@ -172,11 +172,11 @@ func TestHandleError(t *testing.T) {
 		err := New(ErrorTypeBadRequest, "test error")
 
 		HandleError(c, err)
-		
+
 		var response map[string]interface{}
 		unmarshalErr := json.Unmarshal(w.Body.Bytes(), &response)
 		testutil.AssertNoError(t, unmarshalErr)
-		
+
 		errorObj := response["error"].(map[string]interface{})
 		testutil.AssertEqual(t, "req-456", errorObj["request_id"])
 	})
@@ -189,7 +189,7 @@ func TestHandleErrorWithStatus(t *testing.T) {
 		c.Request = httptest.NewRequest("GET", "/test", nil)
 
 		HandleErrorWithStatus(c, 500, nil)
-		
+
 		testutil.AssertEqual(t, 200, w.Code) // Should not modify response
 	})
 
@@ -201,7 +201,7 @@ func TestHandleErrorWithStatus(t *testing.T) {
 		err := New(ErrorTypeBadRequest, "test error")
 
 		HandleErrorWithStatus(c, 418, err) // Teapot status
-		
+
 		testutil.AssertEqual(t, 418, w.Code)
 	})
 
@@ -211,13 +211,13 @@ func TestHandleErrorWithStatus(t *testing.T) {
 		c.Request = httptest.NewRequest("GET", "/test", nil)
 
 		HandleErrorWithStatus(c, 503, io.EOF)
-		
+
 		testutil.AssertEqual(t, 503, w.Code)
-		
+
 		var response map[string]interface{}
 		unmarshalErr := json.Unmarshal(w.Body.Bytes(), &response)
 		testutil.AssertNoError(t, unmarshalErr)
-		
+
 		errorObj := response["error"].(map[string]interface{})
 		testutil.AssertEqual(t, "service_unavailable", errorObj["type"])
 		testutil.AssertEqual(t, "EOF", errorObj["message"])
@@ -232,7 +232,7 @@ func TestAbortWithError(t *testing.T) {
 	err := New(ErrorTypeBadRequest, "test error")
 
 	AbortWithError(c, err)
-	
+
 	testutil.AssertEqual(t, http.StatusBadRequest, w.Code)
 	testutil.AssertTrue(t, c.IsAborted())
 }
@@ -243,14 +243,14 @@ func TestAbortWithCCProxyError(t *testing.T) {
 	c.Request = httptest.NewRequest("GET", "/test", nil)
 
 	AbortWithCCProxyError(c, ErrorTypeNotFound, "resource not found")
-	
+
 	testutil.AssertEqual(t, http.StatusNotFound, w.Code)
 	testutil.AssertTrue(t, c.IsAborted())
-	
+
 	var response map[string]interface{}
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 	testutil.AssertNoError(t, err)
-	
+
 	errorObj := response["error"].(map[string]interface{})
 	testutil.AssertEqual(t, "not_found", errorObj["type"])
 	testutil.AssertEqual(t, "resource not found", errorObj["message"])
@@ -261,14 +261,14 @@ func TestHandleGinError(t *testing.T) {
 		w := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(w)
 		c.Request = httptest.NewRequest("GET", "/test", nil)
-		
+
 		// Write something to mark as written using gin context
 		c.Writer.WriteHeader(200)
 		c.Writer.Write([]byte("already written"))
 
 		ginErr := &gin.Error{Err: New(ErrorTypeBadRequest, "test error")}
 		handleGinError(c, ginErr)
-		
+
 		// Should not override existing response
 		testutil.AssertEqual(t, 200, w.Code)
 		testutil.AssertEqual(t, "already written", w.Body.String())
@@ -281,101 +281,101 @@ func TestHandleGinError(t *testing.T) {
 
 		ginErr := &gin.Error{Err: New(ErrorTypeBadRequest, "test error")}
 		handleGinError(c, ginErr)
-		
+
 		testutil.AssertEqual(t, http.StatusBadRequest, w.Code)
 	})
 }
 
 func TestConvertToCCProxyError(t *testing.T) {
 	tests := []struct {
-		name        string
-		inputError  error
+		name         string
+		inputError   error
 		expectedType ErrorType
-		expectedMsg string
+		expectedMsg  string
 	}{
 		{
-			name:        "EOF",
-			inputError:  io.EOF,
+			name:         "EOF",
+			inputError:   io.EOF,
 			expectedType: ErrorTypeBadRequest,
-			expectedMsg: "Unexpected end of input",
+			expectedMsg:  "Unexpected end of input",
 		},
 		{
-			name:        "Unauthorized",
-			inputError:  &testError{"unauthorized access"},
+			name:         "Unauthorized",
+			inputError:   &testError{"unauthorized access"},
 			expectedType: ErrorTypeUnauthorized,
-			expectedMsg: "unauthorized access",
+			expectedMsg:  "unauthorized access",
 		},
 		{
-			name:        "Forbidden",
-			inputError:  &testError{"forbidden resource"},
+			name:         "Forbidden",
+			inputError:   &testError{"forbidden resource"},
 			expectedType: ErrorTypeForbidden,
-			expectedMsg: "forbidden resource",
+			expectedMsg:  "forbidden resource",
 		},
 		{
-			name:        "Not Found",
-			inputError:  &testError{"not found"},
+			name:         "Not Found",
+			inputError:   &testError{"not found"},
 			expectedType: ErrorTypeNotFound,
-			expectedMsg: "not found",
+			expectedMsg:  "not found",
 		},
 		{
-			name:        "Bad Request",
-			inputError:  &testError{"bad request"},
+			name:         "Bad Request",
+			inputError:   &testError{"bad request"},
 			expectedType: ErrorTypeBadRequest,
-			expectedMsg: "bad request",
+			expectedMsg:  "bad request",
 		},
 		{
-			name:        "Rate Limit",
-			inputError:  &testError{"rate limit exceeded"},
+			name:         "Rate Limit",
+			inputError:   &testError{"rate limit exceeded"},
 			expectedType: ErrorTypeRateLimitError,
-			expectedMsg: "rate limit exceeded",
+			expectedMsg:  "rate limit exceeded",
 		},
 		{
-			name:        "Timeout",
-			inputError:  &testError{"request timeout"},
+			name:         "Timeout",
+			inputError:   &testError{"request timeout"},
 			expectedType: ErrorTypeGatewayTimeout,
-			expectedMsg: "request timeout",
+			expectedMsg:  "request timeout",
 		},
 		{
-			name:        "Connection Refused",
-			inputError:  &testError{"connection refused"},
+			name:         "Connection Refused",
+			inputError:   &testError{"connection refused"},
 			expectedType: ErrorTypeBadGateway,
-			expectedMsg: "connection refused",
+			expectedMsg:  "connection refused",
 		},
 		{
-			name:        "Connection Reset",
-			inputError:  &testError{"connection reset by peer"},
+			name:         "Connection Reset",
+			inputError:   &testError{"connection reset by peer"},
 			expectedType: ErrorTypeBadGateway,
-			expectedMsg: "connection reset by peer",
+			expectedMsg:  "connection reset by peer",
 		},
 		{
-			name:        "No Such Host",
-			inputError:  &testError{"no such host"},
+			name:         "No Such Host",
+			inputError:   &testError{"no such host"},
 			expectedType: ErrorTypeBadGateway,
-			expectedMsg: "no such host",
+			expectedMsg:  "no such host",
 		},
 		{
-			name:        "Service Unavailable",
-			inputError:  &testError{"service unavailable"},
+			name:         "Service Unavailable",
+			inputError:   &testError{"service unavailable"},
 			expectedType: ErrorTypeServiceUnavailable,
-			expectedMsg: "service unavailable",
+			expectedMsg:  "service unavailable",
 		},
 		{
-			name:        "Not Implemented",
-			inputError:  &testError{"not implemented"},
+			name:         "Not Implemented",
+			inputError:   &testError{"not implemented"},
 			expectedType: ErrorTypeNotImplemented,
-			expectedMsg: "not implemented",
+			expectedMsg:  "not implemented",
 		},
 		{
-			name:        "Validation",
-			inputError:  &testError{"validation failed"},
+			name:         "Validation",
+			inputError:   &testError{"validation failed"},
 			expectedType: ErrorTypeValidationError,
-			expectedMsg: "validation failed",
+			expectedMsg:  "validation failed",
 		},
 		{
-			name:        "Default",
-			inputError:  &testError{"unknown error"},
+			name:         "Default",
+			inputError:   &testError{"unknown error"},
 			expectedType: ErrorTypeInternal,
-			expectedMsg: "unknown error",
+			expectedMsg:  "unknown error",
 		},
 	}
 
@@ -398,10 +398,10 @@ func TestExtractProviderError(t *testing.T) {
 	t.Run("ErrorResponse", func(t *testing.T) {
 		resp := &http.Response{StatusCode: 400}
 		body := []byte(`{"error":{"message":"Bad request"}}`)
-		
+
 		err := ExtractProviderError(resp, body, "test-provider")
 		testutil.AssertEqual(t, false, err == nil)
-		
+
 		ccErr, ok := err.(*CCProxyError)
 		testutil.AssertTrue(t, ok)
 		testutil.AssertEqual(t, "test-provider", ccErr.Provider)
@@ -418,10 +418,10 @@ func TestWrapProviderError(t *testing.T) {
 	t.Run("CCProxyErrorWithProvider", func(t *testing.T) {
 		originalErr := New(ErrorTypeBadRequest, "test error").WithProvider("existing-provider")
 		result := WrapProviderError(originalErr, "new-provider")
-		
+
 		// Should return as-is since it already has provider info
 		testutil.AssertEqual(t, originalErr, result)
-		
+
 		ccErr := result.(*CCProxyError)
 		testutil.AssertEqual(t, "existing-provider", ccErr.Provider)
 	})
@@ -429,10 +429,10 @@ func TestWrapProviderError(t *testing.T) {
 	t.Run("CCProxyErrorWithoutProvider", func(t *testing.T) {
 		originalErr := New(ErrorTypeBadRequest, "test error")
 		result := WrapProviderError(originalErr, "new-provider")
-		
+
 		// Should add provider info
 		testutil.AssertEqual(t, originalErr, result)
-		
+
 		ccErr := result.(*CCProxyError)
 		testutil.AssertEqual(t, "new-provider", ccErr.Provider)
 	})
@@ -440,7 +440,7 @@ func TestWrapProviderError(t *testing.T) {
 	t.Run("RegularErrorWithTimeout", func(t *testing.T) {
 		originalErr := &testError{"context deadline exceeded"}
 		result := WrapProviderError(originalErr, "test-provider")
-		
+
 		ccErr, ok := result.(*CCProxyError)
 		testutil.AssertTrue(t, ok)
 		testutil.AssertEqual(t, ErrorTypeGatewayTimeout, ccErr.Type)
@@ -451,7 +451,7 @@ func TestWrapProviderError(t *testing.T) {
 	t.Run("RegularErrorWithConnectionRefused", func(t *testing.T) {
 		originalErr := &testError{"connection refused"}
 		result := WrapProviderError(originalErr, "test-provider")
-		
+
 		ccErr, ok := result.(*CCProxyError)
 		testutil.AssertTrue(t, ok)
 		testutil.AssertEqual(t, ErrorTypeBadGateway, ccErr.Type)
@@ -461,7 +461,7 @@ func TestWrapProviderError(t *testing.T) {
 	t.Run("RegularErrorWithRateLimit", func(t *testing.T) {
 		originalErr := &testError{"rate limit exceeded"}
 		result := WrapProviderError(originalErr, "test-provider")
-		
+
 		ccErr, ok := result.(*CCProxyError)
 		testutil.AssertTrue(t, ok)
 		testutil.AssertEqual(t, ErrorTypeRateLimitError, ccErr.Type)
@@ -471,7 +471,7 @@ func TestWrapProviderError(t *testing.T) {
 	t.Run("RegularErrorDefault", func(t *testing.T) {
 		originalErr := &testError{"generic error"}
 		result := WrapProviderError(originalErr, "test-provider")
-		
+
 		ccErr, ok := result.(*CCProxyError)
 		testutil.AssertTrue(t, ok)
 		testutil.AssertEqual(t, ErrorTypeProviderError, ccErr.Type)
@@ -482,7 +482,7 @@ func TestWrapProviderError(t *testing.T) {
 
 func TestNewErrorResponse(t *testing.T) {
 	resp := NewErrorResponse(ErrorTypeBadRequest, "test message")
-	
+
 	testutil.AssertEqual(t, "bad_request", resp.Error.Type)
 	testutil.AssertEqual(t, "test message", resp.Error.Message)
 	testutil.AssertEqual(t, "", resp.Error.Code)
@@ -492,7 +492,7 @@ func TestNewErrorResponse(t *testing.T) {
 func TestErrorResponse_WithCode(t *testing.T) {
 	resp := NewErrorResponse(ErrorTypeBadRequest, "test message").
 		WithCode("CODE123")
-	
+
 	testutil.AssertEqual(t, "CODE123", resp.Error.Code)
 }
 
@@ -500,7 +500,7 @@ func TestErrorResponse_WithDetails(t *testing.T) {
 	details := map[string]interface{}{"key": "value"}
 	resp := NewErrorResponse(ErrorTypeBadRequest, "test message").
 		WithDetails(details)
-	
+
 	testutil.AssertEqual(t, "value", resp.Error.Details["key"])
 }
 
@@ -508,7 +508,7 @@ func TestErrorResponse_Chaining(t *testing.T) {
 	resp := NewErrorResponse(ErrorTypeBadRequest, "test message").
 		WithCode("CODE123").
 		WithDetails(map[string]interface{}{"key": "value"})
-	
+
 	testutil.AssertEqual(t, "bad_request", resp.Error.Type)
 	testutil.AssertEqual(t, "test message", resp.Error.Message)
 	testutil.AssertEqual(t, "CODE123", resp.Error.Code)

@@ -36,7 +36,7 @@ func New(cfg *config.Config) *Router {
 // Route determines which model to use based on request parameters and token count
 func (r *Router) Route(req Request, tokenCount int) RouteDecision {
 	logger := utils.GetLogger()
-	
+
 	// 1. Check for explicit provider,model format
 	if strings.Contains(req.Model, ",") {
 		parts := strings.SplitN(req.Model, ",", 2)
@@ -49,7 +49,7 @@ func (r *Router) Route(req Request, tokenCount int) RouteDecision {
 			}
 		}
 	}
-	
+
 	// 2. Check if there's a direct route for this model
 	if route, exists := r.config.Routes[req.Model]; exists && route.Provider != "" {
 		logger.Debugf("Using direct route for model: %s", req.Model)
@@ -59,7 +59,7 @@ func (r *Router) Route(req Request, tokenCount int) RouteDecision {
 			Reason:   "direct model route",
 		}
 	}
-	
+
 	// 3. Check for long context routing based on token count
 	if longContext, exists := r.config.Routes["longContext"]; exists && tokenCount > 60000 && longContext.Provider != "" {
 		logger.Infof("Using long context model due to token count: %d", tokenCount)
@@ -69,7 +69,7 @@ func (r *Router) Route(req Request, tokenCount int) RouteDecision {
 			Reason:   fmt.Sprintf("token count (%d) exceeds threshold", tokenCount),
 		}
 	}
-	
+
 	// 4. Check for background routing for haiku models
 	if background, exists := r.config.Routes["background"]; exists && strings.HasPrefix(req.Model, "claude-3-5-haiku") && background.Provider != "" {
 		logger.Info("Using background model for claude-3-5-haiku")
@@ -79,7 +79,7 @@ func (r *Router) Route(req Request, tokenCount int) RouteDecision {
 			Reason:   "haiku model routed to background",
 		}
 	}
-	
+
 	// 5. Check for thinking routing based on parameter
 	if think, exists := r.config.Routes["think"]; exists && req.Thinking && think.Provider != "" {
 		logger.Info("Using think model due to thinking parameter")
@@ -89,7 +89,7 @@ func (r *Router) Route(req Request, tokenCount int) RouteDecision {
 			Reason:   "thinking parameter enabled",
 		}
 	}
-	
+
 	// 6. Fall back to default model
 	defaultRoute := r.config.Routes["default"]
 	logger.Debug("Using default model")
@@ -127,7 +127,7 @@ func (r *Router) GetProviderForModel(model string) (string, error) {
 		provider, _ := ParseModelString(model)
 		return provider, nil
 	}
-	
+
 	// Look for model in provider configurations
 	for _, provider := range r.config.Providers {
 		for _, m := range provider.Models {
@@ -136,11 +136,11 @@ func (r *Router) GetProviderForModel(model string) (string, error) {
 			}
 		}
 	}
-	
+
 	// If not found, use default provider
 	if defaultRoute, exists := r.config.Routes["default"]; exists && defaultRoute.Provider != "" {
 		return defaultRoute.Provider, nil
 	}
-	
+
 	return "", fmt.Errorf("no provider found for model: %s", model)
 }

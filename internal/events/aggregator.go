@@ -9,22 +9,22 @@ import (
 type EventAggregator struct {
 	eventBus *EventBus
 	mu       sync.RWMutex
-	
+
 	// Request metrics
-	requestCounts      map[string]int64 // provider -> count
-	requestLatencies   map[string][]time.Duration
-	requestErrors      map[string]int64
-	tokenCounts        map[string]int64 // provider -> total tokens
-	
+	requestCounts    map[string]int64 // provider -> count
+	requestLatencies map[string][]time.Duration
+	requestErrors    map[string]int64
+	tokenCounts      map[string]int64 // provider -> total tokens
+
 	// Provider metrics
-	providerHealth     map[string]bool
-	providerLastCheck  map[string]time.Time
-	
+	providerHealth    map[string]bool
+	providerLastCheck map[string]time.Time
+
 	// System metrics
-	stateChanges       []StateChange
-	rateLimitHits      int64
+	stateChanges        []StateChange
+	rateLimitHits       int64
 	circuitBreakerTrips int64
-	
+
 	// Time window
 	windowStart time.Time
 	windowSize  time.Duration
@@ -43,7 +43,7 @@ func NewEventAggregator(eventBus *EventBus, windowSize time.Duration) *EventAggr
 	if windowSize == 0 {
 		windowSize = 5 * time.Minute
 	}
-	
+
 	agg := &EventAggregator{
 		eventBus:          eventBus,
 		requestCounts:     make(map[string]int64),
@@ -56,7 +56,7 @@ func NewEventAggregator(eventBus *EventBus, windowSize time.Duration) *EventAggr
 		windowStart:       time.Now(),
 		windowSize:        windowSize,
 	}
-	
+
 	return agg
 }
 
@@ -68,21 +68,21 @@ func (ea *EventAggregator) Start() {
 		EventRequestCompleted,
 		EventRequestFailed,
 	}, ea.handleRequestEvent, WithPriority(10))
-	
+
 	ea.eventBus.Subscribe([]EventType{
 		EventProviderHealthy,
 		EventProviderUnhealthy,
 	}, ea.handleProviderEvent, WithPriority(10))
-	
+
 	ea.eventBus.Subscribe([]EventType{
 		EventSystemStateChanged,
 	}, ea.handleSystemEvent, WithPriority(10))
-	
+
 	ea.eventBus.Subscribe([]EventType{
 		EventRateLimitExceeded,
 		EventCircuitBreakerOpen,
 	}, ea.handlePerformanceEvent, WithPriority(10))
-	
+
 	// Start window rotation
 	go ea.rotateWindow()
 }
@@ -91,16 +91,16 @@ func (ea *EventAggregator) Start() {
 func (ea *EventAggregator) handleRequestEvent(event Event) {
 	ea.mu.Lock()
 	defer ea.mu.Unlock()
-	
+
 	provider, _ := event.Data["provider"].(string)
 	if provider == "" {
 		return
 	}
-	
+
 	switch event.Type {
 	case EventRequestReceived:
 		ea.requestCounts[provider]++
-		
+
 	case EventRequestCompleted:
 		if latencyMs, ok := event.Data["latency"].(int64); ok {
 			latency := time.Duration(latencyMs) * time.Millisecond
@@ -109,7 +109,7 @@ func (ea *EventAggregator) handleRequestEvent(event Event) {
 		if tokensOut, ok := event.Data["tokens_out"].(int); ok {
 			ea.tokenCounts[provider] += int64(tokensOut)
 		}
-		
+
 	case EventRequestFailed:
 		ea.requestErrors[provider]++
 	}
@@ -119,17 +119,17 @@ func (ea *EventAggregator) handleRequestEvent(event Event) {
 func (ea *EventAggregator) handleProviderEvent(event Event) {
 	ea.mu.Lock()
 	defer ea.mu.Unlock()
-	
+
 	providerName, _ := event.Data["provider_name"].(string)
 	if providerName == "" {
 		return
 	}
-	
+
 	switch event.Type {
 	case EventProviderHealthy:
 		ea.providerHealth[providerName] = true
 		ea.providerLastCheck[providerName] = event.Timestamp
-		
+
 	case EventProviderUnhealthy:
 		ea.providerHealth[providerName] = false
 		ea.providerLastCheck[providerName] = event.Timestamp
@@ -140,12 +140,12 @@ func (ea *EventAggregator) handleProviderEvent(event Event) {
 func (ea *EventAggregator) handleSystemEvent(event Event) {
 	ea.mu.Lock()
 	defer ea.mu.Unlock()
-	
+
 	if event.Type == EventSystemStateChanged {
 		component, _ := event.Data["component"].(string)
 		oldState, _ := event.Data["old_state"].(string)
 		newState, _ := event.Data["new_state"].(string)
-		
+
 		ea.stateChanges = append(ea.stateChanges, StateChange{
 			Timestamp: event.Timestamp,
 			Component: component,
@@ -159,11 +159,11 @@ func (ea *EventAggregator) handleSystemEvent(event Event) {
 func (ea *EventAggregator) handlePerformanceEvent(event Event) {
 	ea.mu.Lock()
 	defer ea.mu.Unlock()
-	
+
 	switch event.Type {
 	case EventRateLimitExceeded:
 		ea.rateLimitHits++
-		
+
 	case EventCircuitBreakerOpen:
 		ea.circuitBreakerTrips++
 	}
@@ -173,7 +173,7 @@ func (ea *EventAggregator) handlePerformanceEvent(event Event) {
 func (ea *EventAggregator) GetMetrics() AggregatedMetrics {
 	ea.mu.RLock()
 	defer ea.mu.RUnlock()
-	
+
 	// Calculate provider metrics
 	providerMetrics := make(map[string]ProviderAggregatedMetrics)
 	for provider, count := range ea.requestCounts {
@@ -185,13 +185,13 @@ func (ea *EventAggregator) GetMetrics() AggregatedMetrics {
 			}
 			avgLatency = total / time.Duration(len(latencies))
 		}
-		
+
 		errorCount := ea.requestErrors[provider]
 		errorRate := float64(0)
 		if count > 0 {
 			errorRate = float64(errorCount) / float64(count)
 		}
-		
+
 		providerMetrics[provider] = ProviderAggregatedMetrics{
 			RequestCount:    count,
 			ErrorCount:      errorCount,
@@ -202,7 +202,7 @@ func (ea *EventAggregator) GetMetrics() AggregatedMetrics {
 			LastHealthCheck: ea.providerLastCheck[provider],
 		}
 	}
-	
+
 	return AggregatedMetrics{
 		WindowStart:         ea.windowStart,
 		WindowEnd:           time.Now(),
@@ -217,10 +217,10 @@ func (ea *EventAggregator) GetMetrics() AggregatedMetrics {
 func (ea *EventAggregator) rotateWindow() {
 	ticker := time.NewTicker(ea.windowSize)
 	defer ticker.Stop()
-	
+
 	for range ticker.C {
 		ea.mu.Lock()
-		
+
 		// Reset counters
 		ea.requestCounts = make(map[string]int64)
 		ea.requestLatencies = make(map[string][]time.Duration)
@@ -230,19 +230,19 @@ func (ea *EventAggregator) rotateWindow() {
 		ea.rateLimitHits = 0
 		ea.circuitBreakerTrips = 0
 		ea.windowStart = time.Now()
-		
+
 		ea.mu.Unlock()
 	}
 }
 
 // AggregatedMetrics represents aggregated event metrics
 type AggregatedMetrics struct {
-	WindowStart         time.Time                             `json:"window_start"`
-	WindowEnd           time.Time                             `json:"window_end"`
+	WindowStart         time.Time                            `json:"window_start"`
+	WindowEnd           time.Time                            `json:"window_end"`
 	ProviderMetrics     map[string]ProviderAggregatedMetrics `json:"provider_metrics"`
-	StateChanges        []StateChange                         `json:"state_changes"`
-	RateLimitHits       int64                                 `json:"rate_limit_hits"`
-	CircuitBreakerTrips int64                                 `json:"circuit_breaker_trips"`
+	StateChanges        []StateChange                        `json:"state_changes"`
+	RateLimitHits       int64                                `json:"rate_limit_hits"`
+	CircuitBreakerTrips int64                                `json:"circuit_breaker_trips"`
 }
 
 // ProviderAggregatedMetrics represents aggregated metrics for a provider

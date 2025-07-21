@@ -65,7 +65,7 @@ func TestGeminiTransformRequestIn(t *testing.T) {
 		// Check user message transformation
 		userContent := contents[0].(map[string]interface{})
 		testutil.AssertEqual(t, "user", userContent["role"])
-		
+
 		userParts := userContent["parts"].([]interface{})
 		testutil.AssertEqual(t, 1, len(userParts))
 		userPart := userParts[0].(map[string]interface{})
@@ -74,7 +74,7 @@ func TestGeminiTransformRequestIn(t *testing.T) {
 		// Check assistant message transformation (role becomes "model")
 		assistantContent := contents[1].(map[string]interface{})
 		testutil.AssertEqual(t, "model", assistantContent["role"])
-		
+
 		assistantParts := assistantContent["parts"].([]interface{})
 		testutil.AssertEqual(t, 1, len(assistantParts))
 		assistantPart := assistantParts[0].(map[string]interface{})
@@ -110,14 +110,14 @@ func TestGeminiTransformRequestIn(t *testing.T) {
 
 		content := contents[0].(map[string]interface{})
 		testutil.AssertEqual(t, "model", content["role"])
-		
+
 		parts := content["parts"].([]interface{})
 		testutil.AssertEqual(t, 1, len(parts))
-		
+
 		part := parts[0].(map[string]interface{})
 		functionCall := part["functionCall"].(map[string]interface{})
 		testutil.AssertEqual(t, "get_weather", functionCall["name"])
-		
+
 		args := functionCall["args"].(map[string]interface{})
 		testutil.AssertEqual(t, "New York", args["location"])
 	})
@@ -139,7 +139,7 @@ func TestGeminiTransformRequestIn(t *testing.T) {
 
 		resultMap := result.(map[string]interface{})
 		contents := resultMap["contents"].([]interface{})
-		
+
 		// Find the tool response message
 		var toolContent map[string]interface{}
 		for _, cont := range contents {
@@ -158,10 +158,10 @@ func TestGeminiTransformRequestIn(t *testing.T) {
 
 		testutil.AssertNotEqual(t, nil, toolContent)
 		testutil.AssertEqual(t, "user", toolContent["role"]) // tool becomes user
-		
+
 		parts := toolContent["parts"].([]interface{})
 		testutil.AssertEqual(t, true, len(parts) >= 1)
-		
+
 		// Find the function response part
 		var functionResponse map[string]interface{}
 		for _, p := range parts {
@@ -172,10 +172,10 @@ func TestGeminiTransformRequestIn(t *testing.T) {
 				}
 			}
 		}
-		
+
 		testutil.AssertNotEqual(t, nil, functionResponse)
 		testutil.AssertEqual(t, "get_weather", functionResponse["name"])
-		
+
 		response := functionResponse["response"].(map[string]interface{})
 		testutil.AssertEqual(t, "Sunny, 72°F", response["result"])
 	})
@@ -194,7 +194,7 @@ func TestGeminiTransformRequestIn(t *testing.T) {
 
 		resultMap := result.(map[string]interface{})
 		genConfig := resultMap["generationConfig"].(map[string]interface{})
-		
+
 		testutil.AssertEqual(t, 0.7, genConfig["temperature"])
 		testutil.AssertEqual(t, 1000, genConfig["maxOutputTokens"])
 		testutil.AssertEqual(t, 0.9, genConfig["topP"])
@@ -248,7 +248,7 @@ func TestGeminiTransformRequestIn(t *testing.T) {
 		testutil.AssertEqual(t, false, hasSchema)
 		_, hasAdditionalProps := params["additionalProperties"]
 		testutil.AssertEqual(t, false, hasAdditionalProps)
-		
+
 		// Supported fields should remain
 		testutil.AssertEqual(t, "object", params["type"])
 		_, hasProperties := params["properties"]
@@ -336,12 +336,12 @@ func TestGeminiCleanJSONSchema(t *testing.T) {
 
 		testutil.AssertEqual(t, schema["type"], cleaned["type"])
 		testutil.AssertEqual(t, schema["description"], cleaned["description"])
-		
+
 		// Check properties are preserved (compare field by field)
 		originalProps := schema["properties"].(map[string]interface{})
 		cleanedProps := cleaned["properties"].(map[string]interface{})
 		testutil.AssertEqual(t, len(originalProps), len(cleanedProps))
-		
+
 		for key := range originalProps {
 			_, exists := cleanedProps[key]
 			testutil.AssertEqual(t, true, exists)
@@ -488,14 +488,14 @@ data: [DONE]
 		// Read the transformed stream
 		reader := NewSSEReader(result.Body)
 		events := []string{}
-		
+
 		for {
 			event, err := reader.ReadEvent()
 			if err == io.EOF {
 				break
 			}
 			testutil.AssertNoError(t, err)
-			
+
 			if event.Data != "" && event.Data != "[DONE]" {
 				events = append(events, event.Data)
 			}
@@ -503,10 +503,10 @@ data: [DONE]
 
 		// Should have transformed to OpenAI format
 		testutil.AssertEqual(t, true, len(events) > 0)
-		
+
 		var firstEvent map[string]interface{}
 		json.Unmarshal([]byte(events[0]), &firstEvent)
-		
+
 		testutil.AssertEqual(t, "chat.completion.chunk", firstEvent["object"])
 		testutil.AssertEqual(t, "gemini-pro", firstEvent["model"])
 
@@ -628,7 +628,7 @@ func TestGeminiTransformStreamEvent(t *testing.T) {
 		choices := transformedData["choices"].([]interface{})
 		choice := choices[0].(map[string]interface{})
 		delta := choice["delta"].(map[string]interface{})
-		
+
 		toolCalls := delta["tool_calls"].([]interface{})
 		testutil.AssertEqual(t, 1, len(toolCalls))
 
@@ -678,7 +678,7 @@ func TestGeminiIntegration(t *testing.T) {
 						"name":        "test_tool",
 						"description": "A test tool",
 						"parameters": map[string]interface{}{
-							"type": "object",
+							"type":    "object",
 							"$schema": "should be removed",
 						},
 					},
@@ -690,19 +690,19 @@ func TestGeminiIntegration(t *testing.T) {
 		testutil.AssertNoError(t, err)
 
 		reqMap := transformedReq.(map[string]interface{})
-		
+
 		// Check system instruction extraction
 		testutil.AssertEqual(t, "You are helpful", reqMap["systemInstruction"])
-		
+
 		// Check contents structure
 		contents := reqMap["contents"].([]interface{})
 		testutil.AssertEqual(t, 1, len(contents)) // Only user message in contents
-		
+
 		// Check generation config
 		genConfig := reqMap["generationConfig"].(map[string]interface{})
 		testutil.AssertEqual(t, 0.7, genConfig["temperature"])
 		testutil.AssertEqual(t, 1000, genConfig["maxOutputTokens"])
-		
+
 		// Check tools transformation and schema cleaning
 		tools := reqMap["tools"].([]interface{})
 		tool := tools[0].(map[string]interface{})

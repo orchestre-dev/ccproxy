@@ -64,7 +64,7 @@ func (a *SecurityAuditor) Close() error {
 	var err error
 	a.closeOnce.Do(func() {
 		close(a.done)
-		
+
 		if a.flushTicker != nil {
 			a.flushTicker.Stop()
 		}
@@ -349,7 +349,7 @@ func (a *SecurityAuditor) RotateLogs() error {
 
 	// Get audit log directory
 	dir := filepath.Dir(a.config.AuditLogPath)
-	
+
 	// Find old log files
 	files, err := filepath.Glob(filepath.Join(dir, "audit*.log"))
 	if err != nil {

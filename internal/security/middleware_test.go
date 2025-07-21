@@ -115,14 +115,14 @@ func TestSecurityMiddleware(t *testing.T) {
 
 		req, _ := http.NewRequest("GET", "/test", nil)
 		w := httptest.NewRecorder()
-		
+
 		// This test would be too slow, so we'll test the time check logic separately
 		// Just ensure middleware works with long requests
 		go func() {
 			time.Sleep(100 * time.Millisecond)
 			// In a real test, we'd verify log output
 		}()
-		
+
 		// For testing purposes, we'll use a shorter delay
 		router.ServeHTTP(w, req)
 		testutil.AssertEqual(t, 200, w.Code)
@@ -369,7 +369,7 @@ func TestCORSMiddleware(t *testing.T) {
 
 	t.Run("allowed origin", func(t *testing.T) {
 		allowedOrigins := []string{"https://example.com", "https://test.com"}
-		
+
 		router := gin.New()
 		router.Use(CORSMiddleware(allowedOrigins))
 		router.GET("/test", func(c *gin.Context) {
@@ -388,7 +388,7 @@ func TestCORSMiddleware(t *testing.T) {
 
 	t.Run("wildcard origin", func(t *testing.T) {
 		allowedOrigins := []string{"*"}
-		
+
 		router := gin.New()
 		router.Use(CORSMiddleware(allowedOrigins))
 		router.GET("/test", func(c *gin.Context) {
@@ -406,7 +406,7 @@ func TestCORSMiddleware(t *testing.T) {
 
 	t.Run("disallowed origin", func(t *testing.T) {
 		allowedOrigins := []string{"https://example.com"}
-		
+
 		router := gin.New()
 		router.Use(CORSMiddleware(allowedOrigins))
 		router.GET("/test", func(c *gin.Context) {
@@ -424,7 +424,7 @@ func TestCORSMiddleware(t *testing.T) {
 
 	t.Run("preflight request", func(t *testing.T) {
 		allowedOrigins := []string{"https://example.com"}
-		
+
 		router := gin.New()
 		router.Use(CORSMiddleware(allowedOrigins))
 		router.OPTIONS("/test", func(c *gin.Context) {
@@ -767,12 +767,12 @@ func TestResponseCapture(t *testing.T) {
 	t.Run("captures response body", func(t *testing.T) {
 		capture := &responseCapture{
 			ResponseWriter: &mockResponseWriter{},
-			body:          []byte{},
+			body:           []byte{},
 		}
 
 		testData := []byte("Hello World")
 		n, err := capture.Write(testData)
-		
+
 		testutil.AssertNoError(t, err)
 		testutil.AssertEqual(t, len(testData), n)
 		testutil.AssertEqual(t, string(testData), string(capture.body))
@@ -781,7 +781,7 @@ func TestResponseCapture(t *testing.T) {
 	t.Run("captures multiple writes", func(t *testing.T) {
 		capture := &responseCapture{
 			ResponseWriter: &mockResponseWriter{},
-			body:          []byte{},
+			body:           []byte{},
 		}
 
 		data1 := []byte("Hello ")

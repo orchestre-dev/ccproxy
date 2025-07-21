@@ -16,7 +16,7 @@ func TestCountRequestTokens(t *testing.T) {
 		{
 			name:     "empty request",
 			bodyMap:  map[string]interface{}{},
-			minCount: 50,  // Base tokens
+			minCount: 50, // Base tokens
 			maxCount: 50,
 		},
 		{
@@ -102,9 +102,9 @@ func TestCountRequestTokens(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			count := CountRequestTokens(tt.bodyMap)
-			testutil.AssertTrue(t, count >= tt.minCount, 
+			testutil.AssertTrue(t, count >= tt.minCount,
 				"Token count should be at least %d, got %d", tt.minCount, count)
-			testutil.AssertTrue(t, count <= tt.maxCount, 
+			testutil.AssertTrue(t, count <= tt.maxCount,
 				"Token count should be at most %d, got %d", tt.maxCount, count)
 		})
 	}
@@ -164,9 +164,9 @@ func TestCountResponseTokens(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			count := CountResponseTokens(tt.content)
-			testutil.AssertTrue(t, count >= tt.minCount, 
+			testutil.AssertTrue(t, count >= tt.minCount,
 				"Token count should be at least %d, got %d", tt.minCount, count)
-			testutil.AssertTrue(t, count <= tt.maxCount, 
+			testutil.AssertTrue(t, count <= tt.maxCount,
 				"Token count should be at most %d, got %d", tt.maxCount, count)
 		})
 	}
@@ -234,7 +234,7 @@ func TestTokenCountingEdgeCases(t *testing.T) {
 		count := CountResponseTokens(longContent)
 		expectedCount := len(longContent) / 4
 		// Allow for small rounding differences
-		testutil.AssertTrue(t, count >= expectedCount-1 && count <= expectedCount+1, 
+		testutil.AssertTrue(t, count >= expectedCount-1 && count <= expectedCount+1,
 			"Should handle very long content, expected ~%d, got %d", expectedCount, count)
 	})
 

@@ -3,10 +3,10 @@ package commands
 import (
 	"fmt"
 
-	"github.com/spf13/cobra"
 	"github.com/orchestre-dev/ccproxy/internal/config"
 	"github.com/orchestre-dev/ccproxy/internal/process"
 	"github.com/orchestre-dev/ccproxy/internal/utils"
+	"github.com/spf13/cobra"
 )
 
 // StatusCmd returns the status command
@@ -21,29 +21,29 @@ func StatusCmd() *cobra.Command {
 			if err != nil {
 				return fmt.Errorf("failed to create PID manager: %w", err)
 			}
-			
+
 			// Check if running
 			runningPID, err := pidManager.GetRunningPID()
 			if err != nil {
 				return fmt.Errorf("failed to check running status: %w", err)
 			}
-			
+
 			// Get home directory info
 			homeDir, err := utils.InitializeHomeDir()
 			if err != nil {
 				return fmt.Errorf("failed to get home directory: %w", err)
 			}
-			
+
 			// Load configuration to get port
 			configService := config.NewService()
 			configService.Load() // Ignore error, use defaults if fails
 			cfg := configService.Get()
-			
+
 			// Display status with exact formatting from TypeScript version
 			fmt.Println("")
 			fmt.Println("📊 Claude Code Router Status")
 			fmt.Println("════════════════════════════════════════")
-			
+
 			if runningPID > 0 {
 				fmt.Println("✅ Status: Running")
 				fmt.Printf("🆔 Process ID: %d\n", runningPID)
@@ -60,9 +60,9 @@ func StatusCmd() *cobra.Command {
 				fmt.Println("💡 To start the service:")
 				fmt.Println("   ccproxy start")
 			}
-			
+
 			fmt.Println("")
-			
+
 			return nil
 		},
 	}

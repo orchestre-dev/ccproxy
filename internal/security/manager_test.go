@@ -33,7 +33,7 @@ func TestNewManager(t *testing.T) {
 	t.Run("with custom config", func(t *testing.T) {
 		config := StrictSecurityConfig()
 		config.AuditLogPath = testutil.CreateTempFile(t, testConfig.TempDir, "audit.log", "")
-		
+
 		manager, err := NewManager(config)
 		testutil.AssertNoError(t, err)
 		testutil.AssertNotEqual(t, nil, manager)
@@ -73,7 +73,7 @@ func TestManagerValidateRequest(t *testing.T) {
 	}()
 
 	config := DefaultSecurityConfig()
-	config.RequireAuth = false // Disable auth for these tests
+	config.RequireAuth = false        // Disable auth for these tests
 	config.EnableRateLimiting = false // Disable rate limiting for these tests
 	config.AuditLogPath = testutil.CreateTempFile(t, testConfig.TempDir, "audit.log", "")
 
@@ -324,7 +324,7 @@ func TestManagerRateLimit(t *testing.T) {
 	t.Run("rate limit enforcement", func(t *testing.T) {
 		// Create requests from same IP
 		ip := "192.168.1.10"
-		
+
 		// First request should pass
 		req, err := http.NewRequest("GET", "http://example.com/test", nil)
 		testutil.AssertNoError(t, err)
@@ -381,7 +381,7 @@ func TestManagerSanitization(t *testing.T) {
 	t.Run("sanitize response", func(t *testing.T) {
 		data := map[string]interface{}{
 			"result": "success",
-			"token": "sensitive-token",
+			"token":  "sensitive-token",
 		}
 
 		sanitized, err := manager.SanitizeResponse(data)

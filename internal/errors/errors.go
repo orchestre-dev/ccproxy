@@ -25,22 +25,22 @@ const (
 	ErrorTypeTooManyRequests     ErrorType = "too_many_requests"
 
 	// Server errors (5xx)
-	ErrorTypeInternal        ErrorType = "internal_error"
-	ErrorTypeNotImplemented  ErrorType = "not_implemented"
-	ErrorTypeBadGateway      ErrorType = "bad_gateway"
+	ErrorTypeInternal           ErrorType = "internal_error"
+	ErrorTypeNotImplemented     ErrorType = "not_implemented"
+	ErrorTypeBadGateway         ErrorType = "bad_gateway"
 	ErrorTypeServiceUnavailable ErrorType = "service_unavailable"
-	ErrorTypeGatewayTimeout  ErrorType = "gateway_timeout"
+	ErrorTypeGatewayTimeout     ErrorType = "gateway_timeout"
 
 	// Custom errors
-	ErrorTypeProviderError   ErrorType = "provider_error"
-	ErrorTypeTransformError  ErrorType = "transform_error"
-	ErrorTypeRoutingError    ErrorType = "routing_error"
-	ErrorTypeStreamingError  ErrorType = "streaming_error"
-	ErrorTypeConfigError     ErrorType = "config_error"
-	ErrorTypeValidationError ErrorType = "validation_error"
-	ErrorTypeRateLimitError  ErrorType = "rate_limit_error"
-	ErrorTypeProxyError      ErrorType = "proxy_error"
-	ErrorTypeToolError       ErrorType = "tool_error"
+	ErrorTypeProviderError     ErrorType = "provider_error"
+	ErrorTypeTransformError    ErrorType = "transform_error"
+	ErrorTypeRoutingError      ErrorType = "routing_error"
+	ErrorTypeStreamingError    ErrorType = "streaming_error"
+	ErrorTypeConfigError       ErrorType = "config_error"
+	ErrorTypeValidationError   ErrorType = "validation_error"
+	ErrorTypeRateLimitError    ErrorType = "rate_limit_error"
+	ErrorTypeProxyError        ErrorType = "proxy_error"
+	ErrorTypeToolError         ErrorType = "tool_error"
 	ErrorTypeResourceExhausted ErrorType = "resource_exhausted"
 )
 
@@ -133,7 +133,7 @@ func Wrap(err error, errorType ErrorType, message string) *CCProxyError {
 	if err == nil {
 		return nil
 	}
-	
+
 	// If it's already a CCProxyError, preserve some information
 	if ccErr, ok := err.(*CCProxyError); ok {
 		return &CCProxyError{
@@ -149,7 +149,7 @@ func Wrap(err error, errorType ErrorType, message string) *CCProxyError {
 			wrapped:    err,
 		}
 	}
-	
+
 	return &CCProxyError{
 		Type:       errorType,
 		Message:    message,
@@ -169,28 +169,28 @@ func Wrapf(err error, errorType ErrorType, format string, args ...interface{}) *
 func sanitizeErrorMessage(message string) string {
 	// Remove potential API keys, tokens, and other sensitive data
 	patterns := []string{
-		`(?i)api[_-]?key[_-]?[:\s]*[a-zA-Z0-9_\-/+=]+`,     // API keys
-		`(?i)token[_-]?[:\s]*[a-zA-Z0-9_\-/+=.]+`,          // Tokens
-		`(?i)secret[_-]?[:\s]*[a-zA-Z0-9_\-/+=]+`,          // Secrets
-		`(?i)password[_-]?[:\s]*\S+`,                       // Passwords
-		`(?i)authorization[_-]?[:\s]*\S+`,                  // Authorization headers
-		`(?i)bearer[_-]?\s*[a-zA-Z0-9_\-/+=.]+`,           // Bearer tokens
+		`(?i)api[_-]?key[_-]?[:\s]*[a-zA-Z0-9_\-/+=]+`,       // API keys
+		`(?i)token[_-]?[:\s]*[a-zA-Z0-9_\-/+=.]+`,            // Tokens
+		`(?i)secret[_-]?[:\s]*[a-zA-Z0-9_\-/+=]+`,            // Secrets
+		`(?i)password[_-]?[:\s]*\S+`,                         // Passwords
+		`(?i)authorization[_-]?[:\s]*\S+`,                    // Authorization headers
+		`(?i)bearer[_-]?\s*[a-zA-Z0-9_\-/+=.]+`,              // Bearer tokens
 		`\b[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}\b`, // Email addresses
-		`\b(?:\d{1,3}\.){3}\d{1,3}(?::\d+)?\b`,            // IP addresses with ports
-		`(?i)x-api-key[_-]?[:\s]*[a-zA-Z0-9_\-/+=]+`,      // x-api-key headers
+		`\b(?:\d{1,3}\.){3}\d{1,3}(?::\d+)?\b`,               // IP addresses with ports
+		`(?i)x-api-key[_-]?[:\s]*[a-zA-Z0-9_\-/+=]+`,         // x-api-key headers
 	}
-	
+
 	sanitized := message
 	for _, pattern := range patterns {
 		re := regexp.MustCompile(pattern)
 		sanitized = re.ReplaceAllString(sanitized, "[REDACTED]")
 	}
-	
+
 	// Limit message length to prevent log flooding
 	if len(sanitized) > 500 {
 		sanitized = sanitized[:497] + "..."
 	}
-	
+
 	return sanitized
 }
 
@@ -203,15 +203,15 @@ func FromProviderResponse(statusCode int, body []byte, provider string) *CCProxy
 			Code    string `json:"code"`
 		} `json:"error"`
 	}
-	
+
 	message := fmt.Sprintf("Provider returned status %d", statusCode)
-	
+
 	if err := json.Unmarshal(body, &providerError); err == nil && providerError.Error.Message != "" {
 		message = sanitizeErrorMessage(providerError.Error.Message)
 	}
-	
+
 	errorType := getErrorTypeFromStatusCode(statusCode)
-	
+
 	return &CCProxyError{
 		Type:       errorType,
 		Message:    message,
@@ -235,45 +235,45 @@ func (e *CCProxyError) ToJSON() ([]byte, error) {
 			"message": e.Message,
 		},
 	}
-	
+
 	// Add optional fields
 	if e.Code != "" {
 		response["error"].(map[string]interface{})["code"] = e.Code
 	}
-	
+
 	if e.Details != nil && len(e.Details) > 0 {
 		response["error"].(map[string]interface{})["details"] = e.Details
 	}
-	
+
 	if e.Provider != "" {
 		response["error"].(map[string]interface{})["provider"] = e.Provider
 	}
-	
+
 	if e.RequestID != "" {
 		response["error"].(map[string]interface{})["request_id"] = e.RequestID
 	}
-	
+
 	return json.Marshal(response)
 }
 
 // WriteHTTPResponse writes the error as HTTP response
 func (e *CCProxyError) WriteHTTPResponse(w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json")
-	
+
 	// Add retry header if applicable
 	if e.Retryable && e.RetryAfter != nil {
 		w.Header().Set("Retry-After", fmt.Sprintf("%d", int(e.RetryAfter.Seconds())))
 	}
-	
+
 	w.WriteHeader(e.StatusCode)
-	
+
 	data, err := e.ToJSON()
 	if err != nil {
 		// Fallback error response
 		w.Write([]byte(`{"error":{"type":"internal_error","message":"Failed to serialize error"}}`))
 		return
 	}
-	
+
 	w.Write(data)
 }
 
@@ -398,7 +398,7 @@ func IsRetryableError(err error) bool {
 	if errors.As(err, &ccErr) {
 		return ccErr.Retryable
 	}
-	
+
 	// Check for common retryable error patterns
 	errStr := err.Error()
 	retryablePatterns := []string{
@@ -410,14 +410,14 @@ func IsRetryableError(err error) bool {
 		"service unavailable",
 		"bad gateway",
 	}
-	
+
 	errLower := strings.ToLower(errStr)
 	for _, pattern := range retryablePatterns {
 		if strings.Contains(errLower, pattern) {
 			return true
 		}
 	}
-	
+
 	return false
 }
 

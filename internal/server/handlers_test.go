@@ -458,12 +458,12 @@ func TestServerRouteSetup(t *testing.T) {
 	for _, route := range routes {
 		w := httptest.NewRecorder()
 		req := httptest.NewRequest(route.method, route.path, nil)
-		
+
 		// Add auth for protected endpoints
 		if route.path != "/" && route.path != "/health" && route.path != "/status" {
 			req.Header.Set("Authorization", "Bearer test-api-key")
 		}
-		
+
 		router.ServeHTTP(w, req)
 
 		// We expect some response, not 404

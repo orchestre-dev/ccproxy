@@ -136,7 +136,7 @@ func (lt *LatencyTracker) GetHistogram(buckets []time.Duration) map[string]int {
 	defer lt.mu.RUnlock()
 
 	histogram := make(map[string]int)
-	
+
 	// Initialize all bucket keys
 	for i := 0; i <= len(buckets); i++ {
 		var key string

@@ -279,11 +279,11 @@ func TestSanitizeRequest(t *testing.T) {
 
 		resultArray := result.([]interface{})
 		testutil.AssertContains(t, resultArray[0].(string), "&lt;script&gt;")
-		
+
 		nestedMap := resultArray[1].(map[string]interface{})
 		testutil.AssertEqual(t, "[REDACTED]", nestedMap["token"])
 		testutil.AssertEqual(t, "safe", nestedMap["data"])
-		
+
 		testutil.AssertEqual(t, "normal string", resultArray[2])
 	})
 
@@ -340,14 +340,14 @@ func TestSanitizeRequest(t *testing.T) {
 		user := resultMap["user"].(map[string]interface{})
 		testutil.AssertContains(t, user["name"].(string), "&lt;script&gt;")
 		testutil.AssertEqual(t, "[REDACTED]", user["password"])
-		
+
 		details := user["details"].(map[string]interface{})
 		testutil.AssertEqual(t, "[REDACTED]", details["email"])
 		testutil.AssertEqual(t, "[REDACTED]", details["api_key"])
 
 		items := resultMap["items"].([]interface{})
 		testutil.AssertEqual(t, "item1", items[0])
-		
+
 		nestedItem := items[1].(map[string]interface{})
 		testutil.AssertEqual(t, "[REDACTED]", nestedItem["token"])
 	})
@@ -554,16 +554,16 @@ func TestMaskingFunctions(t *testing.T) {
 
 	t.Run("MaskEmail", func(t *testing.T) {
 		testutil.AssertEqual(t, "us**@example.com", MaskEmail("user@example.com"))
-		testutil.AssertEqual(t, "*@test.com", MaskEmail("a@test.com")) // Short username (1 char)
+		testutil.AssertEqual(t, "*@test.com", MaskEmail("a@test.com"))       // Short username (1 char)
 		testutil.AssertEqual(t, "inv**********", MaskEmail("invalid-email")) // Invalid format - first 3 + 10 masks
 		testutil.AssertEqual(t, "**@domain.com", MaskEmail("ab@domain.com")) // 2-char username
 	})
 
 	t.Run("MaskAPIKey", func(t *testing.T) {
-		testutil.AssertEqual(t, "sk-1***5678", MaskAPIKey("sk-12345678")) // 11 chars: first 4 + 3 stars + last 4
-		testutil.AssertEqual(t, "abc1*****xyz9", MaskAPIKey("abc123456xyz9")) // 13 chars: first 4 + 5 stars + last 4
-		testutil.AssertEqual(t, "*****", MaskAPIKey("short")) // Too short (5 chars)
-		testutil.AssertEqual(t, "********", MaskAPIKey("8charkey")) // Exactly 8 chars
+		testutil.AssertEqual(t, "sk-1***5678", MaskAPIKey("sk-12345678"))             // 11 chars: first 4 + 3 stars + last 4
+		testutil.AssertEqual(t, "abc1*****xyz9", MaskAPIKey("abc123456xyz9"))         // 13 chars: first 4 + 5 stars + last 4
+		testutil.AssertEqual(t, "*****", MaskAPIKey("short"))                         // Too short (5 chars)
+		testutil.AssertEqual(t, "********", MaskAPIKey("8charkey"))                   // Exactly 8 chars
 		testutil.AssertEqual(t, "long*********test", MaskAPIKey("longapikeyfortest")) // 17 chars: first 4 + 9 stars + last 4
 	})
 }
@@ -617,7 +617,7 @@ func TestRemoveSensitiveData(t *testing.T) {
 		user := result["user"].(map[string]interface{})
 		testutil.AssertEqual(t, "John", user["name"])
 		testutil.AssertEqual(t, "[REDACTED]", user["password"])
-		
+
 		details := user["details"].(map[string]interface{})
 		testutil.AssertEqual(t, "555-1234", details["phone"])
 		// Email should be redacted because "email" is a sensitive key
@@ -634,8 +634,8 @@ func TestEdgeCases(t *testing.T) {
 	}()
 
 	t.Run("handles circular references gracefully", func(t *testing.T) {
-		// Note: This is a limitation - we can't easily test circular references 
-		// because JSON marshaling will fail. In a real implementation, we might 
+		// Note: This is a limitation - we can't easily test circular references
+		// because JSON marshaling will fail. In a real implementation, we might
 		// need more sophisticated cycle detection.
 		sanitizer, err := NewDataSanitizer(nil)
 		testutil.AssertNoError(t, err)
@@ -687,20 +687,20 @@ func TestEdgeCases(t *testing.T) {
 		testutil.AssertNoError(t, err)
 
 		resultMap := result.(map[string]interface{})
-		
+
 		// Note: JSON unmarshaling converts numbers to float64
 		num, ok := resultMap["number"].(float64)
 		testutil.AssertTrue(t, ok)
 		testutil.AssertEqual(t, 42.0, num)
-		
-		boolean, ok := resultMap["boolean"].(bool) 
+
+		boolean, ok := resultMap["boolean"].(bool)
 		testutil.AssertTrue(t, ok)
 		testutil.AssertEqual(t, true, boolean)
-		
+
 		float, ok := resultMap["float"].(float64)
 		testutil.AssertTrue(t, ok)
 		testutil.AssertEqual(t, 3.14, float)
-		
+
 		testutil.AssertEqual(t, nil, resultMap["null"])
 	})
 }

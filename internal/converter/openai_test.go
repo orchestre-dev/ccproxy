@@ -16,12 +16,12 @@ func TestOpenAIConverter_ToGeneric_Request(t *testing.T) {
 	converter := NewOpenAIConverter()
 
 	tests := []struct {
-		name                string
-		input               string
-		expectedModel       string
-		expectedSystem      string
+		name                 string
+		input                string
+		expectedModel        string
+		expectedSystem       string
 		expectedMessageCount int
-		expectError         bool
+		expectError          bool
 	}{
 		{
 			name: "basic request",
@@ -36,10 +36,10 @@ func TestOpenAIConverter_ToGeneric_Request(t *testing.T) {
 				"max_tokens": 100,
 				"temperature": 0.7
 			}`,
-			expectedModel:       "gpt-4",
-			expectedSystem:      "",
+			expectedModel:        "gpt-4",
+			expectedSystem:       "",
 			expectedMessageCount: 1,
-			expectError:         false,
+			expectError:          false,
 		},
 		{
 			name: "request with system message",
@@ -59,10 +59,10 @@ func TestOpenAIConverter_ToGeneric_Request(t *testing.T) {
 				"temperature": 0.5,
 				"stream": true
 			}`,
-			expectedModel:       "gpt-3.5-turbo",
-			expectedSystem:      "You are a helpful assistant",
+			expectedModel:        "gpt-3.5-turbo",
+			expectedSystem:       "You are a helpful assistant",
 			expectedMessageCount: 1, // System message extracted
-			expectError:         false,
+			expectError:          false,
 		},
 		{
 			name: "request with multiple system messages",
@@ -84,10 +84,10 @@ func TestOpenAIConverter_ToGeneric_Request(t *testing.T) {
 				],
 				"max_tokens": 150
 			}`,
-			expectedModel:       "gpt-4-turbo",
-			expectedSystem:      "Second system message", // Last system message wins
+			expectedModel:        "gpt-4-turbo",
+			expectedSystem:       "Second system message", // Last system message wins
 			expectedMessageCount: 1,
-			expectError:         false,
+			expectError:          false,
 		},
 		{
 			name: "request with message name",
@@ -102,10 +102,10 @@ func TestOpenAIConverter_ToGeneric_Request(t *testing.T) {
 				],
 				"max_tokens": 100
 			}`,
-			expectedModel:       "gpt-4",
-			expectedSystem:      "",
+			expectedModel:        "gpt-4",
+			expectedSystem:       "",
 			expectedMessageCount: 1,
-			expectError:         false,
+			expectError:          false,
 		},
 		{
 			name: "request with conversation",
@@ -127,10 +127,10 @@ func TestOpenAIConverter_ToGeneric_Request(t *testing.T) {
 				],
 				"max_tokens": 100
 			}`,
-			expectedModel:       "gpt-3.5-turbo",
-			expectedSystem:      "",
+			expectedModel:        "gpt-3.5-turbo",
+			expectedSystem:       "",
 			expectedMessageCount: 3,
-			expectError:         false,
+			expectError:          false,
 		},
 		{
 			name: "request with additional parameters",
@@ -147,10 +147,10 @@ func TestOpenAIConverter_ToGeneric_Request(t *testing.T) {
 				"n": 1,
 				"stop": ["###", "END"]
 			}`,
-			expectedModel:       "gpt-4",
-			expectedSystem:      "",
+			expectedModel:        "gpt-4",
+			expectedSystem:       "",
 			expectedMessageCount: 1,
-			expectError:         false,
+			expectError:          false,
 		},
 		{
 			name:        "malformed JSON",
@@ -315,12 +315,12 @@ func TestOpenAIConverter_FromGeneric_Request(t *testing.T) {
 	converter := NewOpenAIConverter()
 
 	tests := []struct {
-		name                string
-		input               string
-		expectedModel       string
+		name                 string
+		input                string
+		expectedModel        string
 		expectedMessageCount int
-		expectSystemMessage bool
-		expectError         bool
+		expectSystemMessage  bool
+		expectError          bool
 	}{
 		{
 			name: "basic request",
@@ -335,10 +335,10 @@ func TestOpenAIConverter_FromGeneric_Request(t *testing.T) {
 				"max_tokens": 100,
 				"temperature": 0.7
 			}`,
-			expectedModel:       "gpt-4",
+			expectedModel:        "gpt-4",
 			expectedMessageCount: 1,
-			expectSystemMessage: false,
-			expectError:         false,
+			expectSystemMessage:  false,
+			expectError:          false,
 		},
 		{
 			name: "request with system",
@@ -354,10 +354,10 @@ func TestOpenAIConverter_FromGeneric_Request(t *testing.T) {
 				"max_tokens": 200,
 				"stream": true
 			}`,
-			expectedModel:       "gpt-3.5-turbo",
+			expectedModel:        "gpt-3.5-turbo",
 			expectedMessageCount: 2, // System + user message
-			expectSystemMessage: true,
-			expectError:         false,
+			expectSystemMessage:  true,
+			expectError:          false,
 		},
 		{
 			name: "request with anthropic content array",
@@ -371,10 +371,10 @@ func TestOpenAIConverter_FromGeneric_Request(t *testing.T) {
 				],
 				"max_tokens": 150
 			}`,
-			expectedModel:       "gpt-4",
+			expectedModel:        "gpt-4",
 			expectedMessageCount: 1,
-			expectSystemMessage: false,
-			expectError:         false,
+			expectSystemMessage:  false,
+			expectError:          false,
 		},
 		{
 			name: "request with message name",
@@ -389,10 +389,10 @@ func TestOpenAIConverter_FromGeneric_Request(t *testing.T) {
 				],
 				"max_tokens": 100
 			}`,
-			expectedModel:       "gpt-4",
+			expectedModel:        "gpt-4",
 			expectedMessageCount: 1,
-			expectSystemMessage: false,
-			expectError:         false,
+			expectSystemMessage:  false,
+			expectError:          false,
 		},
 		{
 			name: "request with complex content",
@@ -409,10 +409,10 @@ func TestOpenAIConverter_FromGeneric_Request(t *testing.T) {
 				],
 				"max_tokens": 100
 			}`,
-			expectedModel:       "gpt-4",
+			expectedModel:        "gpt-4",
 			expectedMessageCount: 1,
-			expectSystemMessage: false,
-			expectError:         false,
+			expectSystemMessage:  false,
+			expectError:          false,
 		},
 		{
 			name:        "malformed JSON",
@@ -561,7 +561,7 @@ func TestOpenAIConverter_ConvertStreamEvent(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			result, err := converter.ConvertStreamEvent(tt.input, tt.toFormat)
-			
+
 			// Current implementation just passes through
 			testutil.AssertNoError(t, err)
 			testutil.AssertEqual(t, string(tt.input), string(result))
@@ -719,7 +719,7 @@ func TestOpenAIConverter_ErrorHandling(t *testing.T) {
 			],
 			"max_tokens": 100
 		}`
-		
+
 		_, err := converter.ToGeneric(json.RawMessage(input), true)
 		testutil.AssertNoError(t, err)
 	})
@@ -740,7 +740,7 @@ func TestOpenAIConverter_ErrorHandling(t *testing.T) {
 				}
 			]
 		}`
-		
+
 		_, err := converter.ToGeneric(json.RawMessage(input), false)
 		testutil.AssertNoError(t, err)
 	})

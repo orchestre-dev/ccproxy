@@ -135,7 +135,7 @@ func ValidateSpawnDepth(value string) error {
 
 	// Trim whitespace to prevent issues
 	value = strings.TrimSpace(value)
-	
+
 	// Check for extremely long values that might cause overflow
 	if len(value) > 10 {
 		return fmt.Errorf("value too long to be a valid spawn depth")
@@ -182,7 +182,7 @@ func ValidateBoolean(value string) error {
 	if value == "" {
 		return nil
 	}
-	
+
 	lower := strings.ToLower(value)
 	if lower == "true" || lower == "false" || lower == "1" || lower == "0" {
 		return nil
@@ -277,7 +277,7 @@ func ValidateEnvironmentVariables() error {
 
 	for _, envVar := range EnvironmentVariables {
 		value := os.Getenv(envVar.Name)
-		
+
 		// Check if required variable is missing
 		if envVar.Required && value == "" {
 			errors = append(errors, fmt.Sprintf("%s: required environment variable not set", envVar.Name))
@@ -307,10 +307,10 @@ func ValidateEnvironmentVariables() error {
 // GetEnvironmentVariableDocumentation returns a formatted string documenting all environment variables
 func GetEnvironmentVariableDocumentation() string {
 	var sb strings.Builder
-	
+
 	sb.WriteString("CCProxy Environment Variables\n")
 	sb.WriteString("============================\n\n")
-	
+
 	for _, envVar := range EnvironmentVariables {
 		sb.WriteString(fmt.Sprintf("%-25s %s\n", envVar.Name, envVar.Description))
 		if envVar.Required {
@@ -321,7 +321,7 @@ func GetEnvironmentVariableDocumentation() string {
 		}
 		sb.WriteString("\n")
 	}
-	
+
 	return sb.String()
 }
 
@@ -357,7 +357,7 @@ func ValidateEnvironmentVariablesWithReport() *ValidationReport {
 			Valid:   true,
 			Default: envVar.DefaultValue,
 		}
-		
+
 		// Check if required variable is missing
 		if envVar.Required && value == "" {
 			detail.Valid = false
@@ -373,7 +373,7 @@ func ValidateEnvironmentVariablesWithReport() *ValidationReport {
 				report.Valid = false
 			}
 		}
-		
+
 		report.Details[envVar.Name] = detail
 	}
 

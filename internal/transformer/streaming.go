@@ -12,10 +12,10 @@ import (
 
 // SSEReader implements StreamReader for Server-Sent Events
 type SSEReader struct {
-	reader  *bufio.Reader
-	closer  io.Closer
-	mu      sync.Mutex
-	closed  bool
+	reader *bufio.Reader
+	closer io.Closer
+	mu     sync.Mutex
+	closed bool
 }
 
 // NewSSEReader creates a new SSE reader
@@ -30,14 +30,14 @@ func NewSSEReader(r io.ReadCloser) *SSEReader {
 func (r *SSEReader) ReadEvent() (*SSEEvent, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
-	
+
 	if r.closed {
 		return nil, io.EOF
 	}
-	
+
 	event := &SSEEvent{}
 	var dataLines []string
-	
+
 	for {
 		line, err := r.reader.ReadString('\n')
 		if err != nil {
@@ -48,15 +48,15 @@ func (r *SSEReader) ReadEvent() (*SSEEvent, error) {
 			}
 			return nil, err
 		}
-		
+
 		line = strings.TrimRight(line, "\r\n")
-		
+
 		// Empty line signals end of event
 		if line == "" && (event.Event != "" || len(dataLines) > 0) {
 			event.Data = strings.Join(dataLines, "\n")
 			return event, nil
 		}
-		
+
 		// Parse field
 		if strings.HasPrefix(line, "event: ") {
 			event.Event = strings.TrimPrefix(line, "event: ")
@@ -75,11 +75,11 @@ func (r *SSEReader) ReadEvent() (*SSEEvent, error) {
 func (r *SSEReader) Close() error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
-	
+
 	if r.closed {
 		return nil
 	}
-	
+
 	r.closed = true
 	return r.closer.Close()
 }
@@ -97,12 +97,12 @@ func NewSSEWriter(w io.Writer) *SSEWriter {
 	writer := &SSEWriter{
 		writer: w,
 	}
-	
+
 	// Check if writer supports flushing
 	if f, ok := w.(http.Flusher); ok {
 		writer.flusher = f
 	}
-	
+
 	return writer
 }
 
@@ -110,28 +110,28 @@ func NewSSEWriter(w io.Writer) *SSEWriter {
 func (w *SSEWriter) WriteEvent(event *SSEEvent) error {
 	w.mu.Lock()
 	defer w.mu.Unlock()
-	
+
 	if w.closed {
 		return fmt.Errorf("writer is closed")
 	}
-	
+
 	var buf bytes.Buffer
-	
+
 	// Write event type
 	if event.Event != "" {
 		fmt.Fprintf(&buf, "event: %s\n", event.Event)
 	}
-	
+
 	// Write ID
 	if event.ID != "" {
 		fmt.Fprintf(&buf, "id: %s\n", event.ID)
 	}
-	
+
 	// Write retry
 	if event.Retry > 0 {
 		fmt.Fprintf(&buf, "retry: %d\n", event.Retry)
 	}
-	
+
 	// Write data (can be multiline)
 	if event.Data != "" {
 		lines := strings.Split(event.Data, "\n")
@@ -139,21 +139,21 @@ func (w *SSEWriter) WriteEvent(event *SSEEvent) error {
 			fmt.Fprintf(&buf, "data: %s\n", line)
 		}
 	}
-	
+
 	// End of event
 	buf.WriteString("\n")
-	
+
 	// Write to underlying writer
 	_, err := w.writer.Write(buf.Bytes())
 	if err != nil {
 		return err
 	}
-	
+
 	// Flush if possible
 	if w.flusher != nil {
 		w.flusher.Flush()
 	}
-	
+
 	return nil
 }
 
@@ -161,11 +161,11 @@ func (w *SSEWriter) WriteEvent(event *SSEEvent) error {
 func (w *SSEWriter) Flush() error {
 	w.mu.Lock()
 	defer w.mu.Unlock()
-	
+
 	if w.flusher != nil {
 		w.flusher.Flush()
 	}
-	
+
 	return nil
 }
 
@@ -173,23 +173,23 @@ func (w *SSEWriter) Flush() error {
 func (w *SSEWriter) Close() error {
 	w.mu.Lock()
 	defer w.mu.Unlock()
-	
+
 	if w.closed {
 		return nil
 	}
-	
+
 	w.closed = true
-	
+
 	// Flush any remaining data
 	if w.flusher != nil {
 		w.flusher.Flush()
 	}
-	
+
 	// If the writer is also a closer, close it
 	if closer, ok := w.writer.(io.Closer); ok {
 		return closer.Close()
 	}
-	
+
 	return nil
 }
 
@@ -197,7 +197,7 @@ func (w *SSEWriter) Close() error {
 func StreamPipe(reader StreamReader, writer StreamWriter, transform func(*SSEEvent) (*SSEEvent, error)) error {
 	defer reader.Close()
 	defer writer.Close()
-	
+
 	for {
 		event, err := reader.ReadEvent()
 		if err != nil {
@@ -206,20 +206,20 @@ func StreamPipe(reader StreamReader, writer StreamWriter, transform func(*SSEEve
 			}
 			return err
 		}
-		
+
 		// Apply transformation if provided
 		if transform != nil {
 			event, err = transform(event)
 			if err != nil {
 				return err
 			}
-			
+
 			// Skip nil events (filtered out)
 			if event == nil {
 				continue
 			}
 		}
-		
+
 		// Write transformed event
 		if err := writer.WriteEvent(event); err != nil {
 			return err

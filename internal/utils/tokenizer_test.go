@@ -4,8 +4,8 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/pkoukk/tiktoken-go"
 	testutil "github.com/orchestre-dev/ccproxy/internal/testing"
+	"github.com/pkoukk/tiktoken-go"
 )
 
 func TestInitTokenizer(t *testing.T) {
@@ -16,7 +16,7 @@ func TestInitTokenizer(t *testing.T) {
 		// If tiktoken is not available, skip the test
 		t.Skip("tiktoken-go dependency not available:", err)
 	}
-	
+
 	// If initialization succeeded, test encoder
 	encoder, err := GetEncoder()
 	testutil.AssertNoError(t, err, "Should get encoder after successful initialization")
@@ -30,9 +30,9 @@ func TestGetEncoder(t *testing.T) {
 		// If tiktoken is not available, skip the test
 		t.Skip("tiktoken-go dependency not available:", err)
 	}
-	
+
 	testutil.AssertNotEqual(t, nil, encoder, "Encoder should not be nil")
-	
+
 	// Test getting encoder again (should return same instance)
 	encoder2, err := GetEncoder()
 	testutil.AssertNoError(t, err, "Should get encoder on second call")
@@ -69,10 +69,10 @@ func TestCountTokens(t *testing.T) {
 				// If tiktoken is not available, skip the test
 				t.Skip("tiktoken-go dependency not available:", err)
 			}
-			
-			testutil.AssertTrue(t, count >= tt.minCount, 
+
+			testutil.AssertTrue(t, count >= tt.minCount,
 				"Token count should be at least %d, got %d", tt.minCount, count)
-			
+
 			// For empty string, count should be exactly 0
 			if tt.text == "" {
 				testutil.AssertEqual(t, 0, count, "Empty string should have 0 tokens")
@@ -83,42 +83,42 @@ func TestCountTokens(t *testing.T) {
 
 func TestCountTokensConsistency(t *testing.T) {
 	text := "Consistent test message for token counting"
-	
+
 	count1, err := CountTokens(text)
 	if err != nil {
 		t.Skip("tiktoken-go dependency not available:", err)
 	}
-	
+
 	count2, err := CountTokens(text)
 	testutil.AssertNoError(t, err, "Should count tokens on second call")
-	
+
 	testutil.AssertEqual(t, count1, count2, "Token count should be consistent")
 }
 
 func TestTokenizerErrorHandling(t *testing.T) {
 	// Test error handling when encoder is not available
 	// This tests the error path in CountTokens
-	
+
 	// Reset the encoder to force re-initialization
 	originalEncoder := encoder
 	originalEncoderOnce := encoderOnce
-	
+
 	defer func() {
 		// Restore original state
 		encoder = originalEncoder
 		encoderOnce = originalEncoderOnce
 	}()
-	
+
 	// Clear encoder state to test initialization
 	encoder = nil
 	encoderOnce = *new(sync.Once)
 	encoderErr = nil
-	
+
 	// Try to count tokens - this will trigger initialization
 	_, err := CountTokens("test")
 	if err != nil {
 		// This is expected if tiktoken is not available
-		testutil.AssertContains(t, err.Error(), "failed to get encoder", 
+		testutil.AssertContains(t, err.Error(), "failed to get encoder",
 			"Error should mention encoder failure")
 	}
 }
@@ -294,7 +294,7 @@ func TestCountMessageTokens(t *testing.T) {
 			if tt.skipTest {
 				t.Skip("Test case requires specific setup")
 			}
-			
+
 			count, err := CountMessageTokens(tt.params)
 			if err != nil {
 				// If tiktoken is not available, skip the test
@@ -303,8 +303,8 @@ func TestCountMessageTokens(t *testing.T) {
 				}
 				testutil.AssertNoError(t, err, "Should count message tokens without error")
 			}
-			
-			testutil.AssertTrue(t, count >= tt.minCount, 
+
+			testutil.AssertTrue(t, count >= tt.minCount,
 				"Token count should be at least %d, got %d", tt.minCount, count)
 			testutil.AssertTrue(t, count > 0, "Token count should be positive")
 		})
@@ -325,7 +325,7 @@ func TestCountMessageTokensErrorCases(t *testing.T) {
 				},
 				Tools: []Tool{
 					{
-						Name: "test-tool",
+						Name:        "test-tool",
 						InputSchema: make(chan int), // Cannot be marshaled
 					},
 				},
@@ -375,12 +375,12 @@ func TestCountMessageTokensErrorCases(t *testing.T) {
 				// But if we do get one, it should be about marshaling
 				return
 			}
-			
+
 			// Check if it's a tiktoken availability error
 			if testutil.ContainsString(err.Error(), "failed to get encoder") {
 				t.Skip("tiktoken-go dependency not available:", err)
 			}
-			
+
 			// Should be an error about marshaling
 			testutil.AssertError(t, err, "Should return error for unmarshalable content")
 		})
@@ -460,12 +460,12 @@ func TestCountMessageContentTokens(t *testing.T) {
 					},
 				},
 			}
-			
+
 			count, err := CountMessageTokens(params)
 			if err != nil && testutil.ContainsString(err.Error(), "failed to get encoder") {
 				t.Skip("tiktoken-go dependency not available:", err)
 			}
-			
+
 			if err == nil {
 				testutil.AssertTrue(t, count >= 0, "Token count should be non-negative")
 			}
@@ -532,12 +532,12 @@ func TestCountSystemTokens(t *testing.T) {
 				},
 				System: tt.system,
 			}
-			
+
 			count, err := CountMessageTokens(params)
 			if err != nil && testutil.ContainsString(err.Error(), "failed to get encoder") {
 				t.Skip("tiktoken-go dependency not available:", err)
 			}
-			
+
 			if err == nil {
 				testutil.AssertTrue(t, count >= 0, "Token count should be non-negative")
 			}
@@ -550,19 +550,19 @@ func TestGetEncoderErrorPath(t *testing.T) {
 	originalEncoder := encoder
 	originalEncoderOnce := encoderOnce
 	originalEncoderErr := encoderErr
-	
+
 	defer func() {
 		// Restore original state
 		encoder = originalEncoder
 		encoderOnce = originalEncoderOnce
 		encoderErr = originalEncoderErr
 	}()
-	
+
 	// Force an error state
 	encoder = nil
 	encoderOnce = *new(sync.Once)
 	encoderErr = nil
-	
+
 	// Try to get encoder, which will trigger initialization
 	enc, err := GetEncoder()
 	if err != nil {
@@ -591,13 +591,13 @@ func BenchmarkCountMessageTokens(b *testing.B) {
 		},
 		System: "You are a helpful assistant focused on performance testing.",
 	}
-	
+
 	// Skip benchmark if tokenizer is not available
 	_, err := CountMessageTokens(params)
 	if err != nil {
 		b.Skip("tiktoken-go dependency not available:", err)
 	}
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		CountMessageTokens(params)
@@ -646,13 +646,13 @@ func BenchmarkCountMessageTokensComplex(b *testing.B) {
 			},
 		},
 	}
-	
+
 	// Skip benchmark if tokenizer is not available
 	_, err := CountMessageTokens(params)
 	if err != nil {
 		b.Skip("tiktoken-go dependency not available:", err)
 	}
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		CountMessageTokens(params)

@@ -17,7 +17,7 @@ func init() {
 func TestAuthMiddleware(t *testing.T) {
 	t.Run("NoAPIKeyLocalhostAccess", func(t *testing.T) {
 		middleware := authMiddleware("", true)
-		
+
 		router := gin.New()
 		router.Use(middleware)
 		router.GET("/test", func(c *gin.Context) {
@@ -37,7 +37,7 @@ func TestAuthMiddleware(t *testing.T) {
 
 	t.Run("NoAPIKeyNonLocalhostBlocked", func(t *testing.T) {
 		middleware := authMiddleware("", true)
-		
+
 		router := gin.New()
 		router.Use(middleware)
 		router.GET("/test", func(c *gin.Context) {
@@ -58,7 +58,7 @@ func TestAuthMiddleware(t *testing.T) {
 	t.Run("ValidBearerToken", func(t *testing.T) {
 		apiKey := "test-api-key"
 		middleware := authMiddleware(apiKey, true)
-		
+
 		router := gin.New()
 		router.Use(middleware)
 		router.GET("/test", func(c *gin.Context) {
@@ -78,7 +78,7 @@ func TestAuthMiddleware(t *testing.T) {
 	t.Run("ValidXAPIKey", func(t *testing.T) {
 		apiKey := "test-api-key"
 		middleware := authMiddleware(apiKey, true)
-		
+
 		router := gin.New()
 		router.Use(middleware)
 		router.GET("/test", func(c *gin.Context) {
@@ -98,7 +98,7 @@ func TestAuthMiddleware(t *testing.T) {
 	t.Run("InvalidAPIKey", func(t *testing.T) {
 		apiKey := "test-api-key"
 		middleware := authMiddleware(apiKey, true)
-		
+
 		router := gin.New()
 		router.Use(middleware)
 		router.GET("/test", func(c *gin.Context) {
@@ -118,7 +118,7 @@ func TestAuthMiddleware(t *testing.T) {
 	t.Run("SkipAuthForHealthEndpoints", func(t *testing.T) {
 		apiKey := "test-api-key"
 		middleware := authMiddleware(apiKey, true)
-		
+
 		router := gin.New()
 		router.Use(middleware)
 		router.GET("/health", func(c *gin.Context) {
@@ -138,7 +138,7 @@ func TestAuthMiddleware(t *testing.T) {
 	t.Run("CaseInsensitiveBearerToken", func(t *testing.T) {
 		apiKey := "test-api-key"
 		middleware := authMiddleware(apiKey, true)
-		
+
 		router := gin.New()
 		router.Use(middleware)
 		router.GET("/test", func(c *gin.Context) {
@@ -188,7 +188,7 @@ func TestIsLocalhost(t *testing.T) {
 
 func TestCORSMiddleware(t *testing.T) {
 	middleware := corsMiddleware()
-	
+
 	router := gin.New()
 	router.Use(middleware)
 	router.GET("/test", func(c *gin.Context) {
@@ -238,7 +238,7 @@ func TestRequestSizeLimitMiddleware(t *testing.T) {
 	t.Run("RequestWithinLimit", func(t *testing.T) {
 		maxSize := int64(100) // 100 bytes
 		middleware := requestSizeLimitMiddleware(maxSize)
-		
+
 		router := gin.New()
 		router.Use(middleware)
 		router.POST("/test", func(c *gin.Context) {
@@ -259,7 +259,7 @@ func TestRequestSizeLimitMiddleware(t *testing.T) {
 	t.Run("RequestExceedsLimit", func(t *testing.T) {
 		maxSize := int64(10) // 10 bytes
 		middleware := requestSizeLimitMiddleware(maxSize)
-		
+
 		router := gin.New()
 		router.Use(middleware)
 		router.POST("/test", func(c *gin.Context) {
@@ -281,7 +281,7 @@ func TestRequestSizeLimitMiddleware(t *testing.T) {
 	t.Run("DisabledSizeLimit", func(t *testing.T) {
 		maxSize := int64(0) // Disabled
 		middleware := requestSizeLimitMiddleware(maxSize)
-		
+
 		router := gin.New()
 		router.Use(middleware)
 		router.POST("/test", func(c *gin.Context) {
@@ -302,7 +302,7 @@ func TestRequestSizeLimitMiddleware(t *testing.T) {
 	t.Run("NoContentLength", func(t *testing.T) {
 		maxSize := int64(100)
 		middleware := requestSizeLimitMiddleware(maxSize)
-		
+
 		router := gin.New()
 		router.Use(middleware)
 		router.POST("/test", func(c *gin.Context) {
@@ -325,7 +325,7 @@ func TestRequestSizeLimitMiddleware(t *testing.T) {
 
 func TestLoggingMiddleware(t *testing.T) {
 	middleware := loggingMiddleware()
-	
+
 	router := gin.New()
 	router.Use(middleware)
 	router.GET("/test", func(c *gin.Context) {
@@ -366,7 +366,7 @@ func TestPerformanceMiddleware(t *testing.T) {
 	}
 
 	middleware := server.performanceMiddleware()
-	
+
 	router := gin.New()
 	router.Use(middleware)
 	router.GET("/test", func(c *gin.Context) {

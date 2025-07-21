@@ -72,7 +72,7 @@ func (s *Server) handleCreateProvider(c *gin.Context) {
 // handleGetProvider returns a specific provider by name
 func (s *Server) handleGetProvider(c *gin.Context) {
 	name := c.Param("name")
-	
+
 	// Find provider
 	for _, provider := range s.config.Providers {
 		if provider.Name == name {
@@ -80,14 +80,14 @@ func (s *Server) handleGetProvider(c *gin.Context) {
 			return
 		}
 	}
-	
+
 	NotFound(c, fmt.Sprintf("Provider '%s' not found", name))
 }
 
 // handleUpdateProvider updates an existing provider
 func (s *Server) handleUpdateProvider(c *gin.Context) {
 	name := c.Param("name")
-	
+
 	var req UpdateProviderRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		BadRequest(c, err.Error())
@@ -110,7 +110,7 @@ func (s *Server) handleUpdateProvider(c *gin.Context) {
 
 	// Update provider fields
 	provider := &s.config.Providers[providerIndex]
-	
+
 	if req.Name != "" && req.Name != provider.Name {
 		// Check if new name already exists
 		for i, p := range s.config.Providers {
@@ -121,19 +121,19 @@ func (s *Server) handleUpdateProvider(c *gin.Context) {
 		}
 		provider.Name = req.Name
 	}
-	
+
 	if req.APIBaseURL != "" {
 		provider.APIBaseURL = req.APIBaseURL
 	}
-	
+
 	if req.APIKey != "" {
 		provider.APIKey = req.APIKey
 	}
-	
+
 	if req.Models != nil {
 		provider.Models = req.Models
 	}
-	
+
 	if req.Enabled != nil {
 		provider.Enabled = *req.Enabled
 	}

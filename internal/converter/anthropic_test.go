@@ -418,7 +418,7 @@ func TestAnthropicConverter_ConvertStreamEvent(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			result, err := converter.ConvertStreamEvent(tt.input, tt.toFormat)
-			
+
 			// Current implementation just passes through
 			testutil.AssertNoError(t, err)
 			testutil.AssertEqual(t, string(tt.input), string(result))
@@ -501,7 +501,7 @@ func TestAnthropicConverter_ErrorHandling(t *testing.T) {
 			],
 			"max_tokens": 100
 		}`
-		
+
 		// This should succeed normally
 		_, err := converter.ToGeneric(json.RawMessage(input), true)
 		testutil.AssertNoError(t, err)
@@ -520,7 +520,7 @@ func TestAnthropicConverter_ErrorHandling(t *testing.T) {
 			"metadata": {"key": "value"},
 			"max_tokens": 100
 		}`
-		
+
 		_, err := converter.ToGeneric(json.RawMessage(input), true)
 		testutil.AssertNoError(t, err)
 	})
@@ -533,7 +533,7 @@ func TestAnthropicConverter_ErrorHandling(t *testing.T) {
 			"content": [{"type": "text", "text": "Hello!"}],
 			"model": "claude-3-haiku-20240307"
 		}`
-		
+
 		_, err := converter.ToGeneric(json.RawMessage(input), false)
 		testutil.AssertNoError(t, err)
 	})

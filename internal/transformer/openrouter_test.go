@@ -71,14 +71,14 @@ data: [DONE]
 		// Read the transformed stream
 		reader := NewSSEReader(result.Body)
 		events := []string{}
-		
+
 		for {
 			event, err := reader.ReadEvent()
 			if err == io.EOF {
 				break
 			}
 			testutil.AssertNoError(t, err)
-			
+
 			if event.Data != "" && event.Data != "[DONE]" {
 				events = append(events, event.Data)
 			}
@@ -86,26 +86,26 @@ data: [DONE]
 
 		// Should have multiple events
 		testutil.AssertEqual(t, true, len(events) >= 3)
-		
+
 		// Check that reasoning_content was transformed to thinking
 		var firstEvent map[string]interface{}
 		json.Unmarshal([]byte(events[0]), &firstEvent)
-		
+
 		choices, ok := firstEvent["choices"].([]interface{})
 		testutil.AssertEqual(t, true, ok)
 		testutil.AssertEqual(t, true, len(choices) > 0)
-		
+
 		choice, ok := choices[0].(map[string]interface{})
 		testutil.AssertEqual(t, true, ok)
-		
+
 		delta, ok := choice["delta"].(map[string]interface{})
 		testutil.AssertEqual(t, true, ok)
-		
+
 		// Should have thinking instead of reasoning_content
 		thinking, hasThinking := delta["thinking"]
 		testutil.AssertEqual(t, true, hasThinking)
 		testutil.AssertNotEqual(t, nil, thinking)
-		
+
 		// reasoning_content should be removed
 		_, hasReasoning := delta["reasoning_content"]
 		testutil.AssertEqual(t, false, hasReasoning)
@@ -133,14 +133,14 @@ data: [DONE]
 		// Read and verify events
 		reader := NewSSEReader(result.Body)
 		events := []string{}
-		
+
 		for {
 			event, err := reader.ReadEvent()
 			if err == io.EOF {
 				break
 			}
 			testutil.AssertNoError(t, err)
-			
+
 			if event.Data != "" && event.Data != "[DONE]" {
 				events = append(events, event.Data)
 			}
@@ -154,7 +154,7 @@ data: [DONE]
 		for _, eventData := range events {
 			var event map[string]interface{}
 			json.Unmarshal([]byte(eventData), &event)
-			
+
 			if choices, ok := event["choices"].([]interface{}); ok && len(choices) > 0 {
 				if choice, ok := choices[0].(map[string]interface{}); ok {
 					if delta, ok := choice["delta"].(map[string]interface{}); ok {
@@ -188,7 +188,7 @@ func TestOpenRouterTransformStreamData(t *testing.T) {
 		}
 
 		data := `{"choices": [{"delta": {"reasoning_content": "I'm thinking about this problem..."}}]}`
-		
+
 		results, err := transformer.transformStreamData(data, state)
 		testutil.AssertNoError(t, err)
 		testutil.AssertEqual(t, 1, len(results))
@@ -200,14 +200,14 @@ func TestOpenRouterTransformStreamData(t *testing.T) {
 		// Check transformed result
 		var result map[string]interface{}
 		json.Unmarshal([]byte(results[0]), &result)
-		
+
 		choices := result["choices"].([]interface{})
 		choice := choices[0].(map[string]interface{})
 		delta := choice["delta"].(map[string]interface{})
-		
+
 		thinking := delta["thinking"].(map[string]interface{})
 		testutil.AssertEqual(t, "I'm thinking about this problem...", thinking["content"])
-		
+
 		// reasoning_content should be removed
 		_, hasReasoning := delta["reasoning_content"]
 		testutil.AssertEqual(t, false, hasReasoning)
@@ -222,10 +222,10 @@ func TestOpenRouterTransformStreamData(t *testing.T) {
 		}
 
 		data := `{"choices": [{"delta": {"content": "Here's my answer"}}]}`
-		
+
 		results, err := transformer.transformStreamData(data, state)
 		testutil.AssertNoError(t, err)
-		
+
 		// Should have 2 results: thinking block + regular content
 		testutil.AssertEqual(t, 2, len(results))
 		testutil.AssertEqual(t, true, state.isReasoningComplete)
@@ -234,11 +234,11 @@ func TestOpenRouterTransformStreamData(t *testing.T) {
 		// First result should be thinking block
 		var thinkingResult map[string]interface{}
 		json.Unmarshal([]byte(results[0]), &thinkingResult)
-		
+
 		choices := thinkingResult["choices"].([]interface{})
 		choice := choices[0].(map[string]interface{})
 		testutil.AssertEqual(t, 0, int(choice["index"].(float64)))
-		
+
 		delta := choice["delta"].(map[string]interface{})
 		content := delta["content"].(map[string]interface{})
 		testutil.AssertEqual(t, "Previous reasoning...", content["content"])
@@ -246,11 +246,11 @@ func TestOpenRouterTransformStreamData(t *testing.T) {
 		// Second result should be regular content with updated index
 		var contentResult map[string]interface{}
 		json.Unmarshal([]byte(results[1]), &contentResult)
-		
+
 		choices2 := contentResult["choices"].([]interface{})
 		choice2 := choices2[0].(map[string]interface{})
 		testutil.AssertEqual(t, 1, int(choice2["index"].(float64)))
-		
+
 		delta2 := choice2["delta"].(map[string]interface{})
 		testutil.AssertEqual(t, "Here's my answer", delta2["content"])
 	})
@@ -264,10 +264,10 @@ func TestOpenRouterTransformStreamData(t *testing.T) {
 		}
 
 		data := `{"choices": [{"delta": {"tool_calls": [{"index": 0, "id": "call_123", "type": "function", "function": {"name": "test_tool"}}]}}]}`
-		
+
 		results, err := transformer.transformStreamData(data, state)
 		testutil.AssertNoError(t, err)
-		
+
 		// Should have 2 results: thinking block + tool calls
 		testutil.AssertEqual(t, 2, len(results))
 		testutil.AssertEqual(t, true, state.isReasoningComplete)
@@ -276,13 +276,13 @@ func TestOpenRouterTransformStreamData(t *testing.T) {
 		// Check tool call index adjustment
 		var toolResult map[string]interface{}
 		json.Unmarshal([]byte(results[1]), &toolResult)
-		
+
 		choices := toolResult["choices"].([]interface{})
 		choice := choices[0].(map[string]interface{})
 		delta := choice["delta"].(map[string]interface{})
 		toolCalls := delta["tool_calls"].([]interface{})
 		toolCall := toolCalls[0].(map[string]interface{})
-		
+
 		// Index should be adjusted by contentIndex
 		testutil.AssertEqual(t, float64(1), toolCall["index"])
 	})
@@ -296,10 +296,10 @@ func TestOpenRouterTransformStreamData(t *testing.T) {
 		}
 
 		data := `{"choices": [{"delta": {}, "finish_reason": "stop"}]}`
-		
+
 		results, err := transformer.transformStreamData(data, state)
 		testutil.AssertNoError(t, err)
-		
+
 		// Should have 2 results: thinking block + finish chunk
 		testutil.AssertEqual(t, 2, len(results))
 		testutil.AssertEqual(t, true, state.isReasoningComplete)
@@ -307,7 +307,7 @@ func TestOpenRouterTransformStreamData(t *testing.T) {
 		// First result should be thinking block
 		var thinkingResult map[string]interface{}
 		json.Unmarshal([]byte(results[0]), &thinkingResult)
-		
+
 		choices := thinkingResult["choices"].([]interface{})
 		choice := choices[0].(map[string]interface{})
 		delta := choice["delta"].(map[string]interface{})
@@ -317,7 +317,7 @@ func TestOpenRouterTransformStreamData(t *testing.T) {
 		// Second result should be finish chunk with adjusted index
 		var finishResult map[string]interface{}
 		json.Unmarshal([]byte(results[1]), &finishResult)
-		
+
 		choices2 := finishResult["choices"].([]interface{})
 		choice2 := choices2[0].(map[string]interface{})
 		testutil.AssertEqual(t, 1, int(choice2["index"].(float64)))
@@ -327,16 +327,16 @@ func TestOpenRouterTransformStreamData(t *testing.T) {
 	t.Run("EmptyDelta", func(t *testing.T) {
 		state := &openrouterStreamState{}
 		data := `{"choices": [{"finish_reason": "stop"}]}`
-		
+
 		results, err := transformer.transformStreamData(data, state)
 		testutil.AssertNoError(t, err)
-		
+
 		// Should handle chunks without delta
 		testutil.AssertEqual(t, 1, len(results))
-		
+
 		var result map[string]interface{}
 		json.Unmarshal([]byte(results[0]), &result)
-		
+
 		choices := result["choices"].([]interface{})
 		choice := choices[0].(map[string]interface{})
 		testutil.AssertEqual(t, "stop", choice["finish_reason"])
@@ -345,10 +345,10 @@ func TestOpenRouterTransformStreamData(t *testing.T) {
 	t.Run("InvalidJSON", func(t *testing.T) {
 		state := &openrouterStreamState{}
 		data := `invalid json`
-		
+
 		results, err := transformer.transformStreamData(data, state)
 		testutil.AssertNoError(t, err)
-		
+
 		// Should pass through unchanged on parse error
 		testutil.AssertEqual(t, 1, len(results))
 		testutil.AssertEqual(t, data, results[0])
@@ -357,10 +357,10 @@ func TestOpenRouterTransformStreamData(t *testing.T) {
 	t.Run("NoChoices", func(t *testing.T) {
 		state := &openrouterStreamState{}
 		data := `{"model": "some-model"}`
-		
+
 		results, err := transformer.transformStreamData(data, state)
 		testutil.AssertNoError(t, err)
-		
+
 		// Should pass through unchanged
 		testutil.AssertEqual(t, 1, len(results))
 		testutil.AssertEqual(t, data, results[0])
@@ -380,7 +380,7 @@ func TestOpenRouterCreateThinkingBlockChunk(t *testing.T) {
 			"created": 1234567890,
 			"model":   "openrouter-model",
 		}
-		
+
 		content := "Here's my reasoning process..."
 		index := 2
 
@@ -481,14 +481,14 @@ data: [DONE]
 		// Read and analyze all events
 		reader := NewSSEReader(result.Body)
 		events := []string{}
-		
+
 		for {
 			event, err := reader.ReadEvent()
 			if err == io.EOF {
 				break
 			}
 			testutil.AssertNoError(t, err)
-			
+
 			if event.Data != "" && event.Data != "[DONE]" {
 				events = append(events, event.Data)
 			}
@@ -527,7 +527,7 @@ data: [DONE]
 							hasContent = true
 						}
 					}
-					
+
 					// Check for finish reason
 					if finishReason, ok := choice["finish_reason"]; ok && finishReason != nil {
 						hasFinish = true
@@ -566,14 +566,14 @@ data: [DONE]
 
 		reader := NewSSEReader(result.Body)
 		events := []string{}
-		
+
 		for {
 			event, err := reader.ReadEvent()
 			if err == io.EOF {
 				break
 			}
 			testutil.AssertNoError(t, err)
-			
+
 			if event.Data != "" && event.Data != "[DONE]" {
 				events = append(events, event.Data)
 			}
@@ -585,7 +585,7 @@ data: [DONE]
 		// Last event should be the finish with proper index
 		var lastEvent map[string]interface{}
 		json.Unmarshal([]byte(events[len(events)-1]), &lastEvent)
-		
+
 		choices := lastEvent["choices"].([]interface{})
 		choice := choices[0].(map[string]interface{})
 		testutil.AssertEqual(t, "stop", choice["finish_reason"])

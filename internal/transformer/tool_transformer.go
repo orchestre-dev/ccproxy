@@ -110,13 +110,13 @@ func isLegacyOpenAIModel(model string) bool {
 		"gpt-4-0613",
 		"gpt-4-32k-0613",
 	}
-	
+
 	for _, legacy := range legacyModels {
 		if model == legacy {
 			return true
 		}
 	}
-	
+
 	return false
 }
 
@@ -128,7 +128,7 @@ func (t *ToolTransformer) ExtractToolCalls(message interface{}) ([]tools.ToolUse
 // CreateToolResultMessage creates a tool result message
 func (t *ToolTransformer) CreateToolResultMessage(results []tools.ToolResult) interface{} {
 	msg := t.handler.CreateToolResultMessage(results)
-	
+
 	// Convert to generic interface for flexibility
 	return map[string]interface{}{
 		"role":    msg.Role,

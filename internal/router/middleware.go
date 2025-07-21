@@ -14,14 +14,14 @@ import (
 func RouterMiddleware(cfg *config.Config) gin.HandlerFunc {
 	router := New(cfg)
 	logger := utils.GetLogger()
-	
+
 	return func(c *gin.Context) {
 		// Only process POST /v1/messages
 		if c.Request.Method != http.MethodPost || c.Request.URL.Path != "/v1/messages" {
 			c.Next()
 			return
 		}
-		
+
 		// Parse request body
 		var body map[string]interface{}
 		if err := c.ShouldBindJSON(&body); err != nil {
@@ -29,30 +29,30 @@ func RouterMiddleware(cfg *config.Config) gin.HandlerFunc {
 			c.Next()
 			return
 		}
-		
+
 		// Get model from request
 		modelStr, ok := body["model"].(string)
 		if !ok || modelStr == "" {
 			c.Next()
 			return
 		}
-		
+
 		// Create request object
 		req := Request{
 			Model: modelStr,
 		}
-		
+
 		// Check for thinking parameter
 		if thinking, ok := body["thinking"].(bool); ok {
 			req.Thinking = thinking
 		}
-		
+
 		// Count tokens
 		tokenCount := 0
 		params := &utils.MessageCreateParams{
 			Model: modelStr,
 		}
-		
+
 		// Parse messages
 		if messages, ok := body["messages"].([]interface{}); ok {
 			params.Messages = make([]utils.Message, 0, len(messages))
@@ -66,12 +66,12 @@ func RouterMiddleware(cfg *config.Config) gin.HandlerFunc {
 				}
 			}
 		}
-		
+
 		// Parse system
 		if system, ok := body["system"]; ok {
 			params.System = system
 		}
-		
+
 		// Parse tools
 		if tools, ok := body["tools"].([]interface{}); ok {
 			params.Tools = make([]utils.Tool, 0, len(tools))
@@ -86,7 +86,7 @@ func RouterMiddleware(cfg *config.Config) gin.HandlerFunc {
 				}
 			}
 		}
-		
+
 		// Count tokens
 		var err error
 		tokenCount, err = utils.CountMessageTokens(params)
@@ -94,14 +94,14 @@ func RouterMiddleware(cfg *config.Config) gin.HandlerFunc {
 			logger.WithError(err).Error("Failed to count tokens in router middleware")
 			// Continue with tokenCount = 0
 		}
-		
+
 		// Perform routing
 		decision := router.Route(req, tokenCount)
-		
+
 		// Update the model in the request
 		newModel := FormatModelString(decision.Provider, decision.Model)
 		body["model"] = newModel
-		
+
 		// Log routing decision
 		logger.WithFields(map[string]interface{}{
 			"original_model": modelStr,
@@ -109,11 +109,11 @@ func RouterMiddleware(cfg *config.Config) gin.HandlerFunc {
 			"token_count":    tokenCount,
 			"reason":         decision.Reason,
 		}).Debug("Model routing decision")
-		
+
 		// Store routing metadata in context
 		c.Set("routing_decision", decision)
 		c.Set("token_count", tokenCount)
-		
+
 		// Re-bind the modified body
 		bodyBytes, err := json.Marshal(body)
 		if err != nil {
@@ -121,13 +121,13 @@ func RouterMiddleware(cfg *config.Config) gin.HandlerFunc {
 			c.Next()
 			return
 		}
-		
+
 		// Replace request body
 		c.Request.Body = &bodyReader{
 			data: bodyBytes,
 			pos:  0,
 		}
-		
+
 		c.Next()
 	}
 }

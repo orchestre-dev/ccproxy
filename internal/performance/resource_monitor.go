@@ -11,12 +11,12 @@ import (
 
 // ResourceMonitor monitors system resource usage
 type ResourceMonitor struct {
-	limits         ResourceLimits
-	lastCPUCheck   time.Time
-	lastCPUTotal   float64
-	lastCPUIdle    float64
+	limits          ResourceLimits
+	lastCPUCheck    time.Time
+	lastCPUTotal    float64
+	lastCPUIdle     float64
 	cpuUsagePercent float64
-	mu             sync.RWMutex
+	mu              sync.RWMutex
 }
 
 // ResourceMetrics represents current resource usage
@@ -47,8 +47,8 @@ func (rm *ResourceMonitor) CheckLimits() error {
 		if metrics.MemoryUsage > maxMemoryBytes {
 			return errors.New(
 				errors.ErrorTypeResourceExhausted,
-				fmt.Sprintf("memory limit exceeded: %d MB > %d MB", 
-					metrics.MemoryUsage/(1024*1024), 
+				fmt.Sprintf("memory limit exceeded: %d MB > %d MB",
+					metrics.MemoryUsage/(1024*1024),
 					rm.limits.MaxMemoryMB),
 			).WithCode("MEMORY_LIMIT_EXCEEDED")
 		}
@@ -58,8 +58,8 @@ func (rm *ResourceMonitor) CheckLimits() error {
 	if rm.limits.MaxGoroutines > 0 && metrics.GoroutineCount > rm.limits.MaxGoroutines {
 		return errors.New(
 			errors.ErrorTypeResourceExhausted,
-			fmt.Sprintf("goroutine limit exceeded: %d > %d", 
-				metrics.GoroutineCount, 
+			fmt.Sprintf("goroutine limit exceeded: %d > %d",
+				metrics.GoroutineCount,
 				rm.limits.MaxGoroutines),
 		).WithCode("GOROUTINE_LIMIT_EXCEEDED")
 	}
@@ -68,8 +68,8 @@ func (rm *ResourceMonitor) CheckLimits() error {
 	if rm.limits.MaxCPUPercent > 0 && metrics.CPUUsagePercent > rm.limits.MaxCPUPercent {
 		return errors.New(
 			errors.ErrorTypeResourceExhausted,
-			fmt.Sprintf("CPU limit exceeded: %.1f%% > %.1f%%", 
-				metrics.CPUUsagePercent, 
+			fmt.Sprintf("CPU limit exceeded: %.1f%% > %.1f%%",
+				metrics.CPUUsagePercent,
 				rm.limits.MaxCPUPercent),
 		).WithCode("CPU_LIMIT_EXCEEDED")
 	}
@@ -116,7 +116,7 @@ func (rm *ResourceMonitor) updateCPUUsage() {
 	// For now, we'll use a simple approximation based on goroutines
 	goroutines := runtime.NumGoroutine()
 	numCPU := runtime.NumCPU()
-	
+
 	// Very rough approximation: assume each active goroutine uses some CPU
 	// This is not accurate but provides a basic metric
 	rm.cpuUsagePercent = float64(goroutines) / float64(numCPU) * 10.0
@@ -141,8 +141,8 @@ func (rm *ResourceMonitor) CheckRequestSize(size int64) error {
 		if size > maxBytes {
 			return errors.New(
 				errors.ErrorTypeBadRequest,
-				fmt.Sprintf("request body too large: %d MB > %d MB", 
-					size/(1024*1024), 
+				fmt.Sprintf("request body too large: %d MB > %d MB",
+					size/(1024*1024),
 					rm.limits.MaxRequestBodyMB),
 			).WithCode("REQUEST_TOO_LARGE")
 		}
@@ -157,8 +157,8 @@ func (rm *ResourceMonitor) CheckResponseSize(size int64) error {
 		if size > maxBytes {
 			return errors.New(
 				errors.ErrorTypeInternal,
-				fmt.Sprintf("response body too large: %d MB > %d MB", 
-					size/(1024*1024), 
+				fmt.Sprintf("response body too large: %d MB > %d MB",
+					size/(1024*1024),
 					rm.limits.MaxResponseBodyMB),
 			).WithCode("RESPONSE_TOO_LARGE")
 		}

@@ -49,7 +49,7 @@ func NewConfig(proxyURL string) (*Config, error) {
 	if noProxy == "" {
 		noProxy = os.Getenv("no_proxy")
 	}
-	
+
 	if noProxy != "" {
 		config.NoProxy = parseNoProxy(noProxy)
 	}
@@ -84,7 +84,7 @@ func CreateHTTPClient(proxyConfig *Config, timeout time.Duration) (*http.Client,
 
 		// Create proxy function that respects no-proxy list
 		transport.Proxy = createProxyFunc(proxyURL, proxyConfig.NoProxy)
-		
+
 		utils.GetLogger().Infof("Using corporate proxy: %s", sanitizeProxyURL(proxyConfig.URL))
 	}
 
@@ -181,7 +181,7 @@ func sanitizeProxyURL(proxyURL string) string {
 		// Return original string if parsing fails
 		return proxyURL
 	}
-	
+
 	// Remove user info
 	u.User = nil
 	return u.String()

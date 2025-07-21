@@ -243,13 +243,13 @@ func TestIPRateLimiterGetLimit(t *testing.T) {
 		ip := "192.168.1.12"
 
 		// Use up the limit
-		limiter.Allow(ip)  // count = 1
-		limiter.Allow(ip)  // count = 2
-		limiter.Allow(ip)  // This should be denied, count stays at 2
+		limiter.Allow(ip) // count = 1
+		limiter.Allow(ip) // count = 2
+		limiter.Allow(ip) // This should be denied, count stays at 2
 
 		info := limiter.GetLimit(ip)
 
-		testutil.AssertEqual(t, 2, info.Used) // Only 2 allowed
+		testutil.AssertEqual(t, 2, info.Used)      // Only 2 allowed
 		testutil.AssertEqual(t, 0, info.Remaining) // Should be capped at 0
 	})
 
@@ -387,18 +387,18 @@ func TestIPRateLimiterStop(t *testing.T) {
 
 	t.Run("stops cleanup ticker", func(t *testing.T) {
 		limiter := NewIPRateLimiter(5, time.Minute)
-		
+
 		testutil.AssertNotEqual(t, nil, limiter.cleanup)
-		
+
 		limiter.Stop()
-		
+
 		// After stop, ticker should be stopped
 		// We can't easily test this directly, but we can ensure Stop() doesn't panic
 	})
 
 	t.Run("multiple stops do not panic", func(t *testing.T) {
 		limiter := NewIPRateLimiter(5, time.Minute)
-		
+
 		// Should not panic
 		limiter.Stop()
 		limiter.Stop()
@@ -675,17 +675,17 @@ func TestTokenBucketStop(t *testing.T) {
 
 	t.Run("stops cleanup ticker", func(t *testing.T) {
 		limiter := NewTokenBucketRateLimiter(10, 1)
-		
+
 		testutil.AssertNotEqual(t, nil, limiter.cleanup)
-		
+
 		limiter.Stop()
-		
+
 		// Should not panic
 	})
 
 	t.Run("multiple stops do not panic", func(t *testing.T) {
 		limiter := NewTokenBucketRateLimiter(10, 1)
-		
+
 		limiter.Stop()
 		limiter.Stop() // Should not panic
 	})

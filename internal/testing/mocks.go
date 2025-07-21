@@ -37,26 +37,26 @@ func NewMockHTTPClient() *MockHTTPClient {
 func (m *MockHTTPClient) Do(req *http.Request) (*http.Response, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	
+
 	// Store the request
 	m.requests = append(m.requests, req)
-	
+
 	// Return error if set
 	if m.errorToReturn != nil {
 		return nil, m.errorToReturn
 	}
-	
+
 	// Use response function if set
 	if m.responseFunc != nil {
 		return m.responseFunc(req)
 	}
-	
+
 	// Look for exact URL match
 	url := req.URL.String()
 	if resp, exists := m.responses[url]; exists {
 		return resp, nil
 	}
-	
+
 	// Default response
 	return &http.Response{
 		StatusCode: 200,
@@ -122,11 +122,11 @@ func CreateMockResponse(statusCode int, body string, headers map[string]string) 
 		Header:     make(http.Header),
 		Body:       io.NopCloser(strings.NewReader(body)),
 	}
-	
+
 	for key, value := range headers {
 		resp.Header.Set(key, value)
 	}
-	
+
 	return resp
 }
 
@@ -145,11 +145,11 @@ func CreateJSONResponse(statusCode int, data interface{}) *http.Response {
 // MockServer wraps httptest.Server with additional utilities
 type MockServer struct {
 	*httptest.Server
-	mu             sync.RWMutex
-	requests       []*http.Request
-	responseFunc   func(*http.Request) (int, interface{})
-	defaultStatus  int
-	defaultBody    interface{}
+	mu            sync.RWMutex
+	requests      []*http.Request
+	responseFunc  func(*http.Request) (int, interface{})
+	defaultStatus int
+	defaultBody   interface{}
 }
 
 // NewMockServer creates a new mock server
@@ -159,7 +159,7 @@ func NewMockServer() *MockServer {
 		defaultStatus: 200,
 		defaultBody:   map[string]string{"status": "ok"},
 	}
-	
+
 	ms.Server = httptest.NewServer(http.HandlerFunc(ms.handler))
 	return ms
 }
@@ -171,7 +171,7 @@ func NewMockTLSServer() *MockServer {
 		defaultStatus: 200,
 		defaultBody:   map[string]string{"status": "ok"},
 	}
-	
+
 	ms.Server = httptest.NewTLSServer(http.HandlerFunc(ms.handler))
 	return ms
 }
@@ -180,17 +180,17 @@ func (ms *MockServer) handler(w http.ResponseWriter, r *http.Request) {
 	ms.mu.Lock()
 	ms.requests = append(ms.requests, r)
 	ms.mu.Unlock()
-	
+
 	status := ms.defaultStatus
 	body := ms.defaultBody
-	
+
 	if ms.responseFunc != nil {
 		status, body = ms.responseFunc(r)
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	
+
 	if err := json.NewEncoder(w).Encode(body); err != nil {
 		w.WriteHeader(500)
 		w.Write([]byte(`{"error": "encoding error"}`))

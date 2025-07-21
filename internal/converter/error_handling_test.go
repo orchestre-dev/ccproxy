@@ -185,7 +185,7 @@ func TestConverters_ContentParsingErrors(t *testing.T) {
 
 		_, err = converter.FromGeneric(json.RawMessage(invalidResponseInput), false)
 		testutil.AssertError(t, err)
-		// The error will actually be a JSON unmarshaling error 
+		// The error will actually be a JSON unmarshaling error
 		testutil.AssertContains(t, err.Error(), "failed to unmarshal generic response")
 	})
 
@@ -210,7 +210,7 @@ func TestConverters_ContentParsingErrors(t *testing.T) {
 func TestConverters_JSONMarshallingErrors(t *testing.T) {
 	// These tests verify error handling paths, though in practice
 	// they're hard to trigger with valid Go data structures
-	
+
 	t.Run("Test error paths exist", func(t *testing.T) {
 		// Verify that error handling code paths exist in converters
 		// by testing with various edge cases
@@ -361,7 +361,7 @@ func TestConverters_RecoveryFromErrors(t *testing.T) {
 			"max_tokens": 100
 		}`
 
-		// Should handle properly formatted content 
+		// Should handle properly formatted content
 		result, err := converter.ConvertRequest(json.RawMessage(partiallyValidInput), FormatAnthropic, FormatOpenAI)
 		testutil.AssertNoError(t, err)
 		testutil.AssertNotEqual(t, nil, result)
@@ -377,7 +377,7 @@ func TestConverters_ErrorMessageQuality(t *testing.T) {
 
 		_, err := converter.ConvertRequest(json.RawMessage(invalidJSON), FormatAnthropic, FormatOpenAI)
 		testutil.AssertError(t, err)
-		
+
 		// Error should indicate what failed and where
 		errorMsg := err.Error()
 		testutil.AssertContains(t, errorMsg, "failed to convert")
@@ -392,7 +392,7 @@ func TestConverters_ErrorMessageQuality(t *testing.T) {
 
 		// All converters should handle invalid JSON similarly
 		formats := []MessageFormat{FormatAnthropic, FormatOpenAI, FormatGoogle, FormatAWS}
-		
+
 		for _, format := range formats {
 			_, err := converter.ConvertRequest(json.RawMessage(invalidJSON), format, FormatGeneric)
 			testutil.AssertError(t, err, "Format "+string(format)+" should handle invalid JSON with error")

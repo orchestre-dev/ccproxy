@@ -89,8 +89,8 @@ func NewPipeline(
 			MetricsEnabled:  true,
 			MetricsInterval: 30 * time.Second,
 			ResourceLimits: performance.ResourceLimits{
-				RequestTimeout:    timeout,
-				MaxRequestBodyMB:  int(cfg.Performance.MaxRequestBodySize / 1024 / 1024),
+				RequestTimeout:   timeout,
+				MaxRequestBodyMB: int(cfg.Performance.MaxRequestBodySize / 1024 / 1024),
 			},
 		}),
 	}
@@ -101,7 +101,7 @@ func (p *Pipeline) ProcessRequest(ctx context.Context, req *RequestContext) (*Re
 	// Extract model and count tokens from request
 	var routeReq router.Request
 	var tokenCount int
-	
+
 	if bodyMap, ok := req.Body.(map[string]interface{}); ok {
 		if model, ok := bodyMap["model"].(string); ok {
 			routeReq.Model = model
@@ -109,11 +109,11 @@ func (p *Pipeline) ProcessRequest(ctx context.Context, req *RequestContext) (*Re
 		if thinking, ok := bodyMap["thinking"].(bool); ok {
 			routeReq.Thinking = thinking
 		}
-		
+
 		// Count tokens
 		tokenCount = utils.CountRequestTokens(bodyMap)
 	}
-	
+
 	// 1. Route to appropriate model/provider
 	routingDecision := p.router.Route(routeReq, tokenCount)
 
@@ -125,7 +125,7 @@ func (p *Pipeline) ProcessRequest(ctx context.Context, req *RequestContext) (*Re
 
 	// 3. Get transformer chain for provider
 	chain := p.transformerService.GetChainForProvider(routingDecision.Provider)
-	
+
 	// 4. Apply request transformations
 	transformedRequest, err := chain.TransformRequestIn(ctx, req.Body, routingDecision.Provider)
 	if err != nil {
@@ -142,20 +142,20 @@ func (p *Pipeline) ProcessRequest(ctx context.Context, req *RequestContext) (*Re
 	startTime := time.Now()
 	httpResp, err := p.httpClient.Do(httpReq)
 	duration := time.Since(startTime)
-	
+
 	// Track provider metrics atomically
 	atomic.AddInt64(&p.requestCounter, 1)
-	
+
 	if err != nil {
 		// Track provider failure
 		if p.performanceMonitor != nil {
 			p.performanceMonitor.RecordRequest(performance.RequestMetrics{
-				Provider:   selectedProvider.Name,
-				StartTime:  startTime,
-				EndTime:    time.Now(),
-				Latency:    duration,
-				Success:    false,
-				Error:      err,
+				Provider:  selectedProvider.Name,
+				StartTime: startTime,
+				EndTime:   time.Now(),
+				Latency:   duration,
+				Success:   false,
+				Error:     err,
 			})
 		}
 		return nil, fmt.Errorf("provider request failed: %w", err)
@@ -164,11 +164,11 @@ func (p *Pipeline) ProcessRequest(ctx context.Context, req *RequestContext) (*Re
 	// Track provider success
 	if p.performanceMonitor != nil {
 		p.performanceMonitor.RecordRequest(performance.RequestMetrics{
-			Provider:   selectedProvider.Name,
-			StartTime:  startTime,
-			EndTime:    time.Now(),
-			Latency:    duration,
-			Success:    true,
+			Provider:  selectedProvider.Name,
+			StartTime: startTime,
+			EndTime:   time.Now(),
+			Latency:   duration,
+			Success:   true,
 		})
 	}
 
@@ -199,14 +199,14 @@ func (p *Pipeline) buildHTTPRequest(ctx context.Context, provider *config.Provid
 	// Check if body is a RequestConfig with custom URL/headers
 	var reqConfig *transformer.RequestConfig
 	var actualBody interface{}
-	
+
 	if rc, ok := body.(*transformer.RequestConfig); ok {
 		reqConfig = rc
 		actualBody = rc.Body
 	} else {
 		actualBody = body
 	}
-	
+
 	// Marshal request body
 	bodyData, err := json.Marshal(actualBody)
 	if err != nil {
@@ -215,14 +215,14 @@ func (p *Pipeline) buildHTTPRequest(ctx context.Context, provider *config.Provid
 
 	// Build URL
 	url := provider.APIBaseURL
-	
+
 	// Use custom URL if provided by transformer
 	if reqConfig != nil && reqConfig.URL != "" {
 		url = reqConfig.URL
 	} else {
 		// Determine endpoint based on provider type
 		endpoint := p.getProviderEndpoint(providerName)
-		
+
 		// Add endpoint to URL
 		if !strings.HasSuffix(url, "/") {
 			url += "/"
@@ -235,7 +235,7 @@ func (p *Pipeline) buildHTTPRequest(ctx context.Context, provider *config.Provid
 	if reqConfig != nil && reqConfig.Method != "" {
 		method = reqConfig.Method
 	}
-	
+
 	req, err := http.NewRequestWithContext(ctx, method, url, bytes.NewReader(bodyData))
 	if err != nil {
 		return nil, err
@@ -243,10 +243,10 @@ func (p *Pipeline) buildHTTPRequest(ctx context.Context, provider *config.Provid
 
 	// Set default headers
 	req.Header.Set("Content-Type", "application/json")
-	
+
 	// Set authentication header based on provider
 	p.setAuthenticationHeader(req, provider, providerName)
-	
+
 	// Set streaming header if needed
 	if isStreaming {
 		req.Header.Set("Accept", "text/event-stream")
@@ -254,14 +254,14 @@ func (p *Pipeline) buildHTTPRequest(ctx context.Context, provider *config.Provid
 
 	// Add user agent
 	req.Header.Set("User-Agent", "ccproxy/1.0")
-	
+
 	// Apply custom headers from transformer
 	if reqConfig != nil && reqConfig.Headers != nil {
 		for key, value := range reqConfig.Headers {
 			req.Header.Set(key, value)
 		}
 	}
-	
+
 	// Set timeout if specified
 	if reqConfig != nil && reqConfig.Timeout > 0 {
 		ctx, cancel := context.WithTimeout(ctx, time.Duration(reqConfig.Timeout)*time.Millisecond)
@@ -286,11 +286,11 @@ func (p *Pipeline) getProviderEndpoint(providerName string) string {
 		"xai":        "/v1/chat/completions",
 		"ollama":     "/api/chat",
 	}
-	
+
 	if endpoint, exists := endpoints[providerName]; exists {
 		return endpoint
 	}
-	
+
 	// Default to OpenAI-compatible endpoint
 	return "/v1/chat/completions"
 }
@@ -300,33 +300,33 @@ func (p *Pipeline) setAuthenticationHeader(req *http.Request, provider *config.P
 	if provider.APIKey == "" {
 		return
 	}
-	
+
 	// Provider-specific authentication headers
 	switch providerName {
 	case "anthropic":
 		req.Header.Set("X-API-Key", provider.APIKey)
 		req.Header.Set("anthropic-version", "2023-06-01")
-		
+
 	case "gemini":
 		// Gemini uses API key as query parameter, handled by transformer
 		// But also accepts Authorization header
 		req.Header.Set("Authorization", "Bearer "+provider.APIKey)
-		
+
 	case "openrouter":
 		req.Header.Set("Authorization", "Bearer "+provider.APIKey)
 		// OpenRouter also supports custom headers for app identification
 		// TODO: Add support for custom headers in provider configuration
-		
+
 	case "groq":
 		req.Header.Set("Authorization", "Bearer "+provider.APIKey)
-		
+
 	case "ollama":
 		// Ollama typically doesn't require authentication
 		// but support it if configured
 		if provider.APIKey != "" {
 			req.Header.Set("Authorization", "Bearer "+provider.APIKey)
 		}
-		
+
 	default:
 		// Default to Bearer token for OpenAI-compatible providers
 		req.Header.Set("Authorization", "Bearer "+provider.APIKey)
@@ -335,9 +335,9 @@ func (p *Pipeline) setAuthenticationHeader(req *http.Request, provider *config.P
 
 // RequestContext contains the incoming request information
 type RequestContext struct {
-	Body        interface{}          // Parsed request body
-	Headers     map[string]string    // Request headers
-	IsStreaming bool                 // Whether this is a streaming request
+	Body        interface{}            // Parsed request body
+	Headers     map[string]string      // Request headers
+	IsStreaming bool                   // Whether this is a streaming request
 	Metadata    map[string]interface{} // Additional metadata
 }
 
@@ -449,14 +449,14 @@ func HandleStreamingError(w http.ResponseWriter, err error) {
 	w.Header().Set("Content-Type", "text/event-stream")
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Connection", "keep-alive")
-	
+
 	// Try to write error as SSE event
 	errorEvent := fmt.Sprintf("event: error\ndata: %s\n\n", err.Error())
 	w.Write([]byte(errorEvent))
-	
+
 	// Send [DONE] marker
 	w.Write([]byte("data: [DONE]\n\n"))
-	
+
 	// Flush if possible
 	if flusher, ok := w.(http.Flusher); ok {
 		flusher.Flush()

@@ -70,7 +70,7 @@ func (t *DeepSeekTransformer) TransformResponseOut(ctx context.Context, response
 	go func() {
 		defer pw.Close()
 		writer := NewSSEWriter(pw)
-		
+
 		// Track state for reasoning transformation
 		state := &deepseekStreamState{
 			reasoningContent:    "",
@@ -177,7 +177,7 @@ func (t *DeepSeekTransformer) transformStreamData(data string, state *deepseekSt
 			thinkingChunk := t.createThinkingBlockChunk(chunk, state.reasoningContent, state.contentIndex)
 			thinkingData, _ := json.Marshal(thinkingChunk)
 			results = append(results, string(thinkingData))
-			
+
 			// Increment index for subsequent content
 			state.contentIndex++
 		}

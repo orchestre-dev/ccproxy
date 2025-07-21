@@ -98,9 +98,9 @@ func TestNewWithPath(t *testing.T) {
 func TestNewWithSecurityConstraints(t *testing.T) {
 	t.Run("ForceLocalhostWhenNoAPIKey", func(t *testing.T) {
 		cfg := &config.Config{
-			Host:    "0.0.0.0", // Would allow external access
-			Port:    3456,
-			APIKey:  "", // No API key
+			Host:   "0.0.0.0", // Would allow external access
+			Port:   3456,
+			APIKey: "", // No API key
 			Performance: config.PerformanceConfig{
 				RequestTimeout:     30 * time.Second,
 				MaxRequestBodySize: 10 * 1024 * 1024,
@@ -126,9 +126,9 @@ func TestNewWithSecurityConstraints(t *testing.T) {
 
 	t.Run("AllowExternalWhenAPIKeyPresent", func(t *testing.T) {
 		cfg := &config.Config{
-			Host:    "0.0.0.0",
-			Port:    3456,
-			APIKey:  "test-api-key",
+			Host:   "0.0.0.0",
+			Port:   3456,
+			APIKey: "test-api-key",
 			Performance: config.PerformanceConfig{
 				RequestTimeout:     30 * time.Second,
 				MaxRequestBodySize: 10 * 1024 * 1024,
@@ -288,7 +288,7 @@ func TestGinModeConfiguration(t *testing.T) {
 
 	t.Run("DefaultToReleaseMode", func(t *testing.T) {
 		os.Unsetenv("GIN_MODE")
-		
+
 		cfg := &config.Config{
 			Host: "127.0.0.1",
 			Port: 3456,
@@ -317,11 +317,11 @@ func TestGinModeConfiguration(t *testing.T) {
 
 	t.Run("RespectExistingGinMode", func(t *testing.T) {
 		os.Setenv("GIN_MODE", "test")
-		
+
 		// Note: Once Gin mode is set, it cannot be changed in the same process
 		// This test documents the expected behavior but may not work in practice
 		// due to Gin's global state
-		
+
 		cfg := &config.Config{
 			Host: "127.0.0.1",
 			Port: 3456,

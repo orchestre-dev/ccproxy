@@ -11,11 +11,11 @@ import (
 
 // RateLimiter implements rate limiting for requests
 type RateLimiter struct {
-	config     RateLimitConfig
-	limiters   map[string]*rate.Limiter
-	lastClean  time.Time
-	hits       int64
-	mu         sync.RWMutex
+	config    RateLimitConfig
+	limiters  map[string]*rate.Limiter
+	lastClean time.Time
+	hits      int64
+	mu        sync.RWMutex
 }
 
 // NewRateLimiter creates a new rate limiter
@@ -108,18 +108,18 @@ func (rl *RateLimiter) cleanupLoop() {
 	rl.mu.RLock()
 	cleanupInterval := rl.config.CleanupInterval
 	rl.mu.RUnlock()
-	
+
 	ticker := time.NewTicker(cleanupInterval)
 	defer ticker.Stop()
 
 	for range ticker.C {
 		rl.cleanup()
-		
+
 		// Update ticker interval if config changed
 		rl.mu.RLock()
 		newInterval := rl.config.CleanupInterval
 		rl.mu.RUnlock()
-		
+
 		if newInterval != cleanupInterval {
 			ticker.Stop()
 			ticker = time.NewTicker(newInterval)
@@ -141,7 +141,7 @@ func (rl *RateLimiter) cleanup() {
 	// For simplicity, we'll clear all limiters that haven't been used recently
 	// In a production system, you'd track last usage time per limiter
 	oldCount := len(rl.limiters)
-	
+
 	// Keep limiters with available tokens (recently used)
 	newLimiters := make(map[string]*rate.Limiter)
 	for key, limiter := range rl.limiters {

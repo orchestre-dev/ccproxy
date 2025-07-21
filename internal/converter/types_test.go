@@ -184,10 +184,10 @@ func TestResponse_JSONSerialization(t *testing.T) {
 	testutil.AssertEqual(t, response.ID, unmarshaled.ID)
 	testutil.AssertEqual(t, response.Type, unmarshaled.Type)
 	testutil.AssertEqual(t, response.Role, unmarshaled.Role)
-	// Content should be preserved 
+	// Content should be preserved
 	testutil.AssertTrue(t, len(unmarshaled.Content) > 0, "Content should be preserved")
 	testutil.AssertEqual(t, response.Model, unmarshaled.Model)
-	
+
 	// Check usage
 	testutil.AssertEqual(t, response.Usage.InputTokens, unmarshaled.Usage.InputTokens)
 	testutil.AssertEqual(t, response.Usage.OutputTokens, unmarshaled.Usage.OutputTokens)
@@ -215,7 +215,7 @@ func TestResponse_JSONSerialization_WithoutUsage(t *testing.T) {
 	testutil.AssertEqual(t, response.ID, unmarshaled.ID)
 	testutil.AssertEqual(t, response.Type, unmarshaled.Type)
 	testutil.AssertEqual(t, response.Role, unmarshaled.Role)
-	// Content should be preserved 
+	// Content should be preserved
 	testutil.AssertTrue(t, len(unmarshaled.Content) > 0, "Content should be preserved")
 	testutil.AssertEqual(t, response.Model, unmarshaled.Model)
 	testutil.AssertEqual(t, (*Usage)(nil), unmarshaled.Usage)
@@ -320,7 +320,7 @@ func TestStreamEvent_JSONSerialization(t *testing.T) {
 
 func TestMessage_InvalidJSON(t *testing.T) {
 	invalidJSON := `{"role": "user", "content": invalid_json}`
-	
+
 	var message Message
 	err := json.Unmarshal([]byte(invalidJSON), &message)
 	testutil.AssertError(t, err, "Should fail with invalid JSON")
