@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/orchestre-dev/ccproxy/internal/config"
+	"github.com/orchestre-dev/ccproxy/internal/utils"
 )
 
 // Provider request/response structures
