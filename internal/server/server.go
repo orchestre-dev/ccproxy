@@ -88,6 +88,9 @@ func NewWithPath(cfg *config.Config, configPath string) (*Server, error) {
 		router.Use(loggingMiddleware())
 	}
 	
+	// Add request size limit middleware
+	router.Use(requestSizeLimitMiddleware(cfg.Performance.MaxRequestBodySize))
+	
 	// Add authentication middleware
 	router.Use(authMiddleware(cfg.APIKey, true))
 	
@@ -163,6 +166,8 @@ func NewWithPath(cfg *config.Config, configPath string) (*Server, error) {
 	// Add performance monitoring middleware if enabled
 	if cfg.Performance.MetricsEnabled {
 		router.Use(s.performanceMiddleware())
+		// Add resource limit enforcement middleware
+		router.Use(performance.Middleware(s.performance))
 	}
 	
 	return s, nil
@@ -190,7 +195,7 @@ func (s *Server) Run() error {
 	
 	// Setup graceful shutdown
 	stop := make(chan os.Signal, 1)
-	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
+	signal.Notify(stop, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 	
 	// Start server in goroutine
 	errChan := make(chan error, 1)
@@ -289,53 +294,89 @@ func (s *Server) handleHealth(c *gin.Context) {
 	if !s.stateManager.IsHealthy() {
 		c.JSON(http.StatusServiceUnavailable, gin.H{
 			"status":    "unhealthy",
-			"state":     string(s.stateManager.GetState()),
 			"timestamp": time.Now().Format(time.RFC3339),
 		})
 		return
 	}
 	
-	// Get provider health information
-	healthyProviders := s.providerService.GetHealthyProviders()
-	allProviders := s.providerService.GetAllProviders()
+	// Check if request is authenticated for detailed information
+	isAuthenticated := s.isHealthRequestAuthenticated(c)
 	
-	providerHealth := make(map[string]interface{})
-	for _, p := range allProviders {
-		health, _ := s.providerService.GetProviderHealth(p.Name)
-		if health != nil {
-			providerHealth[p.Name] = gin.H{
-				"healthy":          health.Healthy,
-				"last_check":       health.LastCheck.Format(time.RFC3339),
-				"response_time_ms": health.ResponseTime.Milliseconds(),
-				"enabled":          p.Enabled,
+	// Basic health status (always available)
+	healthyProviders := s.providerService.GetHealthyProviders()
+	
+	response := gin.H{
+		"status":    "healthy",
+		"timestamp": time.Now().Format(time.RFC3339),
+		"providers": gin.H{
+			"healthy": len(healthyProviders),
+			"total":   len(s.providerService.GetAllProviders()),
+		},
+	}
+	
+	// Add detailed information only if authenticated
+	if isAuthenticated {
+		allProviders := s.providerService.GetAllProviders()
+		
+		providerHealth := make(map[string]interface{})
+		for _, p := range allProviders {
+			health, _ := s.providerService.GetProviderHealth(p.Name)
+			if health != nil {
+				providerHealth[p.Name] = gin.H{
+					"healthy":          health.Healthy,
+					"last_check":       health.LastCheck.Format(time.RFC3339),
+					"response_time_ms": health.ResponseTime.Milliseconds(),
+					"enabled":          p.Enabled,
+				}
+			}
+		}
+		
+		response["state"] = string(s.stateManager.GetState())
+		response["providers"].(gin.H)["details"] = providerHealth
+		
+		// Get component health
+		components := s.stateManager.GetComponents()
+		componentHealth := make(map[string]interface{})
+		for name, comp := range components {
+			componentHealth[name] = gin.H{
+				"state":        string(comp.State),
+				"last_changed": comp.LastChanged.Format(time.RFC3339),
+			}
+			if comp.Error != nil {
+				componentHealth[name].(gin.H)["error"] = comp.Error.Error()
+			}
+		}
+		response["components"] = componentHealth
+	}
+	
+	c.JSON(http.StatusOK, response)
+}
+
+// isHealthRequestAuthenticated checks if the health request is authenticated
+func (s *Server) isHealthRequestAuthenticated(c *gin.Context) bool {
+	// If no API key is configured, allow detailed access from localhost only
+	if s.config.APIKey == "" {
+		return isLocalhost(c)
+	}
+	
+	// Check Authorization header (Bearer token)
+	authHeader := c.GetHeader("Authorization")
+	if authHeader != "" {
+		const bearerPrefix = "Bearer "
+		if strings.HasPrefix(authHeader, bearerPrefix) {
+			token := authHeader[len(bearerPrefix):]
+			if token == s.config.APIKey {
+				return true
 			}
 		}
 	}
 	
-	// Get component health
-	components := s.stateManager.GetComponents()
-	componentHealth := make(map[string]interface{})
-	for name, comp := range components {
-		componentHealth[name] = gin.H{
-			"state":        string(comp.State),
-			"last_changed": comp.LastChanged.Format(time.RFC3339),
-		}
-		if comp.Error != nil {
-			componentHealth[name].(gin.H)["error"] = comp.Error.Error()
-		}
+	// Check x-api-key header
+	if c.GetHeader("x-api-key") == s.config.APIKey {
+		return true
 	}
 	
-	c.JSON(http.StatusOK, gin.H{
-		"status":     "ok",
-		"state":      string(s.stateManager.GetState()),
-		"timestamp":  time.Now().Format(time.RFC3339),
-		"components": componentHealth,
-		"providers": gin.H{
-			"total":   len(allProviders),
-			"healthy": len(healthyProviders),
-			"details": providerHealth,
-		},
-	})
+	return false
 }
 
 // handleStatus returns detailed status information about ccproxy and providers
@@ -541,13 +582,47 @@ func loggingMiddleware() gin.HandlerFunc {
 	}
 }
 
+// GetPort returns the port the server is configured to run on
+func (s *Server) GetPort() int {
+	return s.config.Port
+}
+
+// requestSizeLimitMiddleware limits the size of request bodies
+func requestSizeLimitMiddleware(maxSize int64) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// Skip size check if maxSize is 0 (disabled)
+		if maxSize <= 0 {
+			c.Next()
+			return
+		}
+		
+		// Check Content-Length header
+		contentLength := c.Request.ContentLength
+		if contentLength > maxSize {
+			c.JSON(http.StatusRequestEntityTooLarge, gin.H{
+				"error": "Request body too large",
+				"limit": maxSize,
+			})
+			c.Abort()
+			return
+		}
+		
+		// Wrap the body with a limited reader to enforce the limit at read time
+		if c.Request.Body != nil {
+			c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, maxSize)
+		}
+		
+		c.Next()
+	}
+}
+
 // corsMiddleware adds CORS headers
 func corsMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Set CORS headers
 		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, PATCH")
-		c.Writer.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type, Accept, Authorization, x-api-key")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type, Accept, Authorization")
 		c.Writer.Header().Set("Access-Control-Max-Age", "86400")
 		
 		// Handle preflight requests
