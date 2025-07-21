@@ -168,7 +168,10 @@ func (s *Server) handleDeleteProvider(c *gin.Context) {
 
 	// Reload config in provider service
 	s.config = configService.Get()
-	s.providerService.Initialize()
+	if err := s.providerService.Initialize(); err != nil {
+		InternalServerError(c, fmt.Sprintf("Failed to reinitialize provider service: %v", err))
+		return
+	}
 
 	Success(c, gin.H{
 		"message": "Provider deleted successfully",

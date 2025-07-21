@@ -90,7 +90,8 @@ func InitLogger(config *LogConfig) error {
 func GetLogger() *logrus.Logger {
 	if logger == nil {
 		// Initialize with defaults if not initialized
-		InitLogger(&LogConfig{
+		// Safe to ignore error here as we're using default safe configuration
+		_ = InitLogger(&LogConfig{
 			Enabled: false,
 			Level:   "info",
 			Format:  "text",
