@@ -9,10 +9,12 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"github.com/orchestre-dev/ccproxy/internal/config"
 	"github.com/orchestre-dev/ccproxy/internal/converter"
+	"github.com/orchestre-dev/ccproxy/internal/performance"
 	"github.com/orchestre-dev/ccproxy/internal/providers"
 	"github.com/orchestre-dev/ccproxy/internal/proxy"
 	"github.com/orchestre-dev/ccproxy/internal/router"
@@ -28,6 +30,8 @@ type Pipeline struct {
 	router             *router.Router
 	httpClient         *http.Client
 	streamingProcessor *StreamingProcessor
+	performanceMonitor *performance.Monitor
+	requestCounter     int64
 	messageConverter   *converter.MessageConverter
 }
 
@@ -38,9 +42,12 @@ func NewPipeline(
 	transformerService *transformer.Service,
 	router *router.Router,
 ) *Pipeline {
-	// Create HTTP client with timeout
-	// Default 60 minutes timeout
-	timeout := 60 * time.Minute
+	// Create HTTP client with configurable timeout
+	timeout := cfg.Performance.RequestTimeout
+	if timeout == 0 {
+		// Fallback to reasonable default if not configured
+		timeout = 30 * time.Second
+	}
 
 	// Create proxy configuration
 	var proxyConfig *proxy.Config
@@ -78,6 +85,14 @@ func NewPipeline(
 		httpClient:         httpClient,
 		streamingProcessor: NewStreamingProcessor(transformerService),
 		messageConverter:   converter.NewMessageConverter(),
+		performanceMonitor: performance.NewMonitor(&performance.PerformanceConfig{
+			MetricsEnabled:  true,
+			MetricsInterval: 30 * time.Second,
+			ResourceLimits: performance.ResourceLimits{
+				RequestTimeout:    timeout,
+				MaxRequestBodyMB:  int(cfg.Performance.MaxRequestBodySize / 1024 / 1024),
+			},
+		}),
 	}
 }
 
@@ -103,7 +118,7 @@ func (p *Pipeline) ProcessRequest(ctx context.Context, req *RequestContext) (*Re
 	routingDecision := p.router.Route(routeReq, tokenCount)
 
 	// 2. Get provider configuration
-	provider, err := p.providerService.GetProvider(routingDecision.Provider)
+	selectedProvider, err := p.providerService.GetProvider(routingDecision.Provider)
 	if err != nil {
 		return nil, fmt.Errorf("provider not found: %s", routingDecision.Provider)
 	}
@@ -118,25 +133,52 @@ func (p *Pipeline) ProcessRequest(ctx context.Context, req *RequestContext) (*Re
 	}
 
 	// 5. Build HTTP request with transformed data
-	httpReq, err := p.buildHTTPRequest(ctx, provider, transformedRequest, req.IsStreaming, routingDecision.Provider)
+	httpReq, err := p.buildHTTPRequest(ctx, selectedProvider, transformedRequest, req.IsStreaming, routingDecision.Provider)
 	if err != nil {
 		return nil, fmt.Errorf("failed to build HTTP request: %w", err)
 	}
 
 	// 6. Send request to provider
+	startTime := time.Now()
 	httpResp, err := p.httpClient.Do(httpReq)
+	duration := time.Since(startTime)
+	
+	// Track provider metrics atomically
+	atomic.AddInt64(&p.requestCounter, 1)
+	
 	if err != nil {
 		// Track provider failure
-		// TODO: Add provider request tracking when implementing metrics
+		if p.performanceMonitor != nil {
+			p.performanceMonitor.RecordRequest(performance.RequestMetrics{
+				Provider:   selectedProvider.Name,
+				StartTime:  startTime,
+				EndTime:    time.Now(),
+				Latency:    duration,
+				Success:    false,
+				Error:      err,
+			})
+		}
 		return nil, fmt.Errorf("provider request failed: %w", err)
 	}
 
-	// Track provider success (initially)
-	// TODO: Add provider request tracking when implementing metrics
+	// Track provider success
+	if p.performanceMonitor != nil {
+		p.performanceMonitor.RecordRequest(performance.RequestMetrics{
+			Provider:   selectedProvider.Name,
+			StartTime:  startTime,
+			EndTime:    time.Now(),
+			Latency:    duration,
+			Success:    true,
+		})
+	}
 
 	// 7. Transform response through chain
 	transformedResp, err := chain.TransformResponseOut(ctx, httpResp)
 	if err != nil {
+		// Close response body to prevent leak
+		if httpResp.Body != nil {
+			httpResp.Body.Close()
+		}
 		return nil, fmt.Errorf("response transformation failed: %w", err)
 	}
 
@@ -403,9 +445,17 @@ func CopyResponse(w http.ResponseWriter, resp *http.Response) error {
 
 // HandleStreamingError attempts to send an error event in SSE format
 func HandleStreamingError(w http.ResponseWriter, err error) {
+	// Set SSE headers
+	w.Header().Set("Content-Type", "text/event-stream")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Connection", "keep-alive")
+	
 	// Try to write error as SSE event
 	errorEvent := fmt.Sprintf("event: error\ndata: %s\n\n", err.Error())
 	w.Write([]byte(errorEvent))
+	
+	// Send [DONE] marker
+	w.Write([]byte("data: [DONE]\n\n"))
 	
 	// Flush if possible
 	if flusher, ok := w.(http.Flusher); ok {
