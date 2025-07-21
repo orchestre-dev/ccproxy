@@ -96,14 +96,14 @@ func TestToJSONString(t *testing.T) {
 }
 
 func TestToJSONStringWithUnmarshallableType(t *testing.T) {
-	// Function type cannot be marshalled to JSON
+	// Function type cannot be marshaled to JSON
 	input := func() {}
 	result := ToJSONString(input)
 	testutil.AssertEqual(t, "{}", result, "Should return {} for unmarshallable types")
 }
 
 func TestToJSONStringWithComplexTypes(t *testing.T) {
-	// Test with channels, which cannot be marshalled
+	// Test with channels, which cannot be marshaled
 	input := make(chan int)
 	defer close(input)
 

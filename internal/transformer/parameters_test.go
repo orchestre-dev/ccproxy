@@ -193,7 +193,7 @@ func TestParametersTransformRequestIn(t *testing.T) {
 	})
 
 	t.Run("JSONUnmarshalableRequest", func(t *testing.T) {
-		// Create a request that can't be marshalled to JSON
+		// Create a request that can't be marshaled to JSON
 		request := make(chan int)
 
 		result, err := transformer.TransformRequestIn(ctx, request, "anthropic")
