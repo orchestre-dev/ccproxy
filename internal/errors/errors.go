@@ -270,11 +270,13 @@ func (e *CCProxyError) WriteHTTPResponse(w http.ResponseWriter) {
 	data, err := e.ToJSON()
 	if err != nil {
 		// Fallback error response
-		w.Write([]byte(`{"error":{"type":"internal_error","message":"Failed to serialize error"}}`))
+		// Safe to ignore write error for fallback response
+		_, _ = w.Write([]byte(`{"error":{"type":"internal_error","message":"Failed to serialize error"}}`))
 		return
 	}
 
-	w.Write(data)
+	// Safe to ignore write error for final error response
+	_, _ = w.Write(data)
 }
 
 // Helper functions

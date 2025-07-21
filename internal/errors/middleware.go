@@ -29,7 +29,8 @@ func ErrorHandlerMiddleware() gin.HandlerFunc {
 				// Create internal error
 				err := New(ErrorTypeInternal, "Internal server error")
 				if reqID := c.GetString("request_id"); reqID != "" {
-					err.WithRequestID(reqID)
+					// Safe to ignore return value - modifies err in place
+					_ = err.WithRequestID(reqID)
 				}
 
 				// Write error response
@@ -69,7 +70,8 @@ func HandleError(c *gin.Context, err error) {
 
 	// Add request ID if available
 	if reqID := c.GetString("request_id"); reqID != "" && ccErr.RequestID == "" {
-		ccErr.WithRequestID(reqID)
+		// Safe to ignore return value - modifies ccErr in place
+		_ = ccErr.WithRequestID(reqID)
 	}
 
 	// Log the error
