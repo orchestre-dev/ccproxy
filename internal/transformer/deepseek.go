@@ -89,7 +89,8 @@ func (t *DeepSeekTransformer) TransformResponseOut(ctx context.Context, response
 
 			// Pass through non-data events
 			if event.Data == "" || event.Data == "[DONE]" {
-				writer.WriteEvent(event)
+				// Safe to ignore error for streaming passthrough
+				_ = writer.WriteEvent(event)
 				continue
 			}
 
@@ -98,14 +99,16 @@ func (t *DeepSeekTransformer) TransformResponseOut(ctx context.Context, response
 			if err != nil {
 				utils.GetLogger().Errorf("DeepSeek: Error transforming stream data: %v", err)
 				// Pass through original on error
-				writer.WriteEvent(event)
+				// Safe to ignore error for fallback streaming
+				_ = writer.WriteEvent(event)
 				continue
 			}
 
 			// Write transformed events
 			for _, data := range transformedData {
 				if data != "" {
-					writer.WriteEvent(&SSEEvent{Data: data})
+					// Safe to ignore error for streaming output
+					_ = writer.WriteEvent(&SSEEvent{Data: data})
 				}
 			}
 		}

@@ -217,14 +217,16 @@ func (t *ToolUseTransformer) transformStreamingResponse(ctx context.Context, res
 
 			// Pass through non-data events
 			if event.Data == "" || event.Data == "[DONE]" {
-				writer.WriteEvent(event)
+				// Safe to ignore error for streaming passthrough
+				_ = writer.WriteEvent(event)
 				continue
 			}
 
 			// Transform the data event
 			transformedEvent := t.transformStreamEvent(event, state)
 			if transformedEvent != nil {
-				writer.WriteEvent(transformedEvent)
+				// Safe to ignore error for streaming output
+				_ = writer.WriteEvent(transformedEvent)
 			}
 		}
 	}()

@@ -133,7 +133,8 @@ func (t *AnthropicTransformer) TransformRequestIn(ctx context.Context, request i
 					argsStr, _ := funcMap["arguments"].(string)
 					var args interface{}
 					if argsStr != "" {
-						json.Unmarshal([]byte(argsStr), &args)
+						// Safe to ignore error - args will remain nil on parse failure
+						_ = json.Unmarshal([]byte(argsStr), &args)
 					}
 
 					toolUse := map[string]interface{}{

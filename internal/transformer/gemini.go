@@ -96,7 +96,8 @@ func (t *GeminiTransformer) TransformRequestIn(ctx context.Context, request inte
 					argsStr, _ := funcMap["arguments"].(string)
 					var args interface{}
 					if argsStr != "" {
-						json.Unmarshal([]byte(argsStr), &args)
+						// Safe to ignore error - args will remain nil on parse failure
+						_ = json.Unmarshal([]byte(argsStr), &args)
 					}
 
 					// Create function call part
@@ -419,12 +420,14 @@ func (t *GeminiTransformer) transformStreamingResponse(ctx context.Context, resp
 			// Transform the event
 			transformed := t.transformStreamEvent(event)
 			if transformed != nil {
-				writer.WriteEvent(transformed)
+				// Safe to ignore error for streaming output
+				_ = writer.WriteEvent(transformed)
 			}
 		}
 
 		// Send [DONE] event
-		writer.WriteEvent(&SSEEvent{Data: "[DONE]"})
+		// Safe to ignore error for final streaming event
+		_ = writer.WriteEvent(&SSEEvent{Data: "[DONE]"})
 	}()
 
 	return newResp, nil
