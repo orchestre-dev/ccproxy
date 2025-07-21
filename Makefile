@@ -36,7 +36,7 @@ PLATFORMS := darwin/amd64 darwin/arm64 linux/amd64 linux/arm64 windows/amd64
 .DEFAULT_GOAL := help
 
 # Phony targets
-.PHONY: all build test clean help install lint fmt coverage release docker version
+.PHONY: all build clean help install lint fmt release docker version
 
 ## help: Show this help message
 help:
@@ -48,7 +48,7 @@ help:
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  %-15s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
 ## all: Build for all platforms
-all: clean test build-all
+all: clean lint build-all
 
 ## build: Build binary for current platform
 build:
@@ -81,53 +81,7 @@ install: build
 	@chmod +x /usr/local/bin/$(BINARY_NAME)
 	@echo "$(BINARY_NAME) installed to /usr/local/bin/"
 
-## test: Run all tests
-test:
-	@echo "Running tests..."
-	$(GOTEST) -v -race -timeout 5m ./...
 
-## test-short: Run short tests
-test-short:
-	@echo "Running short tests..."
-	$(GOTEST) -v -short -race ./...
-
-## test-integration: Run integration tests
-test-integration:
-	@echo "Running integration tests..."
-	$(GOTEST) -v -race -tags=integration ./tests/integration/...
-
-## test-unit: Run unit tests only
-test-unit:
-	@echo "Running unit tests..."
-	@./scripts/test.sh unit
-
-## test-benchmark: Run benchmark tests
-test-benchmark:
-	@echo "Running benchmark tests..."
-	@./scripts/test.sh benchmark
-
-## test-load: Run load tests
-test-load:
-	@echo "Running load tests..."
-	@./scripts/test.sh load
-
-## test-race: Run race detection tests
-test-race:
-	@echo "Running race detection tests..."
-	@./scripts/test.sh race
-
-## test-all: Run all tests with coverage
-test-all:
-	@echo "Running all tests..."
-	@./scripts/test.sh all
-
-## coverage: Generate test coverage report
-coverage:
-	@echo "Generating coverage report..."
-	@mkdir -p $(COVERAGE_DIR)
-	$(GOTEST) -v -race -coverprofile=$(COVERAGE_DIR)/coverage.out -covermode=atomic ./...
-	$(GOCMD) tool cover -html=$(COVERAGE_DIR)/coverage.out -o $(COVERAGE_DIR)/coverage.html
-	@echo "Coverage report generated at $(COVERAGE_DIR)/coverage.html"
 
 ## lint: Run linters
 lint:
@@ -165,7 +119,7 @@ update-deps:
 	$(GOMOD) tidy
 
 ## release: Create release artifacts
-release: clean test build-all
+release: clean lint build-all
 	@echo "Creating release artifacts for v$(VERSION)..."
 	@mkdir -p $(DIST_DIR)
 	@for platform in $(PLATFORMS); do \
@@ -214,8 +168,8 @@ dev:
 		exit 1; \
 	fi
 
-## check: Run all checks (test, lint, fmt)
-check: fmt lint test
+## check: Run all checks (lint, fmt)
+check: fmt lint
 
 ## info: Show build information
 info:

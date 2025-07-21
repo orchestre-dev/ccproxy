@@ -1,0 +1,87 @@
+run:
+  timeout: 5m
+  tests: false
+  skip-dirs:
+    - vendor
+    - node_modules
+
+linters:
+  enable:
+    - gofmt
+    - goimports
+    - vet
+    - misspell
+    - ineffassign
+    - deadcode
+    - varcheck
+    - structcheck
+    - staticcheck
+    - gosimple
+    - unused
+    - typecheck
+  disable:
+    - errcheck      # Too many false positives for now
+    - gosec         # Security linting disabled for now  
+    - bodyclose     # HTTP response body close issues
+    - goconst       # String constants checking
+    - gocritic      # Various style issues
+    - gocyclo       # Cyclomatic complexity
+    - gocognit      # Cognitive complexity
+    - funlen        # Function length
+    - lll           # Line length
+    - nestif        # Nested if statements
+    - godox         # TODO/FIXME comments
+    - unconvert     # Unnecessary type conversions
+    - unparam       # Unused function parameters
+    - nakedret      # Naked returns
+    - prealloc      # Slice preallocation
+    - maligned      # Struct field alignment
+    - dupl          # Code duplication
+    - gomnd         # Magic numbers
+    - wsl           # Whitespace linting
+
+linters-settings:
+  gofmt:
+    simplify: true
+  goimports:
+    local-prefixes: github.com/orchestre-dev/ccproxy
+  misspell:
+    locale: US
+  staticcheck:
+    checks: ["all", "-SA1019"] # Ignore deprecation warnings for now
+
+issues:
+  exclude-rules:
+    # Exclude some linters from running on tests files
+    - path: _test\.go
+      linters:
+        - gocyclo
+        - errcheck
+        - dupl
+        - gosec
+        - funlen
+        - goconst
+    # Disable certain checks in generated files
+    - path: ".*\\.pb\\.go"
+      linters:
+        - all
+    # Allow long lines in build files
+    - path: "(Makefile|Dockerfile)"
+      linters:
+        - lll
+  exclude:
+    # Exclude error checking for certain patterns that are acceptable
+    - "Error return value of .((os\\.)?std(out|err)\\..*|.*Close|.*Flush|os\\.Remove(All)?|.*print.*|os\\.(Un)?Setenv). is not checked"
+    # Exclude magic number complaints for common cases  
+    - "Magic number: [0-9]+, in <argument> detected"
+    # Exclude package comment requirements
+    - "at least one file in a package should have a package comment"
+
+severity:
+  default-severity: warning
+  case-sensitive: false
+
+output:
+  format: colored-line-number
+  print-issued-line: true
+  print-linter-name: true

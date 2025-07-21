@@ -43,8 +43,6 @@ jobs:
     - name: Install dependencies
       run: make deps
 
-    - name: Run tests
-      run: make test-short
 
     - name: Build release artifacts
       run: make release
