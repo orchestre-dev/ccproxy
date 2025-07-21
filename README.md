@@ -226,39 +226,31 @@ go build ./cmd/proxy
 
 ### Testing
 
-**⚠️ Important**: Always use the safe test script to prevent system resource exhaustion:
+**🚧 Test Suite Status**: The test suite has been temporarily removed due to system stability issues. A new test framework is being developed.
+
+**Current Testing Approach**:
 
 ```bash
-# Run all tests safely (recommended)
-./test_safe.sh
+# Build and verify compilation
+make build
 
-# Run specific test suites
-./test_safe.sh unit        # Unit tests only
-./test_safe.sh integration # Integration tests only
-./test_safe.sh quick       # Quick unit tests with higher parallelism
-./test_safe.sh e2e         # End-to-end tests
-./test_safe.sh bench       # Benchmarks
-./test_safe.sh load        # Load tests (resource intensive)
+# Run basic functionality test
+./build/ccproxy version
+
+# Cross-platform builds (all except Windows)
+make build-all
+
+# Code formatting and basic linting
+make fmt
+make lint
 ```
 
-The safe test script includes:
-- Resource monitoring and limits (CPU, memory, process count)
-- Automatic cleanup on failure
-- Progress reporting and colored output
-- Test isolation and safety measures
-- Detailed logging to `test-logs/`
-
-For manual testing (use with caution):
-```bash
-# Run all tests
-go test ./...
-
-# Run tests with coverage
-go test -cover ./...
-
-# Run specific package tests
-go test ./internal/converter
-```
+**Quality Assurance**:
+- ✅ **Compilation**: All packages compile successfully
+- ✅ **Cross-platform**: Builds for Linux, macOS (Intel/Apple Silicon)
+- ✅ **Version Management**: Semantic versioning system functional
+- ✅ **Release Automation**: CI/CD pipeline operational
+- 🔄 **Test Coverage**: New test suite under development
 
 ### Hot Reload Development
 
