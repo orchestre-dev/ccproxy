@@ -10,16 +10,11 @@ import (
 )
 
 func TestBasicProxy(t *testing.T) {
-	// Setup
-	configPath := createTestConfig(t)
-	stopCCProxy := startCCProxy(t, configPath)
-	defer stopCCProxy()
-	
-	mockProvider := startMockProvider(t)
-	defer mockProvider.Stop()
+	// Use isolated test environment
+	env := newTestEnv(t)
 	
 	t.Run("Health Check", func(t *testing.T) {
-		resp, body := makeRequest(t, "GET", "/health", nil, nil)
+		resp, body := env.request("GET", "/health", nil, nil)
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 		
 		var health map[string]interface{}
@@ -36,7 +31,7 @@ func TestBasicProxy(t *testing.T) {
 	})
 	
 	t.Run("Status Check", func(t *testing.T) {
-		resp, body := makeRequest(t, "GET", "/status", nil, nil)
+		resp, body := env.request("GET", "/status", nil, nil)
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 		
 		var status map[string]interface{}
@@ -51,10 +46,10 @@ func TestBasicProxy(t *testing.T) {
 	
 	t.Run("Simple Message Request", func(t *testing.T) {
 		// Clear any previous requests (like health checks)
-		mockProvider.ClearRequests()
+		env.mock.ClearRequests()
 		
 		// Set mock response
-		mockProvider.SetResponse("/v1/messages", mockResponse{
+		env.mock.SetResponse("/v1/messages", mockResponse{
 			Status: 200,
 			Body: map[string]interface{}{
 				"id":   "msg_test_123",
@@ -81,7 +76,7 @@ func TestBasicProxy(t *testing.T) {
 			},
 		}
 		
-		resp, body := makeRequest(t, "POST", "/v1/messages", requestBody, nil)
+		resp, body := env.request("POST", "/v1/messages", requestBody, nil)
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 		
 		var response map[string]interface{}
@@ -93,7 +88,7 @@ func TestBasicProxy(t *testing.T) {
 		assert.Equal(t, "assistant", response["role"])
 		
 		// Verify mock provider received the request
-		requests := mockProvider.GetRequests()
+		requests := env.mock.GetRequests()
 		assert.Len(t, requests, 1)
 		assert.Equal(t, "/v1/messages", requests[0].Path)
 		assert.Equal(t, "POST", requests[0].Method)
@@ -101,7 +96,7 @@ func TestBasicProxy(t *testing.T) {
 	})
 	
 	t.Run("Request with System Message", func(t *testing.T) {
-		mockProvider.ClearRequests()
+		env.mock.ClearRequests()
 		
 		requestBody := map[string]interface{}{
 			"model": "mock-model",
@@ -114,11 +109,11 @@ func TestBasicProxy(t *testing.T) {
 			},
 		}
 		
-		resp, _ := makeRequest(t, "POST", "/v1/messages", requestBody, nil)
+		resp, _ := env.request("POST", "/v1/messages", requestBody, nil)
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 		
 		// Verify request was forwarded
-		requests := mockProvider.GetRequests()
+		requests := env.mock.GetRequests()
 		require.Len(t, requests, 1)
 		
 		var capturedRequest map[string]interface{}
@@ -130,7 +125,7 @@ func TestBasicProxy(t *testing.T) {
 	})
 	
 	t.Run("Request with Max Tokens", func(t *testing.T) {
-		mockProvider.ClearRequests()
+		env.mock.ClearRequests()
 		
 		requestBody := map[string]interface{}{
 			"model": "mock-model",
@@ -143,11 +138,11 @@ func TestBasicProxy(t *testing.T) {
 			"max_tokens": 100,
 		}
 		
-		resp, _ := makeRequest(t, "POST", "/v1/messages", requestBody, nil)
+		resp, _ := env.request("POST", "/v1/messages", requestBody, nil)
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 		
 		// Verify max_tokens was passed through
-		requests := mockProvider.GetRequests()
+		requests := env.mock.GetRequests()
 		require.Len(t, requests, 1)
 		
 		var capturedRequest map[string]interface{}

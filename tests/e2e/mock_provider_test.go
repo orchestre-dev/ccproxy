@@ -1,6 +1,7 @@
 package e2e
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -50,41 +51,84 @@ func startMockProvider(t *testing.T) *mockProvider {
 	// Setup routes
 	m.router.Any("/*path", m.handleRequest)
 	
-	// Start server
+	// Start server with proper shutdown handling
 	m.server = &http.Server{
 		Addr:    fmt.Sprintf(":%d", mockPort),
 		Handler: m.router,
 	}
 	
+	// Channel to signal server has started
+	serverStarted := make(chan error, 1)
+	
 	go func() {
 		if err := m.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			t.Logf("Mock provider server error: %v", err)
+			// Only report error if server hasn't started yet
+			select {
+			case serverStarted <- err:
+				// Server failed to start
+			default:
+				// Server was already running, this is a normal shutdown
+				t.Logf("Mock provider server stopped: %v", err)
+			}
 		}
 	}()
 	
-	// Wait for server to be ready
-	ready := false
-	for i := 0; i < 50; i++ {
-		resp, err := http.Get(fmt.Sprintf("http://localhost:%d/health", mockPort))
-		if err == nil {
-			resp.Body.Close()
-			ready = true
-			break
+	// Register cleanup with t.Cleanup
+	t.Cleanup(func() {
+		// Add panic recovery
+		defer func() {
+			if r := recover(); r != nil {
+				t.Logf("Recovered from panic during mock provider cleanup: %v", r)
+			}
+		}()
+		
+		if m.server != nil {
+			// Use context for graceful shutdown
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+			
+			if err := m.server.Shutdown(ctx); err != nil {
+				t.Logf("Error shutting down mock provider: %v", err)
+				// Force close if graceful shutdown fails
+				m.server.Close()
+			}
 		}
-		time.Sleep(10 * time.Millisecond)
-	}
+	})
 	
-	if !ready {
-		t.Fatal("Mock provider failed to start")
+	// Wait for server to be ready with better error handling
+	ready := false
+	startTimeout := time.After(5 * time.Second)
+	ticker := time.NewTicker(50 * time.Millisecond)
+	defer ticker.Stop()
+	
+	for !ready {
+		select {
+		case err := <-serverStarted:
+			t.Fatalf("Mock provider failed to start: %v", err)
+		case <-startTimeout:
+			t.Fatal("Mock provider failed to start within timeout")
+		case <-ticker.C:
+			resp, err := http.Get(fmt.Sprintf("http://localhost:%d/health", mockPort))
+			if err == nil {
+				resp.Body.Close()
+				ready = true
+			}
+		}
 	}
 	
 	return m
 }
 
-// Stop stops the mock provider
+// Stop stops the mock provider gracefully
 func (m *mockProvider) Stop() {
 	if m.server != nil {
-		m.server.Close()
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		
+		if err := m.server.Shutdown(ctx); err != nil {
+			// Force close if graceful shutdown fails
+			m.server.Close()
+		}
 	}
 }
 
