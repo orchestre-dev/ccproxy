@@ -26,6 +26,7 @@ import (
 // Server represents the CCProxy HTTP server
 type Server struct {
 	config          *config.Config
+	configService   *config.Service
 	configPath      string
 	router          *gin.Engine
 	server          *http.Server
@@ -134,6 +135,7 @@ func NewWithPath(cfg *config.Config, configPath string) (*Server, error) {
 	// Create server
 	s := &Server{
 		config:          cfg,
+		configService:   configService,
 		configPath:      configPath,
 		router:          router,
 		providerService: providerService,

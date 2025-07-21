@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/mitchellh/mapstructure"
@@ -16,6 +17,7 @@ import (
 type Service struct {
 	config *Config
 	viper  *viper.Viper
+	mu     sync.RWMutex
 }
 
 // NewService creates a new configuration service
@@ -104,13 +106,31 @@ func (s *Service) Load() error {
 	return nil
 }
 
-// Get returns the current configuration
+// Get returns the current configuration (returns a copy to prevent race conditions)
 func (s *Service) Get() *Config {
-	return s.config
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	
+	// Create a deep copy of the config
+	configCopy := *s.config
+	
+	// Deep copy the slices
+	configCopy.Providers = make([]Provider, len(s.config.Providers))
+	copy(configCopy.Providers, s.config.Providers)
+	
+	// Deep copy the routes map
+	configCopy.Routes = make(map[string]Route)
+	for k, v := range s.config.Routes {
+		configCopy.Routes[k] = v
+	}
+	
+	return &configCopy
 }
 
 // SetConfig sets the configuration (mainly for testing)
 func (s *Service) SetConfig(cfg *Config) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	s.config = cfg
 }
 
@@ -205,6 +225,9 @@ func (s *Service) GetProvider(name string) (*Provider, error) {
 
 // UpdateProvider updates a provider by name
 func (s *Service) UpdateProvider(name string, provider *Provider) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	
 	provider.UpdatedAt = time.Now()
 
 	// Find and update existing provider
@@ -223,6 +246,9 @@ func (s *Service) UpdateProvider(name string, provider *Provider) error {
 
 // SaveProvider saves a new provider
 func (s *Service) SaveProvider(provider *Provider) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	
 	// Check if provider already exists
 	for _, p := range s.config.Providers {
 		if p.Name == provider.Name {
@@ -241,6 +267,9 @@ func (s *Service) SaveProvider(provider *Provider) error {
 
 // DeleteProvider removes a provider by name
 func (s *Service) DeleteProvider(name string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	
 	providers := make([]Provider, 0, len(s.config.Providers))
 	found := false
 

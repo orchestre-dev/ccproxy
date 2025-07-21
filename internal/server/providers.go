@@ -56,15 +56,14 @@ func (s *Server) handleCreateProvider(c *gin.Context) {
 		Enabled:    req.Enabled,
 	}
 
-	// Add to config
-	s.config.Providers = append(s.config.Providers, provider)
-
-	// Save config
-	configService := config.NewService()
-	if err := configService.SaveProvider(&provider); err != nil {
+	// Save via config service
+	if err := s.configService.SaveProvider(&provider); err != nil {
 		InternalServerError(c, fmt.Sprintf("Failed to save provider: %v", err))
 		return
 	}
+
+	// Update server's config reference
+	s.config = s.configService.Get()
 
 	Created(c, provider)
 }
@@ -133,10 +132,7 @@ func (s *Server) handleUpdateProvider(c *gin.Context) {
 	}
 
 	// Update via config service
-	configService := config.NewService()
-	cfg := configService.Get()
-	configService.SetConfig(cfg)
-	if err := configService.UpdateProvider(name, &updatedProvider); err != nil {
+	if err := s.configService.UpdateProvider(name, &updatedProvider); err != nil {
 		InternalServerError(c, fmt.Sprintf("Failed to update provider: %v", err))
 		return
 	}
@@ -160,15 +156,13 @@ func (s *Server) handleDeleteProvider(c *gin.Context) {
 	}
 
 	// Delete from config service
-	configService := config.NewService()
-	configService.SetConfig(s.config)
-	if err := configService.DeleteProvider(name); err != nil {
+	if err := s.configService.DeleteProvider(name); err != nil {
 		InternalServerError(c, fmt.Sprintf("Failed to delete provider: %v", err))
 		return
 	}
 
 	// Reload config in provider service
-	s.config = configService.Get()
+	s.config = s.configService.Get()
 	if err := s.providerService.Initialize(); err != nil {
 		InternalServerError(c, fmt.Sprintf("Failed to reinitialize provider service: %v", err))
 		return
@@ -195,10 +189,7 @@ func (s *Server) handleToggleProvider(c *gin.Context) {
 	updatedProvider.Enabled = !updatedProvider.Enabled
 
 	// Update via config service
-	configService := config.NewService()
-	cfg := configService.Get()
-	configService.SetConfig(cfg)
-	if err := configService.UpdateProvider(name, &updatedProvider); err != nil {
+	if err := s.configService.UpdateProvider(name, &updatedProvider); err != nil {
 		InternalServerError(c, fmt.Sprintf("Failed to toggle provider: %v", err))
 		return
 	}
