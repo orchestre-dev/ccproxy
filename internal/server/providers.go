@@ -93,59 +93,59 @@ func (s *Server) handleUpdateProvider(c *gin.Context) {
 		return
 	}
 
-	// Find provider index
-	providerIndex := -1
-	for i, p := range s.config.Providers {
-		if p.Name == name {
-			providerIndex = i
-			break
-		}
-	}
-
-	if providerIndex == -1 {
+	// Get current provider from provider service
+	provider, err := s.providerService.GetProvider(name)
+	if err != nil {
 		NotFound(c, fmt.Sprintf("Provider '%s' not found", name))
 		return
 	}
 
-	// Update provider fields
-	provider := &s.config.Providers[providerIndex]
+	// Create a copy to avoid modifying the original
+	updatedProvider := *provider
 
-	if req.Name != "" && req.Name != provider.Name {
+	if req.Name != "" && req.Name != updatedProvider.Name {
 		// Check if new name already exists
-		for i, p := range s.config.Providers {
-			if i != providerIndex && p.Name == req.Name {
+		providers := s.providerService.GetAllProviders()
+		for _, p := range providers {
+			if p.Name == req.Name {
 				Conflict(c, fmt.Sprintf("Provider '%s' already exists", req.Name))
 				return
 			}
 		}
-		provider.Name = req.Name
+		updatedProvider.Name = req.Name
 	}
 
 	if req.APIBaseURL != "" {
-		provider.APIBaseURL = req.APIBaseURL
+		updatedProvider.APIBaseURL = req.APIBaseURL
 	}
 
 	if req.APIKey != "" {
-		provider.APIKey = req.APIKey
+		updatedProvider.APIKey = req.APIKey
 	}
 
 	if req.Models != nil {
-		provider.Models = req.Models
+		updatedProvider.Models = req.Models
 	}
 
 	if req.Enabled != nil {
-		provider.Enabled = *req.Enabled
+		updatedProvider.Enabled = *req.Enabled
 	}
 
-	// Save config
+	// Update via config service
 	configService := config.NewService()
-	configService.SetConfig(s.config)
-	if err := configService.UpdateProvider(name, provider); err != nil {
+	cfg := configService.Get()
+	configService.SetConfig(cfg)
+	if err := configService.UpdateProvider(name, &updatedProvider); err != nil {
 		InternalServerError(c, fmt.Sprintf("Failed to update provider: %v", err))
 		return
 	}
 
-	Success(c, provider)
+	// Refresh provider service
+	if err := s.providerService.RefreshProvider(updatedProvider.Name); err != nil {
+		utils.GetLogger().Warnf("Failed to refresh provider in service: %v", err)
+	}
+
+	Success(c, &updatedProvider)
 }
 
 // handleDeleteProvider deletes a provider
@@ -182,33 +182,33 @@ func (s *Server) handleDeleteProvider(c *gin.Context) {
 func (s *Server) handleToggleProvider(c *gin.Context) {
 	name := c.Param("name")
 
-	// Find provider
-	var provider *config.Provider
-	for i := range s.config.Providers {
-		if s.config.Providers[i].Name == name {
-			provider = &s.config.Providers[i]
-			break
-		}
-	}
-
-	if provider == nil {
+	// Get current provider from provider service
+	provider, err := s.providerService.GetProvider(name)
+	if err != nil {
 		NotFound(c, fmt.Sprintf("Provider '%s' not found", name))
 		return
 	}
 
-	// Toggle enabled state
-	provider.Enabled = !provider.Enabled
+	// Create a copy to avoid modifying the original
+	updatedProvider := *provider
+	updatedProvider.Enabled = !updatedProvider.Enabled
 
-	// Save config
+	// Update via config service
 	configService := config.NewService()
-	configService.SetConfig(s.config)
-	if err := configService.UpdateProvider(name, provider); err != nil {
+	cfg := configService.Get()
+	configService.SetConfig(cfg)
+	if err := configService.UpdateProvider(name, &updatedProvider); err != nil {
 		InternalServerError(c, fmt.Sprintf("Failed to toggle provider: %v", err))
 		return
 	}
 
+	// Refresh provider service
+	if err := s.providerService.RefreshProvider(name); err != nil {
+		utils.GetLogger().Warnf("Failed to refresh provider in service: %v", err)
+	}
+
 	message := "Provider disabled successfully"
-	if provider.Enabled {
+	if updatedProvider.Enabled {
 		message = "Provider enabled successfully"
 	}
 

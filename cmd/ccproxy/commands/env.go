@@ -45,4 +45,3 @@ func EnvCmd() *cobra.Command {
 		},
 	}
 }
-

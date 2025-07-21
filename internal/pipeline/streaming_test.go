@@ -679,4 +679,3 @@ func (w *safeTestWriter) Flush() {
 		flusher.Flush()
 	}
 }
-

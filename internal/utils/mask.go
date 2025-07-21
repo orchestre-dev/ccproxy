@@ -15,4 +15,3 @@ func MaskAPIKey(key string) string {
 	// Show first 4 and last 4 characters
 	return key[:4] + strings.Repeat("*", len(key)-8) + key[len(key)-4:]
 }
-
