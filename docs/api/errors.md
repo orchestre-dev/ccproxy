@@ -122,7 +122,7 @@ import requests
 
 try:
     response = requests.post(
-        "http://localhost:7187/v1/messages",
+        "http://localhost:3456/v1/messages",
         json={"model": "claude-3-sonnet", "messages": [...]},
         headers={"Content-Type": "application/json"}
     )
@@ -147,7 +147,7 @@ except requests.exceptions.HTTPError as e:
 ```javascript
 async function callCCProxy(messages) {
   try {
-    const response = await fetch('http://localhost:7187/v1/messages', {
+    const response = await fetch('http://localhost:3456/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -213,10 +213,10 @@ curl -H "Authorization: Bearer $GROQ_API_KEY" \
 **Connection Refused**
 ```bash
 # Check if CCProxy is running
-curl http://localhost:7187/health
+curl http://localhost:3456/health
 
 # Check port availability
-lsof -i :7187
+lsof -i :3456
 ```
 
 ## Best Practices

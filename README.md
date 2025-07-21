@@ -1,6 +1,6 @@
-# CCProxy - Multi-Provider AI Proxy Server
+# CCProxy
 
-A production-grade Golang proxy server that enables the use of multiple AI providers (Groq, OpenRouter, OpenAI, and more) with Claude Code by translating between Anthropic and provider-specific API formats.
+CCProxy is a Go-based proxy server that acts as an intelligent intermediary between Claude Code and various Large Language Model (LLM) providers.
 
 ## 🌟 Features
 
@@ -226,6 +226,29 @@ go build ./cmd/proxy
 
 ### Testing
 
+**⚠️ Important**: Always use the safe test script to prevent system resource exhaustion:
+
+```bash
+# Run all tests safely (recommended)
+./test_safe.sh
+
+# Run specific test suites
+./test_safe.sh unit        # Unit tests only
+./test_safe.sh integration # Integration tests only
+./test_safe.sh quick       # Quick unit tests with higher parallelism
+./test_safe.sh e2e         # End-to-end tests
+./test_safe.sh bench       # Benchmarks
+./test_safe.sh load        # Load tests (resource intensive)
+```
+
+The safe test script includes:
+- Resource monitoring and limits (CPU, memory, process count)
+- Automatic cleanup on failure
+- Progress reporting and colored output
+- Test isolation and safety measures
+- Detailed logging to `test-logs/`
+
+For manual testing (use with caution):
 ```bash
 # Run all tests
 go test ./...

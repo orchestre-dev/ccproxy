@@ -160,7 +160,7 @@ chmod +x ccproxy.AppImage
 #### Option 1: Docker Run
 ```bash
 # Run CCProxy in Docker
-docker run -p 7187:7187 \
+docker run -p 3456:3456 \
   -e PROVIDER=groq \
   -e GROQ_API_KEY=your_api_key \
   -e GROQ_MODEL=moonshotai/kimi-k2-instruct \
@@ -175,7 +175,7 @@ services:
   ccproxy:
     image: orchestre-dev/ccproxy:latest
     ports:
-      - "7187:7187"
+      - "3456:3456"
     environment:
       - PROVIDER=groq
       - GROQ_API_KEY=${GROQ_API_KEY}
@@ -209,7 +209,7 @@ spec:
       - name: ccproxy
         image: orchestre-dev/ccproxy:latest
         ports:
-        - containerPort: 7187
+        - containerPort: 3456
         env:
         - name: PROVIDER
           value: "groq"
@@ -247,10 +247,10 @@ After installation, verify CCProxy is working:
 ccproxy --version
 
 # Test health endpoint
-curl http://localhost:7187/health
+curl http://localhost:3456/health
 
 # Configure for Claude Code
-export ANTHROPIC_BASE_URL=http://localhost:7187
+export ANTHROPIC_BASE_URL=http://localhost:3456
 export ANTHROPIC_API_KEY=NOT_NEEDED
 ```
 
@@ -279,7 +279,7 @@ ccproxy --port 8187
 ```
 
 **Firewall Issues:**
-Ensure port 7187 is open in your firewall settings.
+Ensure port 3456 is open in your firewall settings.
 
 ### Getting Help
 

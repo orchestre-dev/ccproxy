@@ -113,7 +113,7 @@ curl -sSL https://raw.githubusercontent.com/orchestre-dev/ccproxy/main/install.s
 export PROVIDER=gemini
 export GEMINI_API_KEY=your_gemini_api_key_here
 
-# Start CCProxy (runs on port 7187 by default)
+# Start CCProxy (runs on port 3456 by default)
 ccproxy
 ```
 
@@ -123,7 +123,7 @@ In a new terminal window:
 
 ```bash
 # Point Claude Code to use CCProxy instead of Anthropic's API
-export ANTHROPIC_BASE_URL=http://localhost:7187
+export ANTHROPIC_BASE_URL=http://localhost:3456
 export ANTHROPIC_API_KEY=dummy
 
 # Now Claude Code can work with Gemini through CCProxy

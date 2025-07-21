@@ -26,7 +26,7 @@ ccproxy &
 ## 3. Connect Claude Code
 
 ```bash
-export ANTHROPIC_BASE_URL=http://localhost:7187
+export ANTHROPIC_BASE_URL=http://localhost:3456
 claude-code "Write a Python function to reverse a string"
 ```
 
@@ -48,7 +48,7 @@ claude-code "Debug this error: TypeError: 'int' object is not subscriptable"
 
 ## Troubleshooting
 
-**Connection refused?** Check if CCProxy is running on port 7187.
+**Connection refused?** Check if CCProxy is running on port 3456.
 
 **API key error?** Verify your provider API key is correct.
 

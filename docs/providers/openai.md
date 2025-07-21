@@ -149,7 +149,7 @@ Once configured, use Claude Code normally:
 
 ```bash
 # Set CCProxy as the API endpoint
-export ANTHROPIC_BASE_URL=http://localhost:7187
+export ANTHROPIC_BASE_URL=http://localhost:3456
 export ANTHROPIC_API_KEY=NOT_NEEDED
 
 # Use Claude Code
@@ -318,7 +318,7 @@ curl https://api.openai.com/v1/usage \
 tail -f ccproxy.log
 
 # Check status
-curl http://localhost:7187/status
+curl http://localhost:3456/status
 ```
 
 ### Cost Management
@@ -371,7 +371,7 @@ import openai
 # Point to CCProxy
 client = openai.OpenAI(
     api_key="NOT_NEEDED",
-    base_url="http://localhost:7187"
+    base_url="http://localhost:3456"
 )
 
 response = client.chat.completions.create(
@@ -388,7 +388,7 @@ import OpenAI from 'openai';
 
 const client = new OpenAI({
     apiKey: 'NOT_NEEDED',
-    baseURL: 'http://localhost:7187'
+    baseURL: 'http://localhost:3456'
 });
 
 const response = await client.chat.completions.create({
@@ -416,10 +416,10 @@ Monitor usage at [platform.openai.com/usage](https://platform.openai.com/usage):
 tail -f ccproxy.log | grep openai
 
 # Status endpoint
-curl http://localhost:7187/status
+curl http://localhost:3456/status
 
 # Health check
-curl http://localhost:7187/health
+curl http://localhost:3456/health
 ```
 
 ## Next Steps

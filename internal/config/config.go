@@ -1,423 +1,331 @@
-// Package config provides configuration management for CCProxy
 package config
 
 import (
-	"log"
+	"encoding/json"
+	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
 	"time"
 
+	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/viper"
 )
 
-// Config holds all configuration for the application
-type Config struct {
-	Logging   LoggingConfig   `mapstructure:"logging"`
-	Provider  string          `mapstructure:"provider"`
-	Providers ProvidersConfig `mapstructure:"providers"`
-	Server    ServerConfig    `mapstructure:"server"`
+// Service handles configuration loading and management
+type Service struct {
+	config *Config
+	viper  *viper.Viper
 }
 
-// ServerConfig holds server-related configuration
-type ServerConfig struct {
-	Host            string        `mapstructure:"host"`
-	Port            string        `mapstructure:"port"`
-	Environment     string        `mapstructure:"environment"`
-	ReadTimeout     time.Duration `mapstructure:"read_timeout"`
-	WriteTimeout    time.Duration `mapstructure:"write_timeout"`
-	ShutdownTimeout time.Duration `mapstructure:"shutdown_timeout"`
-}
-
-// ProvidersConfig holds configuration for all providers
-type ProvidersConfig struct {
-	Groq       GroqConfig       `mapstructure:"groq"`
-	OpenRouter OpenRouterConfig `mapstructure:"openrouter"`
-	OpenAI     OpenAIConfig     `mapstructure:"openai"`
-	XAI        XAIConfig        `mapstructure:"xai"`
-	Gemini     GeminiConfig     `mapstructure:"gemini"`
-	Mistral    MistralConfig    `mapstructure:"mistral"`
-	Ollama     OllamaConfig     `mapstructure:"ollama"`
-}
-
-// GroqConfig holds Groq API configuration
-type GroqConfig struct {
-	APIKey    string        `mapstructure:"api_key"`
-	BaseURL   string        `mapstructure:"base_url"`
-	Model     string        `mapstructure:"model"`
-	MaxTokens int           `mapstructure:"max_tokens"`
-	Timeout   time.Duration `mapstructure:"timeout"`
-}
-
-// OpenRouterConfig holds OpenRouter API configuration
-type OpenRouterConfig struct {
-	APIKey    string        `mapstructure:"api_key"`
-	BaseURL   string        `mapstructure:"base_url"`
-	Model     string        `mapstructure:"model"`
-	SiteURL   string        `mapstructure:"site_url"`
-	SiteName  string        `mapstructure:"site_name"`
-	MaxTokens int           `mapstructure:"max_tokens"`
-	Timeout   time.Duration `mapstructure:"timeout"`
-}
-
-// OpenAIConfig holds OpenAI API configuration
-type OpenAIConfig struct {
-	APIKey    string        `mapstructure:"api_key"`
-	BaseURL   string        `mapstructure:"base_url"`
-	Model     string        `mapstructure:"model"`
-	MaxTokens int           `mapstructure:"max_tokens"`
-	Timeout   time.Duration `mapstructure:"timeout"`
-}
-
-// XAIConfig holds XAI (Grok) API configuration
-type XAIConfig struct {
-	APIKey    string        `mapstructure:"api_key"`
-	BaseURL   string        `mapstructure:"base_url"`
-	Model     string        `mapstructure:"model"`
-	MaxTokens int           `mapstructure:"max_tokens"`
-	Timeout   time.Duration `mapstructure:"timeout"`
-}
-
-// GeminiConfig holds Google Gemini API configuration
-type GeminiConfig struct {
-	APIKey    string        `mapstructure:"api_key"`
-	BaseURL   string        `mapstructure:"base_url"`
-	Model     string        `mapstructure:"model"`
-	MaxTokens int           `mapstructure:"max_tokens"`
-	Timeout   time.Duration `mapstructure:"timeout"`
-}
-
-// MistralConfig holds Mistral AI API configuration
-type MistralConfig struct {
-	APIKey    string        `mapstructure:"api_key"`
-	BaseURL   string        `mapstructure:"base_url"`
-	Model     string        `mapstructure:"model"`
-	MaxTokens int           `mapstructure:"max_tokens"`
-	Timeout   time.Duration `mapstructure:"timeout"`
-}
-
-// OllamaConfig holds Ollama API configuration
-type OllamaConfig struct {
-	APIKey    string        `mapstructure:"api_key"`
-	BaseURL   string        `mapstructure:"base_url"`
-	Model     string        `mapstructure:"model"`
-	MaxTokens int           `mapstructure:"max_tokens"`
-	Timeout   time.Duration `mapstructure:"timeout"`
-}
-
-// LoggingConfig holds logging configuration
-type LoggingConfig struct {
-	Level  string `mapstructure:"level"`
-	Format string `mapstructure:"format"`
-}
-
-// Load loads configuration from environment variables and config files
-func Load() *Config {
-	viper.SetConfigName("config")
-	viper.SetConfigType("yaml")
-	viper.AddConfigPath(".")
-	viper.AddConfigPath("./config")
-
+// NewService creates a new configuration service
+func NewService() *Service {
+	v := viper.New()
+	
 	// Set default values
-	setDefaults()
-
-	// Bind environment variables
-	bindEnvVars()
-
-	// Read config file (optional)
-	if err := viper.ReadInConfig(); err != nil {
-		log.Printf("Config file not found or error reading: %v", err)
+	setDefaults(v)
+	
+	// Set up configuration search paths
+	v.SetConfigName("config")
+	v.SetConfigType("json")
+	
+	// Add configuration paths in order of priority
+	// 1. Current directory
+	v.AddConfigPath(".")
+	
+	// 2. User's home directory under .ccproxy
+	if home, err := os.UserHomeDir(); err == nil {
+		v.AddConfigPath(filepath.Join(home, ".ccproxy"))
 	}
-
-	var config Config
-	if err := viper.Unmarshal(&config); err != nil {
-		log.Fatalf("Unable to decode config: %v", err)
+	
+	// 3. System configuration directory
+	v.AddConfigPath("/etc/ccproxy")
+	
+	// Enable environment variable binding
+	v.SetEnvPrefix("CCPROXY")
+	v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+	v.AutomaticEnv()
+	
+	return &Service{
+		viper:  v,
+		config: DefaultConfig(),
 	}
-
-	// Validate required configuration
-	validate(&config)
-
-	return &config
 }
 
-// Default token limits for various providers
-const (
-	groqMaxTokens       = 16384
-	openRouterMaxTokens = 4096
-	openAIMaxTokens     = 4096
-	xaiMaxTokens        = 128000
-	geminiMaxTokens     = 32768
-	mistralMaxTokens    = 32768
-	ollamaMaxTokens     = 4096
-)
-
-// setDefaults sets default configuration values
-func setDefaults() {
-	// Provider defaults
-	viper.SetDefault("provider", "groq")
-
-	// Server defaults
-	viper.SetDefault("server.host", "0.0.0.0")
-	viper.SetDefault("server.port", "7187")
-	viper.SetDefault("server.environment", "development")
-	viper.SetDefault("server.read_timeout", "30s")
-	viper.SetDefault("server.write_timeout", "30s")
-	viper.SetDefault("server.shutdown_timeout", "5s")
-
-	// Groq defaults
-	viper.SetDefault("providers.groq.base_url", "https://api.groq.com/openai/v1")
-	viper.SetDefault("providers.groq.model", "moonshotai/kimi-k2-instruct")
-	viper.SetDefault("providers.groq.max_tokens", groqMaxTokens)
-	viper.SetDefault("providers.groq.timeout", "60s")
-
-	// OpenRouter defaults
-	viper.SetDefault("providers.openrouter.base_url", "https://openrouter.ai/api/v1")
-	viper.SetDefault("providers.openrouter.model", "openai/gpt-4o")
-	viper.SetDefault("providers.openrouter.max_tokens", openRouterMaxTokens)
-	viper.SetDefault("providers.openrouter.timeout", "60s")
-
-	// OpenAI defaults
-	viper.SetDefault("providers.openai.base_url", "https://api.openai.com/v1")
-	viper.SetDefault("providers.openai.model", "gpt-4o")
-	viper.SetDefault("providers.openai.max_tokens", openAIMaxTokens)
-	viper.SetDefault("providers.openai.timeout", "60s")
-
-	// XAI defaults
-	viper.SetDefault("providers.xai.base_url", "https://api.x.ai/v1")
-	viper.SetDefault("providers.xai.model", "grok-beta")
-	viper.SetDefault("providers.xai.max_tokens", xaiMaxTokens)
-	viper.SetDefault("providers.xai.timeout", "60s")
-
-	// Gemini defaults
-	viper.SetDefault("providers.gemini.base_url", "https://generativelanguage.googleapis.com")
-	viper.SetDefault("providers.gemini.model", "gemini-2.0-flash")
-	viper.SetDefault("providers.gemini.max_tokens", geminiMaxTokens)
-	viper.SetDefault("providers.gemini.timeout", "60s")
-
-	// Mistral defaults
-	viper.SetDefault("providers.mistral.base_url", "https://api.mistral.ai/v1")
-	viper.SetDefault("providers.mistral.model", "mistral-large-latest")
-	viper.SetDefault("providers.mistral.max_tokens", mistralMaxTokens)
-	viper.SetDefault("providers.mistral.timeout", "60s")
-
-	// Ollama defaults
-	viper.SetDefault("providers.ollama.base_url", "http://localhost:11434")
-	viper.SetDefault("providers.ollama.model", "llama3.2")
-	viper.SetDefault("providers.ollama.max_tokens", ollamaMaxTokens)
-	viper.SetDefault("providers.ollama.timeout", "120s")
-	viper.SetDefault("providers.ollama.api_key", "ollama")
-
-	// Logging defaults
-	viper.SetDefault("logging.level", "info")
-	viper.SetDefault("logging.format", "json")
-}
-
-// bindEnvVars binds environment variables to config keys
-func bindEnvVars() {
-	viper.AutomaticEnv()
-
-	// Provider selection
-	bindEnvVar("provider", "PROVIDER")
-
-	// Server environment variables
-	bindEnvVar("server.host", "SERVER_HOST")
-	bindEnvVar("server.port", "SERVER_PORT", "PORT")
-	bindEnvVar("server.environment", "SERVER_ENVIRONMENT", "ENV", "ENVIRONMENT")
-
-	// Groq environment variables
-	bindEnvVar("providers.groq.api_key", "GROQ_API_KEY")
-	bindEnvVar("providers.groq.base_url", "GROQ_BASE_URL")
-	bindEnvVar("providers.groq.model", "GROQ_MODEL")
-	bindEnvVar("providers.groq.max_tokens", "GROQ_MAX_TOKENS")
-
-	// OpenRouter environment variables
-	bindEnvVar("providers.openrouter.api_key", "OPENROUTER_API_KEY")
-	bindEnvVar("providers.openrouter.base_url", "OPENROUTER_BASE_URL")
-	bindEnvVar("providers.openrouter.model", "OPENROUTER_MODEL")
-	bindEnvVar("providers.openrouter.max_tokens", "OPENROUTER_MAX_TOKENS")
-	bindEnvVar("providers.openrouter.site_url", "OPENROUTER_SITE_URL")
-	bindEnvVar("providers.openrouter.site_name", "OPENROUTER_SITE_NAME")
-
-	// OpenAI environment variables
-	bindEnvVar("providers.openai.api_key", "OPENAI_API_KEY")
-	bindEnvVar("providers.openai.base_url", "OPENAI_BASE_URL")
-	bindEnvVar("providers.openai.model", "OPENAI_MODEL")
-	bindEnvVar("providers.openai.max_tokens", "OPENAI_MAX_TOKENS")
-
-	// XAI environment variables
-	bindEnvVar("providers.xai.api_key", "XAI_API_KEY")
-	bindEnvVar("providers.xai.base_url", "XAI_BASE_URL")
-	bindEnvVar("providers.xai.model", "XAI_MODEL")
-	bindEnvVar("providers.xai.max_tokens", "XAI_MAX_TOKENS")
-
-	// Gemini environment variables
-	bindEnvVar("providers.gemini.api_key", "GEMINI_API_KEY", "GOOGLE_API_KEY")
-	bindEnvVar("providers.gemini.base_url", "GEMINI_BASE_URL")
-	bindEnvVar("providers.gemini.model", "GEMINI_MODEL")
-	bindEnvVar("providers.gemini.max_tokens", "GEMINI_MAX_TOKENS")
-
-	// Mistral environment variables
-	bindEnvVar("providers.mistral.api_key", "MISTRAL_API_KEY")
-	bindEnvVar("providers.mistral.base_url", "MISTRAL_BASE_URL")
-	bindEnvVar("providers.mistral.model", "MISTRAL_MODEL")
-	bindEnvVar("providers.mistral.max_tokens", "MISTRAL_MAX_TOKENS")
-
-	// Ollama environment variables
-	bindEnvVar("providers.ollama.api_key", "OLLAMA_API_KEY")
-	bindEnvVar("providers.ollama.base_url", "OLLAMA_BASE_URL")
-	bindEnvVar("providers.ollama.model", "OLLAMA_MODEL")
-	bindEnvVar("providers.ollama.max_tokens", "OLLAMA_MAX_TOKENS")
-
-	// Logging environment variables
-	bindEnvVar("logging.level", "LOG_LEVEL")
-	bindEnvVar("logging.format", "LOG_FORMAT")
-}
-
-// validate validates required configuration
-func validate(config *Config) {
-	// Validate provider selection
-	validProviders := []string{"groq", "openrouter", "openai", "xai", "gemini", "mistral", "ollama"}
-	isValid := false
-	for _, provider := range validProviders {
-		if config.Provider == provider {
-			isValid = true
-			break
+// Load reads and parses the configuration from all sources
+func (s *Service) Load() error {
+	// Step 1: Load defaults (already set in NewService)
+	
+	// Step 2: Load from JSON config file if exists
+	if err := s.viper.ReadInConfig(); err != nil {
+		// It's okay if config file doesn't exist
+		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
+			return fmt.Errorf("error reading config file: %w", err)
 		}
 	}
-	if !isValid {
-		log.Fatalf("Invalid provider '%s'. Valid providers are: %v", config.Provider, validProviders)
+	
+	// Step 3: Load from .env file if exists
+	if err := s.loadEnvFile(); err != nil {
+		// Log but don't fail if .env file doesn't exist
+		if !os.IsNotExist(err) {
+			return fmt.Errorf("error loading .env file: %w", err)
+		}
 	}
-
-	// Validate provider-specific configuration
-	switch config.Provider {
-	case "groq":
-		validateGroqConfig(&config.Providers.Groq)
-	case "openrouter":
-		validateOpenRouterConfig(&config.Providers.OpenRouter)
-	case "openai":
-		validateOpenAIConfig(&config.Providers.OpenAI)
-	case "xai":
-		validateXAIConfig(&config.Providers.XAI)
-	case "gemini":
-		validateGeminiConfig(&config.Providers.Gemini)
-	case "mistral":
-		validateMistralConfig(&config.Providers.Mistral)
-	case "ollama":
-		validateOllamaConfig(&config.Providers.Ollama)
+	
+	// Step 4: Environment variables are automatically loaded by Viper
+	
+	// Step 5: Unmarshal into config struct with custom decoder
+	decoderConfig := &mapstructure.DecoderConfig{
+		DecodeHook: mapstructure.ComposeDecodeHookFunc(
+			mapstructure.StringToTimeHookFunc(time.RFC3339),
+			mapstructure.StringToTimeDurationHookFunc(),
+		),
+		Result: s.config,
+		WeaklyTypedInput: true,
 	}
+	
+	decoder, err := mapstructure.NewDecoder(decoderConfig)
+	if err != nil {
+		return fmt.Errorf("error creating decoder: %w", err)
+	}
+	
+	if err := decoder.Decode(s.viper.AllSettings()); err != nil {
+		return fmt.Errorf("error unmarshaling config: %w", err)
+	}
+	
+	// Step 6: Validate configuration
+	if err := s.config.Validate(); err != nil {
+		return fmt.Errorf("invalid configuration: %w", err)
+	}
+	
+	// Step 7: Apply special environment variable mappings
+	s.applyEnvironmentMappings()
+	
+	return nil
 }
 
-// validateGroqConfig validates Groq-specific configuration
-func validateGroqConfig(config *GroqConfig) {
-	if config.APIKey == "" {
-		log.Fatal("GROQ_API_KEY environment variable is required when using Groq provider")
-	}
-
-	if config.MaxTokens <= 0 {
-		log.Fatal("GROQ_MAX_TOKENS must be greater than 0")
-	}
-
-	if config.MaxTokens > groqMaxTokens {
-		log.Printf("Warning: GROQ_MAX_TOKENS (%d) exceeds recommended limit (%d)", config.MaxTokens, groqMaxTokens)
-	}
+// Get returns the current configuration
+func (s *Service) Get() *Config {
+	return s.config
 }
 
-// validateOpenRouterConfig validates OpenRouter-specific configuration
-func validateOpenRouterConfig(config *OpenRouterConfig) {
-	if config.APIKey == "" {
-		log.Fatal("OPENROUTER_API_KEY environment variable is required when using OpenRouter provider")
-	}
-
-	if config.MaxTokens < 0 {
-		log.Fatal("OPENROUTER_MAX_TOKENS cannot be negative")
-	}
-
-	// OpenRouter max tokens can be 0 (unlimited), so we don't enforce a minimum
+// SetConfig sets the configuration (mainly for testing)
+func (s *Service) SetConfig(cfg *Config) {
+	s.config = cfg
 }
 
-// validateOpenAIConfig validates OpenAI-specific configuration
-func validateOpenAIConfig(config *OpenAIConfig) {
-	if config.APIKey == "" {
-		log.Fatal("OPENAI_API_KEY environment variable is required when using OpenAI provider")
+// Validate checks if the configuration is valid
+func (s *Service) Validate() error {
+	// Validate port
+	if s.config.Port < 1 || s.config.Port > 65535 {
+		return fmt.Errorf("invalid port number: %d", s.config.Port)
 	}
-
-	if config.MaxTokens <= 0 {
-		log.Fatal("OPENAI_MAX_TOKENS must be greater than 0")
+	
+	// Validate providers
+	providerNames := make(map[string]bool)
+	for _, provider := range s.config.Providers {
+		if provider.Name == "" {
+			return fmt.Errorf("provider name cannot be empty")
+		}
+		if providerNames[provider.Name] {
+			return fmt.Errorf("duplicate provider name: %s", provider.Name)
+		}
+		providerNames[provider.Name] = true
+		
+		if provider.APIBaseURL == "" {
+			return fmt.Errorf("provider %s: api_base_url cannot be empty", provider.Name)
+		}
 	}
-
-	if config.MaxTokens > xaiMaxTokens {
-		log.Printf("Warning: OPENAI_MAX_TOKENS (%d) exceeds GPT-4o context limit (%d)", config.MaxTokens, xaiMaxTokens)
+	
+	// Validate routes
+	for routeName, route := range s.config.Routes {
+		if route.Provider == "" {
+			return fmt.Errorf("route %s: provider cannot be empty", routeName)
+		}
+		if route.Model == "" {
+			return fmt.Errorf("route %s: model cannot be empty", routeName)
+		}
 	}
+	
+	return nil
 }
 
-// validateXAIConfig validates XAI-specific configuration
-func validateXAIConfig(config *XAIConfig) {
-	if config.APIKey == "" {
-		log.Fatal("XAI_API_KEY environment variable is required when using XAI provider")
+// Reload reloads the configuration
+func (s *Service) Reload() error {
+	// Create a new viper instance to avoid conflicts
+	newService := NewService()
+	if err := newService.Load(); err != nil {
+		return err
 	}
-
-	if config.MaxTokens <= 0 {
-		log.Fatal("XAI_MAX_TOKENS must be greater than 0")
-	}
-
-	if config.MaxTokens > xaiMaxTokens {
-		log.Printf("Warning: XAI_MAX_TOKENS (%d) exceeds Grok context limit (%d)", config.MaxTokens, xaiMaxTokens)
-	}
+	
+	// Update the configuration atomically
+	s.config = newService.config
+	s.viper = newService.viper
+	
+	return nil
 }
 
-// validateGeminiConfig validates Gemini-specific configuration
-func validateGeminiConfig(config *GeminiConfig) {
-	if config.APIKey == "" {
-		log.Fatal("GEMINI_API_KEY or GOOGLE_API_KEY environment variable is required when using Gemini provider")
+// Save saves the current configuration to file
+func (s *Service) Save() error {
+	// Ensure config directory exists
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return fmt.Errorf("cannot get home directory: %w", err)
 	}
-
-	if config.MaxTokens <= 0 {
-		log.Fatal("GEMINI_MAX_TOKENS must be greater than 0")
+	
+	configDir := filepath.Join(home, ".ccproxy")
+	if err := os.MkdirAll(configDir, 0755); err != nil {
+		return fmt.Errorf("cannot create config directory: %w", err)
 	}
-
-	if config.MaxTokens > geminiMaxTokens {
-		log.Printf("Warning: GEMINI_MAX_TOKENS (%d) exceeds Gemini context limit (%d)", config.MaxTokens, geminiMaxTokens)
+	
+	// Marshal configuration to JSON
+	data, err := json.MarshalIndent(s.config, "", "  ")
+	if err != nil {
+		return fmt.Errorf("cannot marshal config: %w", err)
 	}
+	
+	// Write to file
+	configPath := filepath.Join(configDir, "config.json")
+	if err := os.WriteFile(configPath, data, 0644); err != nil {
+		return fmt.Errorf("cannot write config file: %w", err)
+	}
+	
+	return nil
 }
 
-// validateMistralConfig validates Mistral-specific configuration
-func validateMistralConfig(config *MistralConfig) {
-	if config.APIKey == "" {
-		log.Fatal("MISTRAL_API_KEY environment variable is required when using Mistral provider")
+// GetProvider returns a provider by name
+func (s *Service) GetProvider(name string) (*Provider, error) {
+	for _, provider := range s.config.Providers {
+		if provider.Name == name {
+			return &provider, nil
+		}
 	}
-
-	if config.MaxTokens <= 0 {
-		log.Fatal("MISTRAL_MAX_TOKENS must be greater than 0")
-	}
-
-	if config.MaxTokens > mistralMaxTokens {
-		log.Printf("Warning: MISTRAL_MAX_TOKENS (%d) exceeds Mistral context limit (%d)", config.MaxTokens, mistralMaxTokens)
-	}
+	return nil, fmt.Errorf("provider not found: %s", name)
 }
 
-// validateOllamaConfig validates Ollama-specific configuration
-func validateOllamaConfig(config *OllamaConfig) {
-	if config.BaseURL == "" {
-		log.Fatal("OLLAMA_BASE_URL environment variable is required when using Ollama provider")
+// UpdateProvider updates a provider by name
+func (s *Service) UpdateProvider(name string, provider *Provider) error {
+	provider.UpdatedAt = time.Now()
+	
+	// Find and update existing provider
+	for i, p := range s.config.Providers {
+		if p.Name == name {
+			if provider.CreatedAt.IsZero() {
+				provider.CreatedAt = p.CreatedAt
+			}
+			s.config.Providers[i] = *provider
+			return s.Save()
+		}
 	}
-
-	if config.Model == "" {
-		log.Fatal("OLLAMA_MODEL environment variable is required when using Ollama provider")
-	}
-
-	if config.MaxTokens < 0 {
-		log.Fatal("OLLAMA_MAX_TOKENS cannot be negative")
-	}
-
-	// Ollama models can have varying context limits, so we don't enforce a strict upper limit
-	if config.MaxTokens > xaiMaxTokens {
-		log.Printf("Warning: OLLAMA_MAX_TOKENS (%d) is very large and may not be supported by all models", config.MaxTokens)
-	}
+	
+	return fmt.Errorf("provider not found: %s", name)
 }
 
-// bindEnvVar is a helper function that properly handles viper.BindEnv errors
-func bindEnvVar(key string, envVars ...string) {
-	args := make([]string, 0, len(envVars)+1)
-	args = append(args, key)
-	args = append(args, envVars...)
-	if err := viper.BindEnv(args...); err != nil {
-		log.Printf("Warning: Failed to bind environment variable %s: %v", key, err)
+// SaveProvider saves a new provider
+func (s *Service) SaveProvider(provider *Provider) error {
+	// Check if provider already exists
+	for _, p := range s.config.Providers {
+		if p.Name == provider.Name {
+			return fmt.Errorf("provider already exists: %s", provider.Name)
+		}
+	}
+	
+	// Add new provider
+	if provider.CreatedAt.IsZero() {
+		provider.CreatedAt = time.Now()
+	}
+	provider.UpdatedAt = time.Now()
+	s.config.Providers = append(s.config.Providers, *provider)
+	return s.Save()
+}
+
+// DeleteProvider removes a provider by name
+func (s *Service) DeleteProvider(name string) error {
+	providers := make([]Provider, 0, len(s.config.Providers))
+	found := false
+	
+	for _, p := range s.config.Providers {
+		if p.Name != name {
+			providers = append(providers, p)
+		} else {
+			found = true
+		}
+	}
+	
+	if !found {
+		return fmt.Errorf("provider not found: %s", name)
+	}
+	
+	s.config.Providers = providers
+	return s.Save()
+}
+
+// setDefaults sets default configuration values
+func setDefaults(v *viper.Viper) {
+	v.SetDefault("host", "127.0.0.1")
+	v.SetDefault("port", 3456)
+	v.SetDefault("log", false)
+	v.SetDefault("log_file", "")
+	// Don't set default routes - let user configure them
+}
+
+// loadEnvFile loads environment variables from .env file
+func (s *Service) loadEnvFile() error {
+	// Check common locations for .env file
+	locations := []string{
+		".env",
+		filepath.Join(".ccproxy", ".env"),
+	}
+	
+	if home, err := os.UserHomeDir(); err == nil {
+		locations = append(locations, filepath.Join(home, ".ccproxy", ".env"))
+	}
+	
+	for _, loc := range locations {
+		data, err := os.ReadFile(loc)
+		if err == nil {
+			// Parse .env file
+			lines := strings.Split(string(data), "\n")
+			for _, line := range lines {
+				line = strings.TrimSpace(line)
+				if line == "" || strings.HasPrefix(line, "#") {
+					continue
+				}
+				
+				parts := strings.SplitN(line, "=", 2)
+				if len(parts) == 2 {
+					key := strings.TrimSpace(parts[0])
+					value := strings.TrimSpace(parts[1])
+					// Remove quotes if present
+					value = strings.Trim(value, `"'`)
+					os.Setenv(key, value)
+				}
+			}
+			return nil
+		}
+	}
+	
+	return os.ErrNotExist
+}
+
+// applyEnvironmentMappings applies special environment variable mappings
+func (s *Service) applyEnvironmentMappings() {
+	// Map common environment variables to config
+	if apiKey := os.Getenv("APIKEY"); apiKey != "" {
+		s.config.APIKey = apiKey
+	}
+	
+	if port := os.Getenv("PORT"); port != "" {
+		// PORT env var is already handled by viper's AutomaticEnv
+		// This is just for documentation purposes
+	}
+	
+	// Check for corporate proxy settings
+	proxyVars := []string{"HTTPS_PROXY", "https_proxy", "httpsProxy", "PROXY_URL"}
+	for _, v := range proxyVars {
+		if proxy := os.Getenv(v); proxy != "" {
+			s.config.ProxyURL = proxy
+			break
+		}
 	}
 }

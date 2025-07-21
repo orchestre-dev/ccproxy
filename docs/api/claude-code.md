@@ -19,7 +19,7 @@ export GROQ_API_KEY=your_api_key_here
 
 ```bash
 # Point Claude Code to CCProxy
-export ANTHROPIC_BASE_URL=http://localhost:7187
+export ANTHROPIC_BASE_URL=http://localhost:3456
 export ANTHROPIC_API_KEY=NOT_NEEDED
 
 # Use Claude Code normally
@@ -34,7 +34,7 @@ That's it! Claude Code will now use your configured provider through CCProxy.
 
 ```bash
 # Set CCProxy endpoint
-export ANTHROPIC_BASE_URL=http://localhost:7187
+export ANTHROPIC_BASE_URL=http://localhost:3456
 export ANTHROPIC_API_KEY=NOT_NEEDED
 
 # Provider configuration
@@ -46,7 +46,7 @@ export GROQ_API_KEY=your_groq_key_here
 
 ```bash
 # Configure Claude Code directly
-claude config set anthropic.base_url http://localhost:7187
+claude config set anthropic.base_url http://localhost:3456
 claude config set anthropic.api_key NOT_NEEDED
 ```
 
@@ -56,7 +56,7 @@ Add to your `~/.bashrc`, `~/.zshrc`, or `~/.profile`:
 
 ```bash
 # CCProxy + Claude Code Integration
-export ANTHROPIC_BASE_URL=http://localhost:7187
+export ANTHROPIC_BASE_URL=http://localhost:3456
 export ANTHROPIC_API_KEY=NOT_NEEDED
 
 # Default provider (change as needed)
@@ -174,7 +174,7 @@ GROQ_API_KEY=your_groq_key
 GROQ_MODEL=llama-3.1-8b-instant  # Fast model for development
 
 # Claude Code config
-export ANTHROPIC_BASE_URL=http://localhost:7187
+export ANTHROPIC_BASE_URL=http://localhost:3456
 export ANTHROPIC_API_KEY=NOT_NEEDED
 ```
 
@@ -187,7 +187,7 @@ OPENAI_API_KEY=your_openai_key
 OPENAI_MODEL=gpt-4o  # High-quality model for production
 
 # Claude Code config
-export ANTHROPIC_BASE_URL=http://localhost:7187
+export ANTHROPIC_BASE_URL=http://localhost:3456
 export ANTHROPIC_API_KEY=NOT_NEEDED
 ```
 
@@ -200,7 +200,7 @@ OLLAMA_MODEL=codellama:13b  # Local model for privacy
 OLLAMA_BASE_URL=http://localhost:11434
 
 # Claude Code config
-export ANTHROPIC_BASE_URL=http://localhost:7187
+export ANTHROPIC_BASE_URL=http://localhost:3456
 export ANTHROPIC_API_KEY=NOT_NEEDED
 ```
 
@@ -212,13 +212,13 @@ Create different configurations for different use cases:
 # groq-config.sh
 export PROVIDER=groq
 export GROQ_API_KEY=your_groq_key
-export ANTHROPIC_BASE_URL=http://localhost:7187
+export ANTHROPIC_BASE_URL=http://localhost:3456
 export ANTHROPIC_API_KEY=NOT_NEEDED
 
 # openai-config.sh  
 export PROVIDER=openai
 export OPENAI_API_KEY=your_openai_key
-export ANTHROPIC_BASE_URL=http://localhost:7187
+export ANTHROPIC_BASE_URL=http://localhost:3456
 export ANTHROPIC_API_KEY=NOT_NEEDED
 
 # Usage:
@@ -301,7 +301,7 @@ Usage:
 
 ```bash
 # Check if CCProxy is running
-curl http://localhost:7187/health
+curl http://localhost:3456/health
 
 # If not running, start it
 ./ccproxy
@@ -314,11 +314,11 @@ tail -f ccproxy.log
 
 ```bash
 # Verify environment variables
-echo $ANTHROPIC_BASE_URL  # Should be http://localhost:7187
+echo $ANTHROPIC_BASE_URL  # Should be http://localhost:3456
 echo $ANTHROPIC_API_KEY   # Should be NOT_NEEDED
 
 # Test direct API call
-curl -X POST http://localhost:7187/v1/messages \
+curl -X POST http://localhost:3456/v1/messages \
   -H "Content-Type: application/json" \
   -d '{"model":"claude-3-sonnet","messages":[{"role":"user","content":"test"}],"max_tokens":10}'
 ```
@@ -327,7 +327,7 @@ curl -X POST http://localhost:7187/v1/messages \
 
 ```bash
 # Check provider status
-curl http://localhost:7187/status
+curl http://localhost:3456/status
 
 # Verify API keys are set
 env | grep API_KEY
@@ -342,7 +342,7 @@ env | grep OLLAMA   # For Ollama
 
 ```bash
 # Check CCProxy performance
-curl http://localhost:7187/health
+curl http://localhost:3456/health
 
 # Monitor response times
 time claude "simple test"
@@ -381,7 +381,7 @@ export PROVIDER=xai
 
 ```bash
 # Always check CCProxy health before long tasks
-curl -s http://localhost:7187/health | jq '.status'
+curl -s http://localhost:3456/health | jq '.status'
 
 # Implement fallback providers for critical workflows
 ```
@@ -403,7 +403,7 @@ Configure your IDE to use Claude Code with CCProxy:
 #### VS Code Settings
 ```json
 {
-  "claude.anthropic.baseUrl": "http://localhost:7187",
+  "claude.anthropic.baseUrl": "http://localhost:3456",
   "claude.anthropic.apiKey": "NOT_NEEDED"
 }
 ```
@@ -411,7 +411,7 @@ Configure your IDE to use Claude Code with CCProxy:
 #### Vim Configuration
 ```vim
 " In your .vimrc
-let g:claude_base_url = 'http://localhost:7187'
+let g:claude_base_url = 'http://localhost:3456'
 let g:claude_api_key = 'NOT_NEEDED'
 ```
 
@@ -436,7 +436,7 @@ jobs:
           
       - name: Configure Claude Code
         run: |
-          export ANTHROPIC_BASE_URL=http://localhost:7187
+          export ANTHROPIC_BASE_URL=http://localhost:3456
           export ANTHROPIC_API_KEY=NOT_NEEDED
           
       - name: AI Code Review
@@ -455,7 +455,7 @@ COPY ccproxy /usr/local/bin/
 COPY .env /app/.env
 
 # Configure Claude Code
-ENV ANTHROPIC_BASE_URL=http://localhost:7187
+ENV ANTHROPIC_BASE_URL=http://localhost:3456
 ENV ANTHROPIC_API_KEY=NOT_NEEDED
 
 # Start CCProxy and keep container running
@@ -471,7 +471,7 @@ CMD ["sh", "-c", "ccproxy & && tail -f /dev/null"]
 tail -f ccproxy.log | grep claude-code
 
 # Track usage patterns
-curl http://localhost:7187/status | jq '.metrics'
+curl http://localhost:3456/status | jq '.metrics'
 ```
 
 ### Performance Monitoring
@@ -481,7 +481,7 @@ curl http://localhost:7187/status | jq '.metrics'
 time claude "test query"
 
 # Track token usage
-curl http://localhost:7187/health | jq '.requests'
+curl http://localhost:3456/health | jq '.requests'
 ```
 
 ## Next Steps

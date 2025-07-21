@@ -140,7 +140,18 @@ export default withMermaid(defineConfig({
             { text: 'Docker Deployment', link: '/guide/docker' },
             { text: 'Environment Variables', link: '/guide/environment' },
             { text: 'Logging', link: '/guide/logging' },
-            { text: 'Health Checks', link: '/guide/health-checks' }
+            { text: 'Health Checks', link: '/guide/health-checks' },
+            { text: 'Monitoring', link: '/guide/monitoring' }
+          ]
+        },
+        {
+          text: 'Development',
+          items: [
+            { text: 'Development Setup', link: '/guide/development' },
+            { text: 'Testing Guide', link: '/guide/testing' },
+            { text: 'Performance Tuning', link: '/guide/performance' },
+            { text: 'Security Best Practices', link: '/guide/security' },
+            { text: 'Contributing', link: '/guide/contributing' }
           ]
         }
       ],

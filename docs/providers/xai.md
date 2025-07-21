@@ -143,7 +143,7 @@ Once configured, use Claude Code normally:
 
 ```bash
 # Set CCProxy as the API endpoint
-export ANTHROPIC_BASE_URL=http://localhost:7187
+export ANTHROPIC_BASE_URL=http://localhost:3456
 export ANTHROPIC_API_KEY=NOT_NEEDED
 
 # Use Claude Code with real-time capabilities
@@ -394,7 +394,7 @@ import anthropic
 
 client = anthropic.Anthropic(
     api_key="NOT_NEEDED",
-    base_url="http://localhost:7187"
+    base_url="http://localhost:3456"
 )
 
 response = client.messages.create(
@@ -437,7 +437,7 @@ claude "How are consumers reacting to the new product launch?"
 tail -f ccproxy.log | grep xai
 
 # Status endpoint
-curl http://localhost:7187/status
+curl http://localhost:3456/status
 ```
 
 ### Cost Management

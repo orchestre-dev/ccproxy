@@ -153,7 +153,7 @@ Once configured, use Claude Code normally:
 
 ```bash
 # Set CCProxy as the API endpoint
-export ANTHROPIC_BASE_URL=http://localhost:7187
+export ANTHROPIC_BASE_URL=http://localhost:3456
 export ANTHROPIC_API_KEY=NOT_NEEDED
 
 # Use Claude Code
@@ -439,7 +439,7 @@ import google.generativeai as genai
 # Configure to use CCProxy
 genai.configure(
     api_key="NOT_NEEDED",
-    client_options={"api_endpoint": "http://localhost:7187"}
+    client_options={"api_endpoint": "http://localhost:3456"}
 )
 
 model = genai.GenerativeModel('claude-3-sonnet')  # Maps to Gemini
@@ -453,7 +453,7 @@ import anthropic
 
 client = anthropic.Anthropic(
     api_key="NOT_NEEDED",
-    base_url="http://localhost:7187"
+    base_url="http://localhost:3456"
 )
 
 response = client.messages.create(
@@ -481,10 +481,10 @@ Monitor usage at [aistudio.google.com](https://aistudio.google.com):
 tail -f ccproxy.log | grep gemini
 
 # Status endpoint
-curl http://localhost:7187/status
+curl http://localhost:3456/status
 
 # Health check with Gemini status
-curl http://localhost:7187/health
+curl http://localhost:3456/health
 ```
 
 ## Comparison with Other Providers

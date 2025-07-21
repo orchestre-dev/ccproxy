@@ -155,7 +155,7 @@ ccproxy --privacy-mode=strict &
 **Step 5: Configure Claude Code**
 ```bash
 # Point Claude Code to use CCProxy
-export ANTHROPIC_BASE_URL=http://localhost:7187
+export ANTHROPIC_BASE_URL=http://localhost:3456
 export ANTHROPIC_API_KEY=dummy  # CCProxy handles the real authentication
 ```
 

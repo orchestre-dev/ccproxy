@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  ccproxy-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: ccproxy-dev
+    ports:
+      - "3456:3456"
+      - "2345:2345"  # Delve debugger
+    environment:
+      - CGO_ENABLED=0
+      - GOOS=linux
+      - GOARCH=amd64
+      # Development environment variables
+      - CCPROXY_HOST=0.0.0.0
+      - CCPROXY_PORT=3456
+      - CCPROXY_LOG=true
+      - CCPROXY_DEBUG=true
+    volumes:
+      # Mount source code for hot reload
+      - .:/app
+      # Mount go cache to speed up builds
+      - go-cache:/go/pkg/mod
+      - go-build-cache:/root/.cache/go-build
+    networks:
+      - ccproxy-dev-net
+    stdin_open: true
+    tty: true
+
+  # Mock LLM provider for testing
+  mock-provider:
+    build:
+      context: ./tests/mock
+      dockerfile: Dockerfile
+    container_name: ccproxy-mock-provider
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - LATENCY_MS=100
+      - ERROR_RATE=0.0
+    networks:
+      - ccproxy-dev-net
+    profiles:
+      - testing
+
+volumes:
+  go-cache:
+  go-build-cache:
+
+networks:
+  ccproxy-dev-net:
+    driver: bridge

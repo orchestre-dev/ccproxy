@@ -55,7 +55,7 @@ graph LR
 
 ## How It Works
 
-1. **Claude Code** makes a request to `http://localhost:7187/v1/messages`
+1. **Claude Code** makes a request to `http://localhost:3456/v1/messages`
 2. **CCProxy** receives the Anthropic-format request
 3. **CCProxy** converts it to the target provider's format
 4. **Provider** processes the request and returns a response  

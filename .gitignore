@@ -1,4 +1,34 @@
-# Binaries for programs and plugins
+ccr/
+.github/
+.claude/
+.kiro/
+.vscode/
+.idea/
+.git/
+node_modules/
+build/
+dist/
+coverage/
+.tmp/
+temp/
+tmp/
+build/
+builds/
+builds/
+builds/
+.temp/
+logs/
+*.log
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+.temp/x
+
+# Go binaries
+ccproxy
 *.exe
 *.exe~
 *.dll
@@ -8,73 +38,24 @@
 # Test binary, built with `go test -c`
 *.test
 
-# Output of the go coverage tool, specifically when used with LiteTest
+# Output of the go coverage tool
 *.out
-
-# Dependency directories (remove the comment below to include it)
-# vendor/
 
 # Go workspace file
 go.work
+go.work.sum
 
-# Environment files
-.env
-.env.local
-.env.development
-.env.test
-.env.production
+# Dependency directories
+vendor/
 
-# Build output
-/bin/
-/dist/
-/build/
-
-# IDE specific files
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# OS specific files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# Logs
-*.log
-logs/
-
-# Configuration files (except examples)
-config.yaml
-config.yml
+# User config
 config.json
 
-# Temporary files
-.temp/
-tmp/
-
 # Docker
-.dockerignore
+.env
+docker-compose.override.yml
+docker-compose.local.yml
 
-# Test coverage
-coverage.out
-coverage.html
-
-# Air (hot reload) temporary files
-tmp/
-.claude/
-.temp/
-node_modules/
-
-# VitePress build artifacts
-docs/.vitepress/cache/
-docs/.vitepress/dist/
-
-
-# Kiro
-.kiro/
+# Kubernetes secrets
+k8s/secrets.yaml
+helm/ccproxy/values.local.yaml

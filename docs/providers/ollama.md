@@ -178,7 +178,7 @@ Once configured, use Claude Code normally:
 
 ```bash
 # Set CCProxy as the API endpoint
-export ANTHROPIC_BASE_URL=http://localhost:7187
+export ANTHROPIC_BASE_URL=http://localhost:3456
 export ANTHROPIC_API_KEY=NOT_NEEDED
 
 # Use Claude Code with local models
@@ -504,10 +504,10 @@ nvidia-smi   # GPU (if available)
 tail -f ccproxy.log | grep ollama
 
 # Status endpoint
-curl http://localhost:7187/status
+curl http://localhost:3456/status
 
 # Health check
-curl http://localhost:7187/health
+curl http://localhost:3456/health
 ```
 
 ## Comparison with Cloud Providers

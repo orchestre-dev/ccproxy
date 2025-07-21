@@ -1,6 +1,7 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# CCProxy build script
 
-set -e
+set -euo pipefail
 
 # Colors for output
 RED='\033[0;31m'
@@ -9,103 +10,137 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 # Configuration
-APP_NAME="ccproxy"
-BUILD_DIR="bin"
-VERSION=${VERSION:-"1.0.0"}
-COMMIT_HASH=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
-BUILD_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+BINARY_NAME="ccproxy"
+BUILD_DIR="build"
+VERSION="${VERSION:-$(git describe --tags --always --dirty 2>/dev/null || echo "dev")}"
+BUILD_TIME=$(date -u '+%Y-%m-%d_%H:%M:%S')
+COMMIT="${COMMIT:-$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")}"
 
-# Build flags
-LDFLAGS="-X main.version=${VERSION} -X main.commit=${COMMIT_HASH} -X main.buildTime=${BUILD_TIME} -s -w"
+# Parse command line arguments
+PLATFORM="${1:-current}"
+VERBOSE="${VERBOSE:-false}"
 
-echo -e "${GREEN}Building ${APP_NAME} v${VERSION}${NC}"
-echo -e "${YELLOW}Commit: ${COMMIT_HASH}${NC}"
-echo -e "${YELLOW}Build Time: ${BUILD_TIME}${NC}"
-echo ""
+# Print colored message
+print_msg() {
+    local color=$1
+    shift
+    echo -e "${color}$*${NC}"
+}
 
-# Create build directory
-mkdir -p ${BUILD_DIR}
+# Print info message
+info() {
+    print_msg "$GREEN" "ℹ️  $*"
+}
 
-# Build targets
-declare -a targets=(
-    "linux/amd64"
-    "linux/arm64"
-    "darwin/amd64"
-    "darwin/arm64"
-    "windows/amd64"
-)
+# Print error message
+error() {
+    print_msg "$RED" "❌ $*"
+}
 
-# Build commands
-declare -a commands=(
-    "proxy"
-    "setup"
-)
+# Print warning message
+warn() {
+    print_msg "$YELLOW" "⚠️  $*"
+}
 
-for cmd in "${commands[@]}"; do
-    echo -e "${GREEN}Building ${cmd} command...${NC}"
+# Build for current platform
+build_current() {
+    local output="$BUILD_DIR/$BINARY_NAME"
     
-    for target in "${targets[@]}"; do
-        IFS='/' read -r GOOS GOARCH <<< "$target"
-        
-        if [ "$cmd" = "setup" ]; then
-            CMD_NAME="${APP_NAME}-setup"
-        else
-            CMD_NAME="${APP_NAME}"
-        fi
-        
-        if [ "$GOOS" = "windows" ]; then
-            OUTPUT_NAME="${CMD_NAME}-${GOOS}-${GOARCH}.exe"
-        else
-            OUTPUT_NAME="${CMD_NAME}-${GOOS}-${GOARCH}"
-        fi
-        
-        echo -e "${YELLOW}Building ${cmd} for ${GOOS}/${GOARCH}...${NC}"
-        
-        CGO_ENABLED=0 GOOS=$GOOS GOARCH=$GOARCH go build \
-            -ldflags "$LDFLAGS" \
-            -o ${BUILD_DIR}/${OUTPUT_NAME} \
-            ./cmd/${cmd}
-        
-        if [ $? -eq 0 ]; then
-            echo -e "${GREEN}✓ Successfully built ${OUTPUT_NAME}${NC}"
-            
-            # Show file size
-            if command -v ls >/dev/null 2>&1; then
-                SIZE=$(ls -lh ${BUILD_DIR}/${OUTPUT_NAME} | awk '{print $5}')
-                echo -e "  Size: ${SIZE}"
-            fi
-        else
-            echo -e "${RED}✗ Failed to build ${OUTPUT_NAME}${NC}"
-            exit 1
-        fi
-        echo ""
+    info "Building $BINARY_NAME v$VERSION for current platform..."
+    
+    CGO_ENABLED=0 go build \
+        -ldflags "-X main.Version=$VERSION -X main.BuildTime=$BUILD_TIME -X main.Commit=$COMMIT -s -w" \
+        -o "$output" \
+        ./cmd/ccproxy
+    
+    info "Build complete: $output"
+    ls -lh "$output"
+}
+
+# Build for specific platform
+build_platform() {
+    local goos=$1
+    local goarch=$2
+    local output="$BUILD_DIR/$BINARY_NAME-$goos-$goarch"
+    
+    if [ "$goos" = "windows" ]; then
+        output="$output.exe"
+    fi
+    
+    info "Building for $goos/$goarch..."
+    
+    GOOS=$goos GOARCH=$goarch CGO_ENABLED=0 go build \
+        -ldflags "-X main.Version=$VERSION -X main.BuildTime=$BUILD_TIME -X main.Commit=$COMMIT -s -w" \
+        -o "$output" \
+        ./cmd/ccproxy
+    
+    info "Built: $output"
+}
+
+# Build for all platforms
+build_all() {
+    local platforms=(
+        "darwin/amd64"
+        "darwin/arm64"
+        "linux/amd64"
+        "linux/arm64"
+        "windows/amd64"
+    )
+    
+    info "Building $BINARY_NAME v$VERSION for all platforms..."
+    
+    for platform in "${platforms[@]}"; do
+        IFS='/' read -r goos goarch <<< "$platform"
+        build_platform "$goos" "$goarch"
     done
+    
+    info "All builds complete!"
+    ls -lh "$BUILD_DIR"
+}
+
+# Main execution
+main() {
+    # Create build directory
+    mkdir -p "$BUILD_DIR"
+    
+    # Show build info
+    info "Build Information:"
+    echo "  Binary:    $BINARY_NAME"
+    echo "  Version:   $VERSION"
+    echo "  Commit:    $COMMIT"
+    echo "  Time:      $BUILD_TIME"
+    echo "  Platform:  $PLATFORM"
     echo ""
-done
+    
+    # Ensure dependencies are up to date
+    info "Checking dependencies..."
+    go mod download
+    
+    # Run build based on platform
+    case "$PLATFORM" in
+        current)
+            build_current
+            ;;
+        all)
+            build_all
+            ;;
+        */*)
+            IFS='/' read -r goos goarch <<< "$PLATFORM"
+            build_platform "$goos" "$goarch"
+            ;;
+        *)
+            error "Invalid platform: $PLATFORM"
+            echo "Usage: $0 [current|all|os/arch]"
+            echo "Examples:"
+            echo "  $0             # Build for current platform"
+            echo "  $0 all         # Build for all platforms"
+            echo "  $0 linux/amd64 # Build for specific platform"
+            exit 1
+            ;;
+    esac
+    
+    info "Build script completed successfully! ✅"
+}
 
-echo -e "${GREEN}All builds completed successfully!${NC}"
-echo -e "${YELLOW}Binaries available in ${BUILD_DIR}/ directory${NC}"
-
-# List all built binaries
-echo ""
-echo "Built binaries:"
-ls -la ${BUILD_DIR}/
-
-# Create checksums
-echo ""
-echo -e "${YELLOW}Generating checksums...${NC}"
-cd ${BUILD_DIR}
-if command -v sha256sum >/dev/null 2>&1; then
-    sha256sum ${APP_NAME}-* > checksums.txt
-    echo -e "${GREEN}✓ Checksums saved to ${BUILD_DIR}/checksums.txt${NC}"
-elif command -v shasum >/dev/null 2>&1; then
-    shasum -a 256 ${APP_NAME}-* > checksums.txt
-    echo -e "${GREEN}✓ Checksums saved to ${BUILD_DIR}/checksums.txt${NC}"
-else
-    echo -e "${YELLOW}Warning: No checksum utility found${NC}"
-fi
-
-cd ..
-
-echo ""
-echo -e "${GREEN}Build process completed!${NC}"
+# Run main function
+main

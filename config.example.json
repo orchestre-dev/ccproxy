@@ -1,0 +1,22 @@
+{
+  "host": "127.0.0.1",
+  "port": 3456,
+  "log": false,
+  "api_key": "",
+  "providers": [
+    {
+      "name": "anthropic",
+      "api_base_url": "https://api.anthropic.com",
+      "api_key": "YOUR_ANTHROPIC_API_KEY",
+      "models": ["claude-3-5-sonnet-20241022", "claude-3-5-haiku-20241022"],
+      "enabled": true
+    }
+  ],
+  "routes": {
+    "default": {
+      "provider": "anthropic",
+      "model": "claude-3-5-sonnet-20241022"
+    }
+  }
+}
+EOF < /dev/null

@@ -61,7 +61,7 @@ CCProxy includes built-in Docker health checks:
 
 ```dockerfile
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:7187/health || exit 1
+    CMD wget --no-verbose --tries=1 --spider http://localhost:3456/health || exit 1
 ```
 
 ## Kubernetes Health Checks
@@ -72,7 +72,7 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 livenessProbe:
   httpGet:
     path: /health
-    port: 7187
+    port: 3456
   initialDelaySeconds: 30
   periodSeconds: 10
   timeoutSeconds: 5
@@ -85,7 +85,7 @@ livenessProbe:
 readinessProbe:
   httpGet:
     path: /health
-    port: 7187
+    port: 3456
   initialDelaySeconds: 5
   periodSeconds: 5
   timeoutSeconds: 3
@@ -102,7 +102,7 @@ While CCProxy doesn't expose Prometheus metrics directly, you can monitor health
 # prometheus.yml
 - job_name: 'ccproxy'
   static_configs:
-    - targets: ['localhost:7187']
+    - targets: ['localhost:3456']
   metrics_path: /health
   scrape_interval: 30s
 ```
@@ -129,7 +129,7 @@ Set up alerts based on health check failures:
 
 ```nginx
 upstream ccproxy {
-    server localhost:7187;
+    server localhost:3456;
 }
 
 server {
@@ -156,7 +156,7 @@ http:
     ccproxy:
       loadBalancer:
         servers:
-          - url: "http://localhost:7187"
+          - url: "http://localhost:3456"
         healthCheck:
           path: /health
           interval: 30s
@@ -183,11 +183,11 @@ http:
 
 ```bash
 # Test health check manually
-curl -f http://localhost:7187/health
+curl -f http://localhost:3456/health
 
 # Check service logs
 docker logs ccproxy
 
 # Monitor health check responses
-watch -n 5 'curl -s http://localhost:7187/health | jq'
+watch -n 5 'curl -s http://localhost:3456/health | jq'
 ```

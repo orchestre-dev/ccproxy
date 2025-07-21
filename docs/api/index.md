@@ -5,7 +5,7 @@ CCProxy provides a RESTful API that's fully compatible with Anthropic's Messages
 ## Base URL
 
 ```
-http://localhost:7187
+http://localhost:3456
 ```
 
 ## Authentication
@@ -113,7 +113,7 @@ CCProxy provides structured JSON logging for all requests:
 ### Basic Text Request
 
 ```bash
-curl -X POST http://localhost:7187/v1/messages \
+curl -X POST http://localhost:3456/v1/messages \
   -H "Content-Type: application/json" \
   -d '{
     "model": "claude-3-sonnet",
@@ -130,7 +130,7 @@ curl -X POST http://localhost:7187/v1/messages \
 ### Request with Tools
 
 ```bash
-curl -X POST http://localhost:7187/v1/messages \
+curl -X POST http://localhost:3456/v1/messages \
   -H "Content-Type: application/json" \
   -d '{
     "model": "claude-3-sonnet",
@@ -159,13 +159,13 @@ curl -X POST http://localhost:7187/v1/messages \
 ### Health Check
 
 ```bash
-curl http://localhost:7187/health
+curl http://localhost:3456/health
 ```
 
 ### Status Check
 
 ```bash
-curl http://localhost:7187/status
+curl http://localhost:3456/status
 ```
 
 ## Response Examples
@@ -242,7 +242,7 @@ import anthropic
 
 client = anthropic.Anthropic(
     api_key="NOT_NEEDED",  # CCProxy doesn't need this
-    base_url="http://localhost:7187"
+    base_url="http://localhost:3456"
 )
 
 response = client.messages.create(
@@ -259,7 +259,7 @@ import Anthropic from '@anthropic-ai/sdk';
 
 const client = new Anthropic({
     apiKey: 'NOT_NEEDED',
-    baseURL: 'http://localhost:7187'
+    baseURL: 'http://localhost:3456'
 });
 
 const response = await client.messages.create({
@@ -272,7 +272,7 @@ const response = await client.messages.create({
 ### cURL
 
 ```bash
-curl -X POST http://localhost:7187/v1/messages \
+curl -X POST http://localhost:3456/v1/messages \
   -H "Content-Type: application/json" \
   -d '{
     "model": "claude-3-sonnet",

@@ -35,7 +35,7 @@ CCProxy uses environment variables for configuration. Create a `.env` file or ex
 PROVIDER=groq
 
 # Optional: Server configuration
-PORT=7187                    # Default: 7187
+PORT=3456                    # Default: 3456
 LOG_LEVEL=info              # Options: debug, info, warn, error
 LOG_FORMAT=json             # Options: json, text
 ```
@@ -185,7 +185,7 @@ Once CCProxy is configured and running, integrate with Claude Code:
 
 ```bash
 # Set Claude Code to use CCProxy
-export ANTHROPIC_BASE_URL=http://localhost:7187
+export ANTHROPIC_BASE_URL=http://localhost:3456
 export ANTHROPIC_API_KEY=NOT_NEEDED
 
 # Verify it's working
@@ -201,7 +201,7 @@ Create a `config.yaml` file for advanced settings:
 ```yaml
 # config.yaml
 server:
-  port: 7187
+  port: 3456
   host: "0.0.0.0"
   read_timeout: "30s"
   write_timeout: "30s"
@@ -303,13 +303,13 @@ Test your configuration:
 
 ```bash
 # Health check
-curl http://localhost:7187/health
+curl http://localhost:3456/health
 
 # Provider status
-curl http://localhost:7187/status
+curl http://localhost:3456/status
 
 # Test message
-curl -X POST http://localhost:7187/v1/messages \
+curl -X POST http://localhost:3456/v1/messages \
   -H "Content-Type: application/json" \
   -d '{
     "model": "claude-3-sonnet",

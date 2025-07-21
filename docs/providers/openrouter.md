@@ -157,7 +157,7 @@ Once configured, use Claude Code normally:
 
 ```bash
 # Set CCProxy as the API endpoint
-export ANTHROPIC_BASE_URL=http://localhost:7187
+export ANTHROPIC_BASE_URL=http://localhost:3456
 export ANTHROPIC_API_KEY=NOT_NEEDED
 
 # Use Claude Code
@@ -332,7 +332,7 @@ Monitor your OpenRouter usage:
 tail -f ccproxy.log
 
 # Check OpenRouter status
-curl http://localhost:7187/status
+curl http://localhost:3456/status
 
 # View usage analytics on OpenRouter dashboard
 ```
