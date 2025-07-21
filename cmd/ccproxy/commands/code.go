@@ -123,7 +123,7 @@ This command will automatically start the proxy if not running.`,
 }
 
 // autoStartService starts the service and waits for it to be ready
-func autoStartService(cfg *config.Config) error {
+func autoStartService(_ *config.Config) error {
 	// Get executable path
 	execPath, err := utils.GetExecutablePath()
 	if err != nil {

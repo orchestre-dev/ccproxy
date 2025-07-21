@@ -113,10 +113,7 @@ func CountMessageTokens(params *MessageCreateParams) (int, error) {
 
 	// Count tokens in system prompt
 	if params.System != nil {
-		count, err := countSystemTokens(enc, params.System)
-		if err != nil {
-			return 0, fmt.Errorf("failed to count system tokens: %w", err)
-		}
+		count := countSystemTokens(enc, params.System)
 		tokenCount += count
 	}
 
@@ -141,7 +138,7 @@ func CountMessageTokens(params *MessageCreateParams) (int, error) {
 		}
 	}
 
-	return tokenCount, nil
+	return tokenCount
 }
 
 // countMessageContentTokens counts tokens in message content
@@ -203,11 +200,11 @@ func countMessageContentTokens(enc *tiktoken.Tiktoken, content interface{}) (int
 		}
 	}
 
-	return tokenCount, nil
+	return tokenCount
 }
 
 // countSystemTokens counts tokens in system content
-func countSystemTokens(enc *tiktoken.Tiktoken, system interface{}) (int, error) {
+func countSystemTokens(enc *tiktoken.Tiktoken, system interface{}) int {
 	tokenCount := 0
 
 	switch s := system.(type) {
@@ -243,5 +240,5 @@ func countSystemTokens(enc *tiktoken.Tiktoken, system interface{}) (int, error) 
 		}
 	}
 
-	return tokenCount, nil
+	return tokenCount
 }

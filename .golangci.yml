@@ -1,77 +1,8 @@
 run:
   timeout: 5m
   tests: true
-  skip-dirs:
-    - vendor
-    - node_modules
-    - docs
-    - scripts
-
-output:
-  formats:
-    - format: colored-line-number
-  print-issued-lines: true
-  print-linter-name: true
-  uniq-by-line: true
-
-linters:
-  enable:
-    - errcheck
-    - gosimple
-    - govet
-    - ineffassign
-    - staticcheck
-    - typecheck
-    - unused
-    - gofmt
-    - goimports
-    - goconst
-    - gocyclo
-    - gosec
-    - misspell
-    - nakedret
-    - prealloc
-    - unconvert
-    - unparam
-    - whitespace
-  disable:
-    - exhaustive
-    - exhaustivestruct
-    - gofumpt
-    - golint
-    - maligned
-    - scopelint
-    - interfacer
-    - gomnd
-    - deadcode    # Deprecated - replaced by unused
-    - varcheck    # Deprecated - replaced by unused
-    - structcheck # Deprecated - replaced by unused
-
-linters-settings:
-  gocyclo:
-    min-complexity: 15
-  gosec:
-    excludes:
-      - G204 # Command injection via format string
-      - G304 # File path provided as taint input
-  govet:
-    check-shadowing: true
-  misspell:
-    locale: US
-  nakedret:
-    max-func-lines: 30
-  prealloc:
-    simple: true
-    range-loops: true
-    for-loops: false
-  staticcheck:
-    go: "1.21"
-  unparam:
-    check-exported: false
-  unused:
-    go: "1.21"
-  goimports:
-    local-prefixes: github.com/orchestre-dev/ccproxy
+  go: "1.21"
+  issues-exit-code: 1
 
 issues:
   exclude-dirs:
@@ -110,6 +41,64 @@ issues:
   max-issues-per-linter: 0
   max-same-issues: 0
   new: false
+  uniq-by-line: true
+
+output:
+  formats:
+    - format: colored-line-number
+  print-issued-lines: true
+  print-linter-name: true
+
+linters:
+  enable:
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - typecheck
+    - unused
+    - gofmt
+    - goimports
+    - goconst
+    - gocyclo
+    - gosec
+    - misspell
+    - nakedret
+    - prealloc
+    - unconvert
+    - unparam
+    - whitespace
+  disable:
+    - exhaustive
+
+linters-settings:
+  gocyclo:
+    min-complexity: 15
+  gosec:
+    excludes:
+      - G204 # Command injection via format string
+      - G304 # File path provided as taint input
+  misspell:
+    locale: US
+  nakedret:
+    max-func-lines: 30
+  prealloc:
+    simple: true
+    range-loops: true
+    for-loops: false
+  unparam:
+    check-exported: false
+  goimports:
+    local-prefixes: github.com/orchestre-dev/ccproxy
+  errcheck:
+    exclude-functions:
+      - (os\.)?std(out|err)\..*
+      - .*Close
+      - .*Flush
+      - os\.Remove(All)?
+      - .*print.*
+      - os\.(Un)?Setenv
 
 severity:
   default-severity: error

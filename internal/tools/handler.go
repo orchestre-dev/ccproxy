@@ -125,7 +125,7 @@ func (h *Handler) processContentBlocks(ctx context.Context, response map[string]
 }
 
 // processToolUseBlock processes a single tool use block
-func (h *Handler) processToolUseBlock(ctx context.Context, block map[string]interface{}) (interface{}, error) {
+func (h *Handler) processToolUseBlock(_ context.Context, block map[string]interface{}) (interface{}, error) {
 	toolName, _ := block["name"].(string)
 	toolID, _ := block["id"].(string)
 

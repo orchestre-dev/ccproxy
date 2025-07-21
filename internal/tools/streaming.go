@@ -52,9 +52,13 @@ func (sh *StreamingHandler) ProcessToolStream(ctx context.Context, reader io.Rea
 				if err != nil {
 					sh.logger.Warnf("Failed to process SSE event: %v", err)
 					// Write original event on error
-					sh.writeSSEEvent(writer, currentEvent)
+					if err := sh.writeSSEEvent(writer, currentEvent); err != nil {
+						sh.logger.WithError(err).Error("Failed to write original SSE event")
+					}
 				} else {
-					sh.writeSSEEvent(writer, processedEvent)
+					if err := sh.writeSSEEvent(writer, processedEvent); err != nil {
+						sh.logger.WithError(err).Error("Failed to write processed SSE event")
+					}
 				}
 			}
 			// Reset for next event
@@ -84,9 +88,13 @@ func (sh *StreamingHandler) ProcessToolStream(ctx context.Context, reader io.Rea
 	if currentEvent.Data != "" {
 		processedEvent, err := sh.processSSEEvent(ctx, currentEvent)
 		if err != nil {
-			sh.writeSSEEvent(writer, currentEvent)
+			if err := sh.writeSSEEvent(writer, currentEvent); err != nil {
+				sh.logger.WithError(err).Error("Failed to write current SSE event")
+			}
 		} else {
-			sh.writeSSEEvent(writer, processedEvent)
+			if err := sh.writeSSEEvent(writer, processedEvent); err != nil {
+				sh.logger.WithError(err).Error("Failed to write processed SSE event")
+			}
 		}
 	}
 
@@ -148,7 +156,7 @@ func (sh *StreamingHandler) processSSEEvent(ctx context.Context, event SSEEvent)
 }
 
 // processContentDelta processes a content delta that may contain tool use
-func (sh *StreamingHandler) processContentDelta(ctx context.Context, delta map[string]interface{}) (map[string]interface{}, bool) {
+func (sh *StreamingHandler) processContentDelta(_ context.Context, delta map[string]interface{}) (map[string]interface{}, bool) {
 	deltaType, _ := delta["type"].(string)
 	if deltaType != "tool_use" {
 		return delta, false
@@ -167,7 +175,7 @@ func (sh *StreamingHandler) processContentDelta(ctx context.Context, delta map[s
 }
 
 // processStreamingContent processes content blocks in streaming
-func (sh *StreamingHandler) processStreamingContent(ctx context.Context, content []interface{}) ([]interface{}, bool) {
+func (sh *StreamingHandler) processStreamingContent(_ context.Context, content []interface{}) ([]interface{}, bool) {
 	var modified bool
 	var processed []interface{}
 

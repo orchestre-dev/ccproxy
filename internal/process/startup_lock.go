@@ -60,7 +60,11 @@ func (sl *StartupLock) WithLock(fn func() error) error {
 	if !locked {
 		return fmt.Errorf("another ccproxy startup is already in progress")
 	}
-	defer sl.Unlock()
+	defer func() {
+		if err := sl.Unlock(); err != nil {
+			utils.GetLogger().WithError(err).Error("Failed to unlock startup lock")
+		}
+	}()
 
 	return fn()
 }
@@ -68,7 +72,9 @@ func (sl *StartupLock) WithLock(fn func() error) error {
 // Cleanup removes the lock file
 func (sl *StartupLock) Cleanup() error {
 	// Unlock first if we hold the lock
-	sl.flock.Unlock()
+	if err := sl.flock.Unlock(); err != nil {
+		utils.GetLogger().WithError(err).Error("Failed to unlock startup lock file")
+	}
 
 	// Remove the lock file
 	if err := os.Remove(sl.lockPath); err != nil && !os.IsNotExist(err) {

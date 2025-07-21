@@ -372,8 +372,14 @@ func TestService_Load_ComprehensiveScenarios(t *testing.T) {
 
 		// Change to temp directory so config.json is found
 		originalWd, _ := os.Getwd()
-		os.Chdir(tempDir)
-		defer os.Chdir(originalWd)
+		if err := os.Chdir(tempDir); err != nil {
+			t.Fatalf("Failed to change to temp directory: %v", err)
+		}
+		defer func() {
+			if err := os.Chdir(originalWd); err != nil {
+				t.Errorf("Failed to restore original working directory: %v", err)
+			}
+		}()
 
 		service := NewService()
 		err = service.Load()
@@ -423,8 +429,14 @@ func TestService_Load_ComprehensiveScenarios(t *testing.T) {
 		}
 
 		originalWd, _ := os.Getwd()
-		os.Chdir(tempDir)
-		defer os.Chdir(originalWd)
+		if err := os.Chdir(tempDir); err != nil {
+			t.Fatalf("Failed to change to temp directory: %v", err)
+		}
+		defer func() {
+			if err := os.Chdir(originalWd); err != nil {
+				t.Errorf("Failed to restore original working directory: %v", err)
+			}
+		}()
 
 		service := NewService()
 		err = service.Load()
@@ -441,8 +453,14 @@ func TestService_Load_ComprehensiveScenarios(t *testing.T) {
 
 		// Change to temp directory first
 		originalWd, _ := os.Getwd()
-		os.Chdir(tempDir)
-		defer os.Chdir(originalWd)
+		if err := os.Chdir(tempDir); err != nil {
+			t.Fatalf("Failed to change to temp directory: %v", err)
+		}
+		defer func() {
+			if err := os.Chdir(originalWd); err != nil {
+				t.Errorf("Failed to restore original working directory: %v", err)
+			}
+		}()
 
 		// Create .env file
 		envPath := filepath.Join(tempDir, ".env")
@@ -483,8 +501,14 @@ PROXY_URL=http://proxy.example.com:8080`
 		}
 
 		originalWd, _ := os.Getwd()
-		os.Chdir(tempDir)
-		defer os.Chdir(originalWd)
+		if err := os.Chdir(tempDir); err != nil {
+			t.Fatalf("Failed to change to temp directory: %v", err)
+		}
+		defer func() {
+			if err := os.Chdir(originalWd); err != nil {
+				t.Errorf("Failed to restore original working directory: %v", err)
+			}
+		}()
 
 		service := NewService()
 		err = service.Load()
@@ -687,8 +711,14 @@ ANOTHER_VAR=test`
 	t.Run("Parse env file with comments and quotes", func(t *testing.T) {
 		tempDir := t.TempDir()
 		originalWd, _ := os.Getwd()
-		os.Chdir(tempDir)
-		defer os.Chdir(originalWd)
+		if err := os.Chdir(tempDir); err != nil {
+			t.Fatalf("Failed to change to temp directory: %v", err)
+		}
+		defer func() {
+			if err := os.Chdir(originalWd); err != nil {
+				t.Errorf("Failed to restore original working directory: %v", err)
+			}
+		}()
 
 		envPath := filepath.Join(tempDir, ".env")
 		envContent := `# This is a comment
@@ -1077,8 +1107,14 @@ func TestService_Reload_EdgeCases(t *testing.T) {
 		}
 
 		originalWd, _ := os.Getwd()
-		os.Chdir(tempDir)
-		defer os.Chdir(originalWd)
+		if err := os.Chdir(tempDir); err != nil {
+			t.Fatalf("Failed to change to temp directory: %v", err)
+		}
+		defer func() {
+			if err := os.Chdir(originalWd); err != nil {
+				t.Errorf("Failed to restore original working directory: %v", err)
+			}
+		}()
 
 		service := NewService()
 		originalConfig := service.Get()

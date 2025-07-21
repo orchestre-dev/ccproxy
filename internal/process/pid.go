@@ -70,7 +70,11 @@ func (pm *PIDManager) WritePIDForProcess(pid int) error {
 	if !locked {
 		return fmt.Errorf("could not acquire lock on PID file")
 	}
-	defer pm.flock.Unlock()
+	defer func() {
+		if err := pm.flock.Unlock(); err != nil {
+			utils.GetLogger().WithError(err).Error("Failed to unlock PID file")
+		}
+	}()
 
 	// Check if there's already a running process while holding the lock
 	if data, err := os.ReadFile(pm.pidPath); err == nil {
@@ -120,7 +124,11 @@ func (pm *PIDManager) ReadPID() (int, error) {
 	if !locked {
 		return 0, fmt.Errorf("could not acquire read lock on PID file")
 	}
-	defer pm.flock.Unlock()
+	defer func() {
+		if err := pm.flock.Unlock(); err != nil {
+			utils.GetLogger().WithError(err).Error("Failed to unlock PID file")
+		}
+	}()
 
 	return pm.readPIDWithoutLock()
 }
@@ -197,7 +205,11 @@ func (pm *PIDManager) Cleanup() error {
 	if !locked {
 		return fmt.Errorf("could not acquire lock for cleanup")
 	}
-	defer pm.flock.Unlock()
+	defer func() {
+		if err := pm.flock.Unlock(); err != nil {
+			utils.GetLogger().WithError(err).Error("Failed to unlock PID file")
+		}
+	}()
 
 	if err := os.Remove(pm.pidPath); err != nil && !os.IsNotExist(err) {
 		return fmt.Errorf("failed to remove PID file: %w", err)
@@ -234,7 +246,9 @@ func (pm *PIDManager) AcquireLock() error {
 		// PID file exists, check if process is running
 		pidStr := strings.TrimSpace(string(data))
 		if pid, err := strconv.Atoi(pidStr); err == nil && pm.IsProcessRunning(pid) {
-			pm.flock.Unlock()
+			if unlockErr := pm.flock.Unlock(); unlockErr != nil {
+				utils.GetLogger().WithError(unlockErr).Error("Failed to unlock PID file")
+			}
 			return fmt.Errorf("service already running with PID %d", pid)
 		}
 	}
@@ -244,7 +258,9 @@ func (pm *PIDManager) AcquireLock() error {
 	data = []byte(strconv.Itoa(pid))
 
 	if err := utils.WriteFileAtomic(pm.pidPath, data, 0644); err != nil {
-		pm.flock.Unlock()
+		if unlockErr := pm.flock.Unlock(); unlockErr != nil {
+			utils.GetLogger().WithError(unlockErr).Error("Failed to unlock PID file")
+		}
 		return fmt.Errorf("failed to write PID file: %w", err)
 	}
 
@@ -273,7 +289,9 @@ func (pm *PIDManager) ReleaseLock() error {
 	}
 
 	// Always unlock the file lock
-	pm.flock.Unlock()
+	if err := pm.flock.Unlock(); err != nil {
+		utils.GetLogger().WithError(err).Error("Failed to unlock PID file")
+	}
 
 	return nil
 }
@@ -296,7 +314,11 @@ func (pm *PIDManager) StopProcessWithTimeout(timeout time.Duration) error {
 
 	// Always try to clean up PID file after stopping
 	// Even if the process doesn't clean up properly
-	defer pm.Cleanup()
+	defer func() {
+		if err := pm.Cleanup(); err != nil {
+			utils.GetLogger().WithError(err).Error("Failed to cleanup PID file")
+		}
+	}()
 
 	// First, try graceful shutdown with SIGTERM
 	if err := syscall.Kill(pid, syscall.SIGTERM); err != nil {
