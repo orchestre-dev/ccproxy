@@ -104,7 +104,7 @@ func TestStreamingProcessor_ProcessStreamingResponse(t *testing.T) {
 		}
 	})
 
-	t.Run("CancelledContext", func(t *testing.T) {
+	t.Run("CanceledContext", func(t *testing.T) {
 		sseData := "data: {\"chunk\": \"hello\"}\n\ndata: {\"chunk\": \"world\"}\n\n"
 		resp := &http.Response{
 			StatusCode: 200,

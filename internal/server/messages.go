@@ -126,8 +126,8 @@ func (s *Server) handleMessages(c *gin.Context) {
 		utils.GetLogger().Errorf("Pipeline processing failed: %v", err)
 
 		// Return appropriate error response
-		var statusCode int = http.StatusInternalServerError
-		var errorType string = "api_error"
+		statusCode := http.StatusInternalServerError
+		errorType := "api_error"
 
 		// Check for specific error types
 		if strings.Contains(err.Error(), "connection refused") ||

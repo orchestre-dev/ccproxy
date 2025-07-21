@@ -143,7 +143,7 @@ func TestRetryWithConfig(t *testing.T) {
 		testutil.AssertEqual(t, originalErr, ccErr.Unwrap())
 	})
 
-	t.Run("ContextCancelled", func(t *testing.T) {
+	t.Run("ContextCanceled", func(t *testing.T) {
 		config := &RetryConfig{
 			MaxAttempts:  3,
 			InitialDelay: 10 * time.Millisecond,
@@ -172,7 +172,7 @@ func TestRetryWithConfig(t *testing.T) {
 		testutil.AssertEqual(t, "Context canceled", ccErr.Message)
 	})
 
-	t.Run("ContextCancelledDuringRetry", func(t *testing.T) {
+	t.Run("ContextCanceledDuringRetry", func(t *testing.T) {
 		config := &RetryConfig{
 			MaxAttempts:     3,
 			InitialDelay:    100 * time.Millisecond,
