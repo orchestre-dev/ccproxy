@@ -37,6 +37,14 @@ jobs:
       run: |
         curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.61.0
 
+    - name: Debug linter configuration
+      run: |
+        echo "Checking golangci-lint configuration:"
+        golangci-lint --version
+        golangci-lint linters
+        echo "Checking if typecheck is disabled:"
+        grep -A 20 -B 5 "typecheck" .golangci.yml || echo "typecheck config found"
+
     - name: Run linters
       run: make lint
 

@@ -67,7 +67,7 @@ output:
 
 linters:
   enable:
-    # Only enable the most essential linters
+    # Only enable the most essential linters that work reliably in CI
     - errcheck
     - gosimple
     - govet
@@ -75,8 +75,10 @@ linters:
     - unused
     - gofmt
     - misspell
+  disable-all: false
   disable:
-    # Disable problematic linters that cause issues in CI
+    # Explicitly disable problematic linters that cause CI issues
+    - typecheck       # Causes command resolution issues in CI
     - staticcheck
     - goimports
     - goconst
@@ -87,7 +89,6 @@ linters:
     - unconvert
     - unparam
     - whitespace
-    - typecheck
 
 linters-settings:
   errcheck:
