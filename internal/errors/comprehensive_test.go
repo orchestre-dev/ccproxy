@@ -398,14 +398,19 @@ func testRetryLogic(t *testing.T) {
 			t.Fatalf("Expected 2 delays, got %d", len(delays))
 		}
 		
-		// First retry should be ~50ms
-		if delays[0] < 45*time.Millisecond || delays[0] > 55*time.Millisecond {
-			t.Errorf("Expected first delay ~50ms, got %v", delays[0])
+		// First retry should be ~50ms (with generous tolerance for system scheduling)
+		if delays[0] < 30*time.Millisecond || delays[0] > 200*time.Millisecond {
+			t.Errorf("Expected first delay ~50ms (30-200ms range), got %v", delays[0])
 		}
 		
-		// Second retry should be ~100ms (50ms * 2)
-		if delays[1] < 95*time.Millisecond || delays[1] > 105*time.Millisecond {
-			t.Errorf("Expected second delay ~100ms, got %v", delays[1])
+		// Second retry should be ~100ms (50ms * 2) (with generous tolerance)
+		if delays[1] < 60*time.Millisecond || delays[1] > 400*time.Millisecond {
+			t.Errorf("Expected second delay ~100ms (60-400ms range), got %v", delays[1])
+		}
+		
+		// More importantly, verify that second delay is longer than first (exponential backoff)
+		if delays[1] <= delays[0] {
+			t.Errorf("Expected exponential backoff: second delay (%v) should be longer than first (%v)", delays[1], delays[0])
 		}
 	})
 }

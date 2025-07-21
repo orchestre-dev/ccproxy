@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"regexp"
 	"strings"
 	"time"
 )
@@ -164,6 +165,35 @@ func Wrapf(err error, errorType ErrorType, format string, args ...interface{}) *
 	return Wrap(err, errorType, fmt.Sprintf(format, args...))
 }
 
+// sanitizeErrorMessage removes sensitive information from error messages
+func sanitizeErrorMessage(message string) string {
+	// Remove potential API keys, tokens, and other sensitive data
+	patterns := []string{
+		`(?i)api[_-]?key[_-]?[:\s]*[a-zA-Z0-9_\-/+=]+`,     // API keys
+		`(?i)token[_-]?[:\s]*[a-zA-Z0-9_\-/+=.]+`,          // Tokens
+		`(?i)secret[_-]?[:\s]*[a-zA-Z0-9_\-/+=]+`,          // Secrets
+		`(?i)password[_-]?[:\s]*\S+`,                       // Passwords
+		`(?i)authorization[_-]?[:\s]*\S+`,                  // Authorization headers
+		`(?i)bearer[_-]?\s*[a-zA-Z0-9_\-/+=.]+`,           // Bearer tokens
+		`\b[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}\b`, // Email addresses
+		`\b(?:\d{1,3}\.){3}\d{1,3}(?::\d+)?\b`,            // IP addresses with ports
+		`(?i)x-api-key[_-]?[:\s]*[a-zA-Z0-9_\-/+=]+`,      // x-api-key headers
+	}
+	
+	sanitized := message
+	for _, pattern := range patterns {
+		re := regexp.MustCompile(pattern)
+		sanitized = re.ReplaceAllString(sanitized, "[REDACTED]")
+	}
+	
+	// Limit message length to prevent log flooding
+	if len(sanitized) > 500 {
+		sanitized = sanitized[:497] + "..."
+	}
+	
+	return sanitized
+}
+
 // FromProviderResponse creates an error from provider response
 func FromProviderResponse(statusCode int, body []byte, provider string) *CCProxyError {
 	var providerError struct {
@@ -177,7 +207,7 @@ func FromProviderResponse(statusCode int, body []byte, provider string) *CCProxy
 	message := fmt.Sprintf("Provider returned status %d", statusCode)
 	
 	if err := json.Unmarshal(body, &providerError); err == nil && providerError.Error.Message != "" {
-		message = providerError.Error.Message
+		message = sanitizeErrorMessage(providerError.Error.Message)
 	}
 	
 	errorType := getErrorTypeFromStatusCode(statusCode)
