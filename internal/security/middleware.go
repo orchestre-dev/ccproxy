@@ -218,7 +218,8 @@ func SanitizationMiddleware(sanitizer *DataSanitizer) gin.HandlerFunc {
 		}
 
 		// Write original response
-		c.Writer.Write(captureWriter.body)
+		// Safe to ignore write error at this point as response is already processed
+		_, _ = c.Writer.Write(captureWriter.body)
 	}
 }
 

@@ -377,7 +377,8 @@ func NewErrorResponse(message, errorType, code string) *ErrorResponse {
 func WriteErrorResponse(w http.ResponseWriter, statusCode int, err *ErrorResponse) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
-	json.NewEncoder(w).Encode(err)
+	// Safe to ignore encoding error for error response
+	_ = json.NewEncoder(w).Encode(err)
 }
 
 // StreamResponse handles streaming responses with transformation support
@@ -452,10 +453,11 @@ func HandleStreamingError(w http.ResponseWriter, err error) {
 
 	// Try to write error as SSE event
 	errorEvent := fmt.Sprintf("event: error\ndata: %s\n\n", err.Error())
-	w.Write([]byte(errorEvent))
+	// Safe to ignore write errors for SSE cleanup
+	_, _ = w.Write([]byte(errorEvent))
 
 	// Send [DONE] marker
-	w.Write([]byte("data: [DONE]\n\n"))
+	_, _ = w.Write([]byte("data: [DONE]\n\n"))
 
 	// Flush if possible
 	if flusher, ok := w.(http.Flusher); ok {
