@@ -27,10 +27,6 @@ issues:
     - path: "internal/version/version.go"
       linters:
         - unused
-    # Exclude typecheck from main.go due to CI timing issues with command package resolution
-    - path: "cmd/ccproxy/main.go"
-      linters:
-        - typecheck
     # Ignore import formatting issues temporarily
     - linters:
         - goimports
@@ -38,12 +34,6 @@ issues:
   exclude:
     # errcheck: Common patterns that are typically safe to ignore
     - Error return value of .((os\.)?std(out|err)\..*|.*Close|.*Flush|os\.Remove(All)?|.*print.*|os\.(Un)?Setenv). is not checked
-    # typecheck: Ignore undefined imports that might be environment-specific
-    - "undefined:"
-    - "could not import"
-    # Specific exclusion for command functions that may have build timing issues
-    - "undefined: commands.ClaudeCmd"
-    - "undefined: commands.EnvCmd"
     # staticcheck: Common false positives
     - SA5011
     - SA9003
@@ -82,7 +72,6 @@ linters:
     - gosimple
     - govet
     - ineffassign
-    - typecheck
     - unused
     - gofmt
     - misspell
@@ -98,6 +87,7 @@ linters:
     - unconvert
     - unparam
     - whitespace
+    - typecheck
 
 linters-settings:
   errcheck:
