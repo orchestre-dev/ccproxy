@@ -125,7 +125,8 @@ func runInForeground(cfg *config.Config, pidManager *process.PIDManager, configP
 		// Stop signal notification
 		signal.Stop(sigChan)
 		// Release lock
-		pidManager.ReleaseLock()
+		// Safe to ignore error during shutdown
+		_ = pidManager.ReleaseLock()
 	}
 
 	// Ensure cleanup happens
@@ -208,7 +209,10 @@ func startInBackground(cfg *config.Config) error {
 	if !locked {
 		return fmt.Errorf("another ccproxy startup is already in progress")
 	}
-	defer startupLock.Unlock()
+	defer func() {
+		// Safe to ignore error on defer cleanup
+		_ = startupLock.Unlock()
+	}()
 
 	// Check if service is already running (while holding startup lock)
 	pidManager, err := process.NewPIDManager()
@@ -253,7 +257,8 @@ func startInBackground(cfg *config.Config) error {
 	// This will fail if another process is already running
 	if err := pidManager.WritePIDForProcess(backgroundPID); err != nil {
 		// Kill the process we just started if we can't write PID
-		cmd.Process.Kill()
+		// Safe to ignore error during cleanup
+		_ = cmd.Process.Kill()
 		return fmt.Errorf("failed to write PID file: %w", err)
 	}
 
@@ -269,7 +274,8 @@ func startInBackground(cfg *config.Config) error {
 		if !pidManager.IsProcessRunning(backgroundPID) {
 			// Process exited prematurely
 			fmt.Println(" ❌")
-			pidManager.Cleanup()
+			// Safe to ignore error during cleanup
+			_ = pidManager.Cleanup()
 			return fmt.Errorf("background process exited prematurely")
 		}
 
@@ -292,7 +298,8 @@ func startInBackground(cfg *config.Config) error {
 
 	fmt.Println(" ❌")
 	// Clean up if startup failed
-	cmd.Process.Kill()
-	pidManager.Cleanup()
+	// Safe to ignore errors during cleanup
+	_ = cmd.Process.Kill()
+	_ = pidManager.Cleanup()
 	return fmt.Errorf("service failed to start within timeout")
 }

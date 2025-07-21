@@ -36,7 +36,8 @@ func StatusCmd() *cobra.Command {
 
 			// Load configuration to get port
 			configService := config.NewService()
-			configService.Load() // Ignore error, use defaults if fails
+			// Ignore error, use defaults if config loading fails
+			_ = configService.Load()
 			cfg := configService.Get()
 
 			// Display status with exact formatting from TypeScript version

@@ -36,7 +36,8 @@ This command will automatically start the proxy if not running.`,
 
 			// Load configuration
 			configService := config.NewService()
-			configService.Load() // Ignore error, use defaults
+			// Ignore error, use defaults if config loading fails
+			_ = configService.Load()
 			cfg := configService.Get()
 
 			// Auto-start service if not running

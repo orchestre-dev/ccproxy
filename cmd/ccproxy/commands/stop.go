@@ -53,7 +53,8 @@ func StopCmd() *cobra.Command {
 			// Stop the process with timeout
 			if err := pidManager.StopProcessWithTimeout(timeout); err != nil {
 				// Try to clean up PID file anyway
-				pidManager.Cleanup()
+				// Safe to ignore cleanup error as process stop already failed
+				_ = pidManager.Cleanup()
 				return fmt.Errorf("failed to stop service: %w", err)
 			}
 
