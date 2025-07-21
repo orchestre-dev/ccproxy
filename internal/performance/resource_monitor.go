@@ -13,8 +13,6 @@ import (
 type ResourceMonitor struct {
 	limits          ResourceLimits
 	lastCPUCheck    time.Time
-	lastCPUTotal    float64
-	lastCPUIdle     float64
 	cpuUsagePercent float64
 	mu              sync.RWMutex
 }

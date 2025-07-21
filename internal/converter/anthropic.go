@@ -3,7 +3,6 @@ package converter
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
 )
 
 // AnthropicConverter handles Anthropic format conversions
@@ -214,20 +213,4 @@ func (ac *AnthropicConverter) ConvertStreamEvent(data []byte, toFormat MessageFo
 	// For now, just pass through stream events
 	// In a full implementation, this would parse and convert SSE events
 	return data, nil
-}
-
-// Helper function to convert string content to Anthropic format
-func stringToAnthropicContent(text string) []AnthropicContent {
-	return []AnthropicContent{{Type: "text", Text: text}}
-}
-
-// Helper function to convert Anthropic content to string
-func anthropicContentToString(content []AnthropicContent) string {
-	var texts []string
-	for _, c := range content {
-		if c.Type == "text" && c.Text != "" {
-			texts = append(texts, c.Text)
-		}
-	}
-	return strings.Join(texts, " ")
 }

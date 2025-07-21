@@ -539,45 +539,8 @@ func TestAnthropicConverter_ErrorHandling(t *testing.T) {
 	})
 }
 
-func TestAnthropicConverter_HelperFunctions(t *testing.T) {
-	t.Run("stringToAnthropicContent", func(t *testing.T) {
-		result := stringToAnthropicContent("Hello world")
-		testutil.AssertEqual(t, 1, len(result))
-		testutil.AssertEqual(t, "text", result[0].Type)
-		testutil.AssertEqual(t, "Hello world", result[0].Text)
-	})
-
-	t.Run("stringToAnthropicContent empty", func(t *testing.T) {
-		result := stringToAnthropicContent("")
-		testutil.AssertEqual(t, 1, len(result))
-		testutil.AssertEqual(t, "text", result[0].Type)
-		testutil.AssertEqual(t, "", result[0].Text)
-	})
-
-	t.Run("anthropicContentToString", func(t *testing.T) {
-		content := []AnthropicContent{
-			{Type: "text", Text: "Hello"},
-			{Type: "text", Text: "world"},
-			{Type: "image", Text: ""}, // Should be ignored
-		}
-		result := anthropicContentToString(content)
-		testutil.AssertEqual(t, "Hello world", result)
-	})
-
-	t.Run("anthropicContentToString empty", func(t *testing.T) {
-		content := []AnthropicContent{}
-		result := anthropicContentToString(content)
-		testutil.AssertEqual(t, "", result)
-	})
-
-	t.Run("anthropicContentToString non-text", func(t *testing.T) {
-		content := []AnthropicContent{
-			{Type: "image", Text: "should be ignored"},
-		}
-		result := anthropicContentToString(content)
-		testutil.AssertEqual(t, "", result)
-	})
-}
+// TestAnthropicConverter_HelperFunctions was removed since the helper functions
+// were unused in production code and removed to fix lint warnings
 
 func TestAnthropicConverter_EdgeCases(t *testing.T) {
 	converter := NewAnthropicConverter()

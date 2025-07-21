@@ -1,7 +1,6 @@
 package performance
 
 import (
-	"sync"
 	"time"
 )
 
@@ -30,8 +29,6 @@ type Metrics struct {
 	// Time window
 	StartTime time.Time `json:"start_time"`
 	EndTime   time.Time `json:"end_time"`
-
-	mu sync.RWMutex
 }
 
 // ProviderMetrics represents metrics for a specific provider

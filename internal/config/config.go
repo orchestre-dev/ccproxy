@@ -315,10 +315,7 @@ func (s *Service) applyEnvironmentMappings() {
 		s.config.APIKey = apiKey
 	}
 
-	if port := os.Getenv("PORT"); port != "" {
-		// PORT env var is already handled by viper's AutomaticEnv
-		// This is just for documentation purposes
-	}
+	// PORT env var is already handled by viper's AutomaticEnv
 
 	// Check for corporate proxy settings
 	proxyVars := []string{"HTTPS_PROXY", "https_proxy", "httpsProxy", "PROXY_URL"}

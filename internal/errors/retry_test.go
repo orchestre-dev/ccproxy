@@ -169,7 +169,7 @@ func TestRetryWithConfig(t *testing.T) {
 		ccErr, ok := err.(*CCProxyError)
 		testutil.AssertTrue(t, ok)
 		testutil.AssertEqual(t, ErrorTypeInternal, ccErr.Type)
-		testutil.AssertEqual(t, "Context cancelled", ccErr.Message)
+		testutil.AssertEqual(t, "Context canceled", ccErr.Message)
 	})
 
 	t.Run("ContextCancelledDuringRetry", func(t *testing.T) {
@@ -199,7 +199,7 @@ func TestRetryWithConfig(t *testing.T) {
 		ccErr, ok := err.(*CCProxyError)
 		testutil.AssertTrue(t, ok)
 		testutil.AssertEqual(t, ErrorTypeInternal, ccErr.Type)
-		testutil.AssertEqual(t, "Context cancelled during retry", ccErr.Message)
+		testutil.AssertEqual(t, "Context canceled during retry", ccErr.Message)
 	})
 
 	t.Run("WithRetryAfter", func(t *testing.T) {

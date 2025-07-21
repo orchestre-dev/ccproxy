@@ -241,7 +241,7 @@ func (e *CCProxyError) ToJSON() ([]byte, error) {
 		response["error"].(map[string]interface{})["code"] = e.Code
 	}
 
-	if e.Details != nil && len(e.Details) > 0 {
+	if len(e.Details) > 0 {
 		response["error"].(map[string]interface{})["details"] = e.Details
 	}
 

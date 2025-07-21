@@ -2,7 +2,6 @@ package server
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/orchestre-dev/ccproxy/internal/config"
@@ -213,21 +212,4 @@ func (s *Server) handleToggleProvider(c *gin.Context) {
 	Success(c, gin.H{
 		"message": message,
 	})
-}
-
-// Helper function to validate provider configuration
-func validateProvider(p *config.Provider) error {
-	if p.Name == "" {
-		return fmt.Errorf("provider name is required")
-	}
-	if p.APIBaseURL == "" {
-		return fmt.Errorf("provider API base URL is required")
-	}
-	if p.APIKey == "" {
-		return fmt.Errorf("provider API key is required")
-	}
-	if !strings.HasPrefix(p.APIBaseURL, "http://") && !strings.HasPrefix(p.APIBaseURL, "https://") {
-		return fmt.Errorf("provider API base URL must start with http:// or https://")
-	}
-	return nil
 }

@@ -65,8 +65,8 @@ func (r *SSEReader) ReadEvent() (*SSEEvent, error) {
 		} else if strings.HasPrefix(line, "id: ") {
 			event.ID = strings.TrimPrefix(line, "id: ")
 		} else if strings.HasPrefix(line, "retry: ") {
-			// Parse retry value
-			// TODO: Implement retry parsing
+			// Parse retry value (currently ignored)
+			_ = strings.TrimPrefix(line, "retry: ")
 		}
 	}
 }

@@ -245,7 +245,7 @@ func (h *Handler) ValidateToolDefinition(tool interface{}) error {
 
 // TransformToolsForProvider transforms tool definitions for a specific provider
 func (h *Handler) TransformToolsForProvider(tools []interface{}, provider string) ([]interface{}, error) {
-	if tools == nil || len(tools) == 0 {
+	if len(tools) == 0 {
 		return tools, nil
 	}
 

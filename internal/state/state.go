@@ -83,7 +83,6 @@ func (m *Manager) SetComponentState(name string, state ServiceState, err error) 
 			LastChanged: time.Now(),
 		}
 		// Don't return early - we need to update service state
-		component = m.components[name]
 		oldState := StateStarting // Default old state for new components
 
 		if err != nil {

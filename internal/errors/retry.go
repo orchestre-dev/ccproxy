@@ -51,7 +51,7 @@ func RetryWithConfig(ctx context.Context, config *RetryConfig, fn RetryFunc) err
 	for attempt := 1; attempt <= config.MaxAttempts; attempt++ {
 		// Check context
 		if err := ctx.Err(); err != nil {
-			return Wrap(err, ErrorTypeInternal, "Context cancelled")
+			return Wrap(err, ErrorTypeInternal, "Context canceled")
 		}
 
 		// Execute function
@@ -83,7 +83,7 @@ func RetryWithConfig(ctx context.Context, config *RetryConfig, fn RetryFunc) err
 		// Wait with context
 		select {
 		case <-ctx.Done():
-			return Wrap(ctx.Err(), ErrorTypeInternal, "Context cancelled during retry")
+			return Wrap(ctx.Err(), ErrorTypeInternal, "Context canceled during retry")
 		case <-time.After(actualDelay):
 			// Continue to next attempt
 		}

@@ -83,10 +83,8 @@ func validateProvider(p *Provider) error {
 	}
 
 	// API key validation - warn if empty but don't fail
-	if p.APIKey == "" && p.Enabled {
-		// This is just a warning, not an error
-		// The provider health check will handle this
-	}
+	// This is just a warning, not an error
+	// The provider health check will handle this
 
 	// Validate models list
 	if len(p.Models) == 0 && p.Enabled {

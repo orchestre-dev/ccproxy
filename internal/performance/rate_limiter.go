@@ -154,10 +154,8 @@ func (rl *RateLimiter) cleanup() {
 	rl.limiters = newLimiters
 	rl.lastClean = now
 
-	// Log cleanup results
-	if removed := oldCount - len(newLimiters); removed > 0 {
-		// utils.GetLogger().Debugf("Rate limiter cleanup: removed %d inactive limiters", removed)
-	}
+	// Log cleanup results if needed
+	_ = oldCount - len(newLimiters) // removed count (currently unused)
 }
 
 // UpdateConfig updates the rate limiter configuration
