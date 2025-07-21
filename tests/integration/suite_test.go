@@ -10,9 +10,8 @@ import (
 	"time"
 
 	"github.com/orchestre-dev/ccproxy/internal/config"
-	"github.com/orchestre-dev/ccproxy/internal/provider"
 	"github.com/orchestre-dev/ccproxy/internal/server"
-	testfw "github.com/orchestre-dev/ccproxy/internal/testing"
+	testfw "github.com/orchestre-dev/ccproxy/testing"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -25,6 +24,7 @@ type IntegrationTestSuite struct {
 	client          *http.Client
 	fixtures        *testfw.Fixtures
 	serverURL       string
+	suiteReporter   *testfw.TestSuiteReporter
 }
 
 // SetupSuite runs once before all tests
@@ -35,56 +35,70 @@ func (s *IntegrationTestSuite) SetupSuite() {
 	s.mockProviders = make(map[string]*testfw.MockProviderServer)
 	
 	// Create mock providers
-	s.mockProviders["anthropic"] = testfw.NewMockProviderServer("anthropic")
-	s.mockProviders["openai"] = testfw.NewMockProviderServer("openai")
-	s.mockProviders["google"] = testfw.NewMockProviderServer("google")
-	s.mockProviders["aws"] = testfw.NewMockProviderServer("aws")
+	s.mockProviders["anthropic"] = testfw.NewMockProviderServer()
+	s.mockProviders["openai"] = testfw.NewMockProviderServer()
+	s.mockProviders["google"] = testfw.NewMockProviderServer()
+	s.mockProviders["aws"] = testfw.NewMockProviderServer()
 	
 	// Update config with mock provider URLs
 	cfg := s.framework.GetConfig()
-	cfg.Providers = []config.ProviderConfig{
+	cfg.Providers = []config.Provider{
 		{
-			Name:     "anthropic-test",
-			Type:     "anthropic",
-			APIKey:   "test-key",
-			BaseURL:  s.mockProviders["anthropic"].GetURL(),
-			Enabled:  true,
-			Priority: 1,
+			Name:       "anthropic-test",
+			APIBaseURL: s.mockProviders["anthropic"].URL(),
+			APIKey:     "test-key",
+			Enabled:    true,
+			Models:     []string{"claude-3-sonnet"},
 		},
 		{
-			Name:     "openai-test",
-			Type:     "openai",
-			APIKey:   "test-key",
-			BaseURL:  s.mockProviders["openai"].GetURL(),
-			Enabled:  true,
-			Priority: 2,
+			Name:       "openai-test",
+			APIBaseURL: s.mockProviders["openai"].URL(),
+			APIKey:     "test-key",
+			Enabled:    true,
+			Models:     []string{"gpt-4"},
 		},
 		{
-			Name:     "google-test",
-			Type:     "google",
-			APIKey:   "test-key",
-			BaseURL:  s.mockProviders["google"].GetURL(),
-			Enabled:  true,
-			Priority: 3,
+			Name:       "google-test",
+			APIBaseURL: s.mockProviders["google"].URL(),
+			APIKey:     "test-key",
+			Enabled:    true,
+			Models:     []string{"gemini-pro"},
 		},
 	}
 	
 	// Start server
-	s.server = s.framework.StartServer()
-	s.serverURL = fmt.Sprintf("http://%s:%d", cfg.Server.Host, s.server.GetPort())
+	s.server = s.framework.StartServerWithConfig(cfg)
+	s.serverURL = fmt.Sprintf("http://%s:%d", cfg.Host, cfg.Port)
 	
-	// Create HTTP client
+	// Create HTTP client with connection pooling limits
 	s.client = &http.Client{
 		Timeout: 30 * time.Second,
+		Transport: &http.Transport{
+			MaxIdleConns:        10,
+			MaxIdleConnsPerHost: 5,
+			IdleConnTimeout:     90 * time.Second,
+		},
 	}
 }
 
 // TearDownSuite runs once after all tests
 func (s *IntegrationTestSuite) TearDownSuite() {
+	// Shutdown server first
+	if s.server != nil {
+		if err := s.server.Shutdown(); err != nil {
+			s.T().Logf("Error shutting down server: %v", err)
+		}
+	}
+	
 	// Close mock providers
-	for _, mock := range s.mockProviders {
+	for name, mock := range s.mockProviders {
+		s.T().Logf("Closing mock provider: %s", name)
 		mock.Close()
 	}
+	
+	// Clear references
+	s.mockProviders = nil
+	s.server = nil
 }
 
 // SetupTest runs before each test
@@ -97,6 +111,13 @@ func (s *IntegrationTestSuite) SetupTest() {
 
 // TestAnthropicMessages tests Anthropic messages endpoint
 func (s *IntegrationTestSuite) TestAnthropicMessages() {
+	if s.suiteReporter != nil {
+		s.suiteReporter.StartTest("TestAnthropicMessages")
+		defer func() {
+			s.suiteReporter.EndTest("TestAnthropicMessages", !s.T().Failed())
+		}()
+	}
+	
 	// Get request fixture
 	reqBody, err := s.fixtures.GetRequest("anthropic_messages")
 	s.Require().NoError(err)
@@ -120,7 +141,7 @@ func (s *IntegrationTestSuite) TestAnthropicMessages() {
 	s.Assert().NotEmpty(result["content"])
 	
 	// Verify mock was called
-	requests := s.mockProviders["anthropic"].GetRequestsForPath("POST", "/v1/messages")
+	requests := s.mockProviders["anthropic"].GetRequestsForPath("/v1/messages")
 	s.Assert().Len(requests, 1)
 }
 
@@ -148,8 +169,8 @@ func (s *IntegrationTestSuite) TestOpenAIChatCompletions() {
 	s.Assert().NotEmpty(result["choices"])
 	
 	// Verify routing - should use OpenAI provider
-	anthropicReqs := s.mockProviders["anthropic"].GetRequestsForPath("POST", "/v1/messages")
-	openaiReqs := s.mockProviders["openai"].GetRequestsForPath("POST", "/v1/chat/completions")
+	anthropicReqs := s.mockProviders["anthropic"].GetRequestsForPath("/v1/messages")
+	openaiReqs := s.mockProviders["openai"].GetRequestsForPath("/v1/chat/completions")
 	s.Assert().Len(anthropicReqs, 0, "Should not call Anthropic for OpenAI endpoint")
 	s.Assert().Len(openaiReqs, 1, "Should call OpenAI provider")
 }
@@ -198,7 +219,7 @@ func (s *IntegrationTestSuite) TestStreamingResponse() {
 // TestProviderFailover tests failover between providers
 func (s *IntegrationTestSuite) TestProviderFailover() {
 	// Set primary provider to return error
-	s.mockProviders["anthropic"].SetError("POST", "/v1/messages", fmt.Errorf("provider unavailable"))
+	s.mockProviders["anthropic"].SetErrorRate(1.0)
 	
 	// Make request
 	reqBody, _ := s.fixtures.GetRequest("anthropic_messages")
@@ -210,8 +231,8 @@ func (s *IntegrationTestSuite) TestProviderFailover() {
 	s.Assert().Equal(http.StatusOK, resp.StatusCode)
 	
 	// Verify both providers were called
-	anthropicReqs := s.mockProviders["anthropic"].GetRequestsForPath("POST", "/v1/messages")
-	openaiReqs := s.mockProviders["openai"].GetRequestsForPath("POST", "/v1/chat/completions")
+	anthropicReqs := s.mockProviders["anthropic"].GetRequestsForPath("/v1/messages")
+	openaiReqs := s.mockProviders["openai"].GetRequestsForPath("/v1/chat/completions")
 	
 	s.Assert().Len(anthropicReqs, 1, "Should try primary provider first")
 	s.Assert().Len(openaiReqs, 1, "Should fallback to secondary provider")
@@ -406,5 +427,27 @@ func (s *IntegrationTestSuite) makeRequestWithAuth(method, path string, body int
 
 // TestSuite runs the integration test suite
 func TestIntegrationSuite(t *testing.T) {
-	suite.Run(t, new(IntegrationTestSuite))
+	// Create suite reporter to track all tests
+	testNames := []string{
+		"TestAnthropicMessages",
+		"TestOpenAIChatCompletions", 
+		"TestStreamingResponse",
+		"TestProviderFailover",
+		"TestRateLimiting",
+		"TestAuthentication",
+		"TestConcurrentRequests",
+		"TestLargePayload",
+		"TestHealthCheck",
+		"TestMetrics",
+	}
+	
+	reporter := testfw.NewTestSuiteReporter(t, "IntegrationSuite", testNames)
+	
+	// Hook into suite to report progress
+	s := new(IntegrationTestSuite)
+	s.suiteReporter = reporter
+	
+	suite.Run(t, s)
+	
+	reporter.Complete()
 }

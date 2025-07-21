@@ -2,6 +2,7 @@ package integration
 
 import (
 	"bytes"
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -12,6 +13,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	testutil "github.com/orchestre-dev/ccproxy/testing"
 )
 
 // buildTestBinary builds the ccproxy binary for testing
@@ -90,14 +92,11 @@ func TestCLICommands(t *testing.T) {
 
 // TestClaudeCommands tests the claude subcommands
 func TestClaudeCommands(t *testing.T) {
+	// Set up test isolation
+	isolation := testutil.SetupIsolatedTest(t)
+	
 	// Build the binary
 	binaryPath := buildTestBinary(t)
-	
-	// Save original HOME
-	originalHome := os.Getenv("HOME")
-	tempHome := t.TempDir()
-	os.Setenv("HOME", tempHome)
-	defer os.Setenv("HOME", originalHome)
 
 	// Test claude init
 	t.Run("Claude Init", func(t *testing.T) {
@@ -117,7 +116,7 @@ func TestClaudeCommands(t *testing.T) {
 			"Init should report success")
 		
 		// Check if file was created in home directory
-		claudeFile := filepath.Join(tempHome, ".claude.json")
+		claudeFile := filepath.Join(isolation.GetHomeDir(), ".claude.json")
 		assert.FileExists(t, claudeFile, "claude.json should be created in home directory")
 	})
 
@@ -196,22 +195,38 @@ func TestServiceLifecycle(t *testing.T) {
 
 	// Build the binary
 	binaryPath := buildTestBinary(t)
+	
+	// Set up enhanced process cleanup
+	cleanup := testutil.NewEnhancedProcessCleanup(t)
+	
+	// Set up test isolation
+	iso := testutil.SetupIsolatedTest(t)
 
+	// Get a free port for testing
+	port, err := testutil.GetFreePort()
+	require.NoError(t, err, "Failed to get free port")
+	
 	// Create test config
-	testConfig := `{
+	testConfig := fmt.Sprintf(`{
 		"host": "127.0.0.1",
-		"port": 18089,
+		"port": %d,
 		"log": false,
 		"providers": [],
 		"routes": {}
-	}`
-	err := os.WriteFile("test-config.json", []byte(testConfig), 0644)
-	require.NoError(t, err)
-	defer os.Remove("test-config.json")
+	}`, port)
+	configPath := iso.CreateTempFile("test-config.json", testConfig)
+	cleanup.TrackFile(configPath)
+	
+	// Track the port for cleanup
+	cleanup.TrackPort(port)
+	
+	// Track PID file directory (ccproxy stores PID in .ccproxy directory)
+	pidDir := filepath.Join(iso.GetHomeDir(), ".ccproxy")
+	cleanup.TrackDirectory(pidDir)
 
 	// Test start command in foreground
 	t.Run("Start Foreground", func(t *testing.T) {
-		cmd := exec.Command(binaryPath, "start", "--config", "test-config.json", "--foreground")
+		cmd := exec.Command(binaryPath, "start", "--config", configPath, "--foreground")
 		
 		// Start the command
 		var stdout, stderr bytes.Buffer
@@ -220,19 +235,15 @@ func TestServiceLifecycle(t *testing.T) {
 		
 		err := cmd.Start()
 		require.NoError(t, err)
+		
+		// Track the process with enhanced cleanup
+		cleanup.TrackCommand(cmd, "ccproxy start --foreground")
 
 		// Wait a bit for server to start
 		time.Sleep(500 * time.Millisecond)
 
 		// Check if process is running
 		assert.NotNil(t, cmd.Process)
-
-		// Kill the process
-		err = cmd.Process.Kill()
-		assert.NoError(t, err)
-		
-		// Wait for process to finish
-		cmd.Wait()
 
 		// Log output
 		t.Logf("Stdout: %s", stdout.String())
@@ -242,6 +253,9 @@ func TestServiceLifecycle(t *testing.T) {
 		// Just verify the process started successfully
 		assert.True(t, err == nil || cmd.ProcessState != nil, 
 			"Server process should have started successfully")
+		
+		// Verify no zombies
+		assert.NoError(t, cleanup.VerifyNoZombies())
 	})
 }
 
@@ -311,15 +325,7 @@ func isProcessRunning(pid int) bool {
 
 // Helper function to wait for a port to be available
 func waitForPort(port string, timeout time.Duration) bool {
-	deadline := time.Now().Add(timeout)
-	for time.Now().Before(deadline) {
-		cmd := exec.Command("nc", "-z", "localhost", port)
-		if err := cmd.Run(); err == nil {
-			return true
-		}
-		time.Sleep(100 * time.Millisecond)
-	}
-	return false
+	return testutil.WaitForPort(&testing.T{}, "localhost", port, timeout)
 }
 
 // TestHelp tests help output for all commands
