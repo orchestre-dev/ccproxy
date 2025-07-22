@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"syscall"
 	"time"
 
 	"github.com/gofrs/flock"
@@ -153,16 +152,6 @@ func (pm *PIDManager) readPIDWithoutLock() (int, error) {
 	return pid, nil
 }
 
-// IsProcessRunning checks if a process with given PID is running
-func (pm *PIDManager) IsProcessRunning(pid int) bool {
-	if pid <= 0 {
-		return false
-	}
-
-	// Try to send signal 0 to check if process exists
-	err := syscall.Kill(pid, 0)
-	return err == nil
-}
 
 // GetRunningPID returns the PID if the service is running, 0 otherwise
 func (pm *PIDManager) GetRunningPID() (int, error) {
@@ -296,6 +285,7 @@ func (pm *PIDManager) ReleaseLock() error {
 	return nil
 }
 
+
 // StopProcess stops the running process with graceful shutdown
 func (pm *PIDManager) StopProcess() error {
 	return pm.StopProcessWithTimeout(DefaultShutdownTimeout)
@@ -320,13 +310,9 @@ func (pm *PIDManager) StopProcessWithTimeout(timeout time.Duration) error {
 		}
 	}()
 
-	// First, try graceful shutdown with SIGTERM
-	if err := syscall.Kill(pid, syscall.SIGTERM); err != nil {
-		// Process might have already exited
-		if err == syscall.ESRCH {
-			return nil
-		}
-		return fmt.Errorf("failed to send SIGTERM to process: %w", err)
+	// First, try graceful shutdown
+	if err := pm.stopProcessByPID(pid); err != nil {
+		return fmt.Errorf("failed to stop process: %w", err)
 	}
 
 	// Wait for process to terminate gracefully
@@ -334,14 +320,10 @@ func (pm *PIDManager) StopProcessWithTimeout(timeout time.Duration) error {
 		return nil
 	}
 
-	// Process didn't terminate gracefully, force kill with SIGKILL
-	utils.GetLogger().Warn("Process did not terminate gracefully, sending SIGKILL")
-	if err := syscall.Kill(pid, syscall.SIGKILL); err != nil {
-		// Process might have already exited
-		if err == syscall.ESRCH {
-			return nil
-		}
-		return fmt.Errorf("failed to send SIGKILL to process: %w", err)
+	// Process didn't terminate gracefully, force kill
+	utils.GetLogger().Warn("Process did not terminate gracefully, forcing termination")
+	if err := pm.forceStopProcessByPID(pid); err != nil {
+		return fmt.Errorf("failed to force stop process: %w", err)
 	}
 
 	// Wait a bit more for forceful termination
@@ -349,7 +331,7 @@ func (pm *PIDManager) StopProcessWithTimeout(timeout time.Duration) error {
 		return nil
 	}
 
-	return fmt.Errorf("failed to stop process after SIGKILL")
+	return fmt.Errorf("process %d did not terminate", pid)
 }
 
 // waitForProcessTermination waits for a process to terminate

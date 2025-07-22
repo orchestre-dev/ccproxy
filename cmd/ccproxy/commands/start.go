@@ -240,10 +240,8 @@ func startInBackground(cfg *config.Config) error {
 	cmd.Stderr = nil
 	cmd.Stdin = nil
 
-	// Set process group to ensure child processes are cleaned up
-	cmd.SysProcAttr = &syscall.SysProcAttr{
-		Setpgid: true,
-	}
+	// Set platform-specific attributes
+	setPlatformSpecificAttrs(cmd)
 
 	// Start the process
 	if err := cmd.Start(); err != nil {
