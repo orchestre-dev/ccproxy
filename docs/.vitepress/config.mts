@@ -121,14 +121,14 @@ export default withMermaid(defineConfig({
           items: [
             { text: 'All Posts', link: '/blog/' },
             { text: '🎉 v1.0 Release: Use Any Model', link: '/blog/use-any-ai-model-with-claude-code' },
+            { text: '🔥 Kimi K2 Guide', link: '/blog/kimi-k2-claude-code-ultimate-guide' },
             { text: 'Qwen3 235B: Top Model', link: '/blog/qwen3-235b-top-model' },
             { text: 'OpenAI Integration', link: '/blog/openai-claude-code-integration' },
             { text: 'Google Gemini Guide', link: '/blog/google-gemini-claude-code-multimodal' },
             { text: 'Mistral AI & Privacy', link: '/blog/mistral-ai-claude-code-privacy-first' },
             { text: 'Groq Performance', link: '/blog/groq-claude-code-future-ai-development' },
             { text: 'Ollama Local AI', link: '/blog/ollama-claude-code-complete-privacy' },
-            { text: 'xAI Grok Real-Time', link: '/blog/xai-grok-claude-code-real-time' },
-            { text: 'Kimi K2 Guide', link: '/blog/kimi-k2-claude-code-ultimate-guide' }
+            { text: 'xAI Grok Real-Time', link: '/blog/xai-grok-claude-code-real-time' }
           ]
         }
       ]
