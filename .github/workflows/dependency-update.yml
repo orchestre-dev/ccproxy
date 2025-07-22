@@ -123,7 +123,7 @@ jobs:
           govulncheck ./...
 
       - name: Run gosec
-        uses: securecodewarrior/github-action-gosec@master
+        uses: securego/gosec@master
         with:
           args: '-fmt sarif -out gosec-results.sarif ./...'
 

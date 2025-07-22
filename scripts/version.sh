@@ -4,23 +4,50 @@
 
 set -euo pipefail
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-CYAN='\033[0;36m'
-NC='\033[0m' # No Color
+# Colors for output (disable in CI)
+if [ -n "${CI:-}" ]; then
+    RED=''
+    GREEN=''
+    YELLOW=''
+    BLUE=''
+    CYAN=''
+    NC=''
+else
+    RED='\033[0;31m'
+    GREEN='\033[0;32m'
+    YELLOW='\033[1;33m'
+    BLUE='\033[0;34m'
+    CYAN='\033[0;36m'
+    NC='\033[0m' # No Color
+fi
 
 # Configuration
 VERSION_FILE="internal/version/version.go"
 CHANGELOG_FILE="CHANGELOG.md"
 
+# Validate script is run from project root
+if [ ! -f "go.mod" ]; then
+    error "This script must be run from the project root directory"
+    exit 1
+fi
+
+# Validate version file directory exists
+VERSION_DIR=$(dirname "$VERSION_FILE")
+if [ ! -d "$VERSION_DIR" ]; then
+    error "Version directory '$VERSION_DIR' does not exist"
+    error "Please ensure the project structure is correct"
+    exit 1
+fi
+
 # Print colored message
 print_msg() {
     local color=$1
     shift
-    echo -e "${color}$*${NC}"
+    if [ -n "$color" ]; then
+        echo -e "${color}$*${NC}"
+    else
+        echo "$*"
+    fi
 }
 
 # Print info message
