@@ -130,3 +130,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - docs: fix readme
 
+## [1.2.6] - 2025-07-22
+
+### 🐛 Bug Fixes
+
+- installation script cleanup trap causing file not found error
+
