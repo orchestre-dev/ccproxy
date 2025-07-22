@@ -10,7 +10,12 @@ POST /v1/messages
 
 ## Authentication
 
-CCProxy doesn't require authentication. The API key authentication is handled by the underlying provider using the configured environment variables.
+CCProxy supports API key authentication when configured:
+
+- **Bearer Token**: `Authorization: Bearer your-api-key`
+- **API Key Header**: `x-api-key: your-api-key`
+
+If no API key is configured in `config.json`, the service is only accessible from localhost.
 
 ## Request Format
 
@@ -395,44 +400,42 @@ curl -X POST http://localhost:3456/v1/messages \
 
 ### Model Mapping
 
-The `model` parameter is mapped to the actual provider model:
+CCProxy automatically maps Anthropic model names to provider-specific models. The mapping is configured in your `config.json` file.
 
-| Provider | Input Model | Actual Model |
-|----------|-------------|--------------|
-| Groq | claude-3-sonnet | moonshotai/kimi-k2-instruct |
+Example mappings:
+
+| Provider | Anthropic Model | Mapped Model |
+|----------|----------------|--------------|
+| Anthropic | claude-3-sonnet | claude-3-sonnet-20240229 |
 | OpenRouter | claude-3-sonnet | anthropic/claude-3.5-sonnet |
-| OpenAI | claude-3-sonnet | gpt-4o |
-| XAI | claude-3-sonnet | grok-beta |
+| OpenAI | claude-3-sonnet | gpt-4 |
 | Gemini | claude-3-sonnet | gemini-1.5-flash |
-| Mistral | claude-3-sonnet | mistral-large-latest |
-| Ollama | claude-3-sonnet | llama3.2 |
+| DeepSeek | claude-3-sonnet | deepseek-coder |
 
 ### Feature Support
 
-Not all providers support all features:
+Provider capabilities vary:
 
-| Feature | Groq | OpenRouter | OpenAI | XAI | Gemini | Mistral | Ollama |
-|---------|------|------------|--------|-----|--------|---------|--------|
-| Text | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Tools | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Vision | ❌ | ✅* | ✅ | ✅ | ✅ | ❌ | ✅* |
-| Streaming | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Feature | Anthropic | OpenRouter | OpenAI | Gemini | DeepSeek |
+|---------|-----------|------------|--------|--------|-----------|
+| Text | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Tools | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Vision | ✅ | ✅* | ✅ | ✅ | ❌ |
+| Streaming | ✅ | ✅ | ✅ | ✅ | ✅ |
 
 *Depends on specific model
 
 ## Rate Limits
 
-Rate limits are enforced by the underlying providers:
+Rate limits are enforced by the underlying providers and vary by plan:
 
-| Provider | Requests/min | Tokens/min |
-|----------|--------------|------------|
-| Groq | 30 | 6,000 |
-| OpenRouter | Varies | Varies |
-| OpenAI | 10,000 | 30,000,000 |
-| XAI | Unknown | Unknown |
-| Gemini | 15 | 32,000 |
-| Mistral | Unknown | Unknown |
-| Ollama | No limits | No limits |
+| Provider | Default Limits | Notes |
+|----------|----------------|-------|
+| Anthropic | Per API key | Check your Anthropic dashboard |
+| OpenRouter | Model-specific | Varies by model |
+| OpenAI | Tier-based | Based on usage tier |
+| Gemini | 15 RPM (free) | Higher limits for paid plans |
+| DeepSeek | API key based | Check provider documentation |
 
 ## Best Practices
 

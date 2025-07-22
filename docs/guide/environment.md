@@ -1,135 +1,213 @@
 # Environment Variables
 
-CCProxy is configured entirely through environment variables. This guide covers all available configuration options.
+CCProxy uses a JSON configuration file (`config.json`) as its primary configuration method. However, it supports environment variables for specific use cases, including sensitive data like API keys and Claude Code integration.
 
-## Core Configuration
+## Environment Variable Support
 
-### Provider Selection
+### Variable Substitution in config.json
 
-```bash
-# Select the AI provider to use
-PROVIDER=groq  # Options: groq, openai, gemini, mistral, ollama, xai, openrouter
+CCProxy supports environment variable substitution in configuration files using the `${VAR_NAME}` syntax:
+
+```json
+{
+  "providers": [
+    {
+      "name": "anthropic",
+      "api_key": "${ANTHROPIC_API_KEY}",
+      "enabled": true
+    },
+    {
+      "name": "openai",
+      "api_key": "${OPENAI_API_KEY}",
+      "enabled": true
+    }
+  ]
+}
 ```
 
-### Server Configuration
-
+Set the environment variables:
 ```bash
-# Server settings
-SERVER_HOST=0.0.0.0           # Host to bind to
-SERVER_PORT=3456              # Port to listen on
-SERVER_ENVIRONMENT=production # Environment: development, production
+export ANTHROPIC_API_KEY="sk-ant-..."
+export OPENAI_API_KEY="sk-..."
+./ccproxy start
 ```
 
-## Provider-Specific Configuration
-
-### Groq Configuration
+### CCProxy-Specific Variables
 
 ```bash
-GROQ_API_KEY=your_api_key_here
-GROQ_BASE_URL=https://api.groq.com/openai/v1
-GROQ_MODEL=moonshotai/kimi-k2-instruct
-GROQ_MAX_TOKENS=16384
+# Override default configuration file location
+export CCPROXY_CONFIG="/path/to/config.json"
+
+# Override default port (takes precedence over config.json)
+export CCPROXY_PORT=8080
+
+# Override default host (takes precedence over config.json)
+export CCPROXY_HOST="0.0.0.0"
+
+# Set CCProxy API key for authentication
+export CCPROXY_API_KEY="your-secure-api-key"
+
+# Enable logging to file
+export LOG=true
 ```
 
-### OpenAI Configuration
+### Claude Code Integration Variables
+
+When using `./ccproxy code`, the following environment variables are automatically set:
 
 ```bash
-OPENAI_API_KEY=your_api_key_here
-OPENAI_BASE_URL=https://api.openai.com/v1
-OPENAI_MODEL=gpt-4o
-OPENAI_MAX_TOKENS=4096
+# Set by ccproxy code command
+export ANTHROPIC_BASE_URL=http://127.0.0.1:3456
+export ANTHROPIC_AUTH_TOKEN=test
+export API_TIMEOUT_MS=600000
 ```
-
-### Gemini Configuration
-
-```bash
-GEMINI_API_KEY=your_api_key_here
-GEMINI_BASE_URL=https://generativelanguage.googleapis.com
-GEMINI_MODEL=gemini-2.0-flash
-GEMINI_MAX_TOKENS=32768
-```
-
-### Mistral Configuration
-
-```bash
-MISTRAL_API_KEY=your_api_key_here
-MISTRAL_BASE_URL=https://api.mistral.ai/v1
-MISTRAL_MODEL=mistral-large-latest
-MISTRAL_MAX_TOKENS=32768
-```
-
-### XAI Configuration
-
-```bash
-XAI_API_KEY=your_api_key_here
-XAI_BASE_URL=https://api.x.ai/v1
-XAI_MODEL=grok-beta
-XAI_MAX_TOKENS=128000
-```
-
-### Ollama Configuration
-
-```bash
-OLLAMA_API_KEY=ollama  # Default value
-OLLAMA_BASE_URL=http://localhost:11434
-OLLAMA_MODEL=llama3.2
-OLLAMA_MAX_TOKENS=4096
-```
-
-### OpenRouter Configuration
-
-```bash
-OPENROUTER_API_KEY=your_api_key_here
-OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
-OPENROUTER_MODEL=openai/gpt-4o
-OPENROUTER_MAX_TOKENS=4096
-OPENROUTER_SITE_URL=https://yoursite.com
-OPENROUTER_SITE_NAME=Your Site
-```
-
-## Logging Configuration
-
-```bash
-LOG_LEVEL=info    # Options: debug, info, warn, error
-LOG_FORMAT=json   # Options: json, text
-```
-
-## Security Configuration
-
-```bash
-# CORS settings
-CORS_ALLOWED_ORIGINS=https://yoursite.com,https://anotherdomain.com
-```
-
-## Example Configuration Files
-
-### Development (.env.development)
-
-```bash
-PROVIDER=groq
-GROQ_API_KEY=your_development_key
-SERVER_ENVIRONMENT=development
-LOG_LEVEL=debug
-```
-
-### Production (.env.production)
-
-```bash
-PROVIDER=groq
-GROQ_API_KEY=your_production_key
-SERVER_ENVIRONMENT=production
-LOG_LEVEL=info
-LOG_FORMAT=json
-```
-
-## Configuration Validation
-
-CCProxy validates all configuration at startup. If required environment variables are missing or invalid, the application will exit with an error message.
 
 ## Best Practices
 
-1. **Use separate API keys** for development and production
-2. **Store secrets securely** - never commit API keys to version control
-3. **Use environment-specific configurations** for different deployment stages
-4. **Monitor API usage** to avoid hitting rate limits
-5. **Set appropriate timeouts** based on your use case
+### 1. Sensitive Data Management
+
+Store API keys in environment variables rather than hardcoding in config.json:
+
+```bash
+# .env file (not committed to git)
+ANTHROPIC_API_KEY="sk-ant-..."
+OPENAI_API_KEY="sk-..."
+GEMINI_API_KEY="AI..."
+DEEPSEEK_API_KEY="sk-..."
+OPENROUTER_API_KEY="sk-or-v1-..."
+CCPROXY_API_KEY="your-secure-key"
+```
+
+Load variables before starting:
+```bash
+source .env
+./ccproxy start
+```
+
+### 2. Docker Environment
+
+When using Docker, pass environment variables:
+
+```bash
+docker run -p 3456:3456 \
+  -e ANTHROPIC_API_KEY="$ANTHROPIC_API_KEY" \
+  -e OPENAI_API_KEY="$OPENAI_API_KEY" \
+  -v $(pwd)/config.json:/home/ccproxy/.ccproxy/config.json \
+  ccproxy:latest
+```
+
+Or use Docker Compose:
+```yaml
+version: '3.8'
+services:
+  ccproxy:
+    image: ccproxy:latest
+    ports:
+      - "3456:3456"
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - CCPROXY_API_KEY=${CCPROXY_API_KEY}
+    volumes:
+      - ./config.json:/home/ccproxy/.ccproxy/config.json
+```
+
+### 3. CI/CD Integration
+
+Use environment variables in CI/CD pipelines:
+
+```yaml
+# GitHub Actions example
+- name: Run CCProxy Tests
+  env:
+    ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+    OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+  run: |
+    ./ccproxy start --config test.config.json
+    npm test
+```
+
+### 4. Production Deployment
+
+Use a proper secrets management system:
+
+```bash
+# AWS Systems Manager Parameter Store
+export ANTHROPIC_API_KEY=$(aws ssm get-parameter --name /ccproxy/anthropic-key --query 'Parameter.Value' --output text)
+export OPENAI_API_KEY=$(aws ssm get-parameter --name /ccproxy/openai-key --query 'Parameter.Value' --output text)
+
+# HashiCorp Vault
+export ANTHROPIC_API_KEY=$(vault kv get -field=api_key secret/ccproxy/anthropic)
+export OPENAI_API_KEY=$(vault kv get -field=api_key secret/ccproxy/openai)
+
+# Kubernetes Secrets
+kubectl create secret generic ccproxy-secrets \
+  --from-literal=anthropic-api-key=$ANTHROPIC_API_KEY \
+  --from-literal=openai-api-key=$OPENAI_API_KEY
+```
+
+## Environment Variable Reference
+
+| Variable | Description | Default | Example |
+|----------|-------------|---------|---------|
+| `CCPROXY_CONFIG` | Path to configuration file | `~/.ccproxy/config.json` | `/etc/ccproxy/config.json` |
+| `CCPROXY_PORT` | Override port setting | From config.json | `8080` |
+| `CCPROXY_HOST` | Override host setting | From config.json | `0.0.0.0` |
+| `CCPROXY_API_KEY` | API key for CCProxy authentication | None | `secure-key-123` |
+| `LOG` | Enable file logging | `false` | `true` |
+| `ANTHROPIC_BASE_URL` | Set by `ccproxy code` | None | `http://127.0.0.1:3456` |
+| `ANTHROPIC_AUTH_TOKEN` | Set by `ccproxy code` | None | `test` |
+| `API_TIMEOUT_MS` | Set by `ccproxy code` | None | `600000` |
+
+## Viewing Current Environment
+
+Use the `ccproxy env` command to see environment variable documentation:
+
+```bash
+./ccproxy env
+```
+
+This will display:
+- All supported environment variables
+- Their current values (if set)
+- Usage examples
+
+## Security Considerations
+
+1. **Never commit `.env` files** to version control
+2. **Use different API keys** for development and production
+3. **Rotate API keys regularly**
+4. **Limit API key permissions** to only what's needed
+5. **Use secrets management** in production environments
+
+## Troubleshooting
+
+### Variable Not Being Read
+
+```bash
+# Check if variable is exported
+echo $ANTHROPIC_API_KEY
+
+# Ensure variable is exported, not just set
+export ANTHROPIC_API_KEY="sk-ant-..."
+
+# Verify CCProxy sees the variable
+./ccproxy start --config test.json
+```
+
+### Variable Substitution Not Working
+
+Ensure your config.json uses the correct syntax:
+```json
+{
+  "api_key": "${ANTHROPIC_API_KEY}"  // Correct
+  "api_key": "$ANTHROPIC_API_KEY"    // Wrong
+  "api_key": "ANTHROPIC_API_KEY"     // Wrong
+}
+```
+
+## Next Steps
+
+- [Configuration Guide](/guide/configuration) - Full configuration reference
+- [Security Guide](/guide/security) - Security best practices
+- [Docker Guide](/guide/docker) - Using CCProxy with Docker

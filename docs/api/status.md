@@ -8,120 +8,169 @@ keywords: CCProxy status, API health check, proxy monitoring, provider status
 
 <SocialShare />
 
-Monitor CCProxy and provider health with the status endpoint.
+Get detailed information about CCProxy service status and configuration.
 
 ## GET /status
 
-Returns detailed status information about CCProxy and the configured provider.
+Returns service status, version information, and configuration details.
+
+### Authentication
+
+This endpoint requires authentication:
+- Request from localhost (127.0.0.1)
+- Valid API key via `Authorization: Bearer <key>` or `x-api-key: <key>` header
 
 ### Request
 
 ```bash
+# From localhost
 curl http://localhost:3456/status
+
+# With API key
+curl -H "x-api-key: your-api-key" http://your-server:3456/status
 ```
 
 ### Response
 
 ```json
 {
-  "status": "healthy",
-  "timestamp": "2025-01-17T10:30:45Z",
-  "proxy": {
-    "version": "1.0.0",
-    "uptime": "2h 15m 30s",
-    "requests_served": 1247
+  "service": "CCProxy",
+  "version": "1.0.0",
+  "status": "running",
+  "uptime": "2h 15m 30s",
+  "pid": 12345,
+  "host": "127.0.0.1",
+  "port": 3456,
+  "api_key_configured": true,
+  "providers": {
+    "count": 2,
+    "active": ["anthropic", "openai"]
   },
-  "provider": {
-    "name": "groq",
-    "status": "connected",
-    "model": "moonshotai/kimi-k2-instruct",
-    "last_check": "2025-01-17T10:30:44Z",
-    "response_time_ms": 185
+  "build": {
+    "version": "1.0.0",
+    "commit": "abc123def",
+    "date": "2025-01-17T08:00:00Z"
   }
 }
 ```
 
-### Status Values
+### Response Fields
 
-| Status | Description |
-|--------|-------------|
-| `healthy` | All systems operational |
-| `degraded` | Provider issues, but proxy operational |
-| `unhealthy` | Proxy or provider connection failed |
+| Field | Type | Description |
+|-------|------|-------------|
+| `service` | string | Service name (always "CCProxy") |
+| `version` | string | Service version |
+| `status` | string | Service status (running/stopped) |
+| `uptime` | string | Human-readable uptime |
+| `pid` | number | Process ID |
+| `host` | string | Bind host address |
+| `port` | number | Bind port number |
+| `api_key_configured` | boolean | Whether API key is configured |
+| `providers` | object | Provider configuration info |
+| `build` | object | Build information |
 
-## Provider-Specific Status
+## Usage Examples
 
-### Groq Status
-```json
-{
-  "provider": {
-    "name": "groq",
-    "status": "connected",
-    "model": "moonshotai/kimi-k2-instruct",
-    "tokens_per_second": 185,
-    "rate_limit_remaining": 5000
-  }
-}
-```
-
-### OpenAI Status
-```json
-{
-  "provider": {
-    "name": "openai",
-    "status": "connected", 
-    "model": "gpt-4o",
-    "rate_limit_remaining": 150,
-    "organization": "org-..."
-  }
-}
-```
-
-## Monitoring Integration
-
-### Prometheus Metrics
-```bash
-# Enable metrics endpoint
-export ENABLE_METRICS=true
-
-# Scrape metrics
-curl http://localhost:3456/metrics
-```
-
-### Health Check Script
+### Basic Status Check
 ```bash
 #!/bin/bash
+# Check if CCProxy is running
 STATUS=$(curl -s http://localhost:3456/status | jq -r '.status')
-if [ "$STATUS" != "healthy" ]; then
-  echo "CCProxy unhealthy: $STATUS"
+if [ "$STATUS" = "running" ]; then
+  echo "✅ CCProxy is running"
+else
+  echo "❌ CCProxy is not running"
   exit 1
 fi
-echo "CCProxy healthy"
+```
+
+### Provider Information
+```bash
+# Get active providers
+PROVIDERS=$(curl -s -H "x-api-key: $API_KEY" http://localhost:3456/status | 
+  jq -r '.providers.active[]')
+echo "Active providers: $PROVIDERS"
+```
+
+### Version Check
+```bash
+# Check CCProxy version
+VERSION=$(curl -s http://localhost:3456/status | jq -r '.version')
+echo "CCProxy version: $VERSION"
+```
+
+## Integration with Monitoring Systems
+
+### Uptime Monitoring
+```bash
+#!/bin/bash
+# Monitor service uptime
+RESPONSE=$(curl -s -H "x-api-key: $API_KEY" http://localhost:3456/status)
+if [ $? -ne 0 ]; then
+  alert "CCProxy is down"
+  exit 1
+fi
+
+UPTIME=$(echo "$RESPONSE" | jq -r '.uptime')
+echo "CCProxy uptime: $UPTIME"
+```
+
+### Configuration Validation
+```bash
+#!/bin/bash
+# Verify expected configuration
+CONFIG=$(curl -s -H "x-api-key: $API_KEY" http://localhost:3456/status)
+
+# Check if API key is configured
+API_KEY_SET=$(echo "$CONFIG" | jq -r '.api_key_configured')
+if [ "$API_KEY_SET" != "true" ]; then
+  echo "WARNING: API key not configured"
+fi
+
+# Check provider count
+PROVIDER_COUNT=$(echo "$CONFIG" | jq -r '.providers.count')
+if [ "$PROVIDER_COUNT" -eq 0 ]; then
+  echo "ERROR: No providers configured"
+  exit 1
+fi
 ```
 
 ## Error Responses
 
-### Provider Connection Failed
+### Unauthorized Access
 ```json
 {
-  "status": "unhealthy",
-  "error": "provider_connection_failed",
-  "message": "Failed to connect to Groq API",
-  "details": {
-    "provider": "groq",
-    "error_code": "authentication_failed"
+  "error": {
+    "type": "authentication_error",
+    "message": "Invalid or missing API key"
   }
 }
 ```
+HTTP Status: 401
 
-### Rate Limited
+### Service Not Available
 ```json
 {
-  "status": "degraded", 
-  "warning": "rate_limited",
-  "message": "Provider rate limit exceeded",
-  "retry_after": 60
+  "error": {
+    "type": "service_error",
+    "message": "Service temporarily unavailable"
+  }
 }
+```
+HTTP Status: 503
+
+## Docker Integration
+
+```yaml
+version: '3.8'
+services:
+  ccproxy:
+    image: ccproxy:latest
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3456/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 ```
 
 ## See Also

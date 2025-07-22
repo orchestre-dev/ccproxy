@@ -4,13 +4,13 @@ CCProxy provides several endpoints for monitoring the health and status of the s
 
 ## Endpoints Overview
 
-| Endpoint | Method | Purpose | Response Time |
-|----------|--------|---------|---------------|
-| `/` | GET | Basic health check | < 1ms |
-| `/health` | GET | Detailed health status | < 100ms |
-| `/status` | GET | Provider status & config | < 100ms |
+| Endpoint | Method | Purpose | Authentication |
+|----------|--------|---------|----------------|
+| `/` | GET | Basic API info | None |
+| `/health` | GET | Service health status | API key or localhost |
+| `/status` | GET | Service information | API key or localhost |
 
-## Basic Health Check
+## Basic API Info
 
 ### Endpoint
 ```
@@ -18,14 +18,14 @@ GET /
 ```
 
 ### Description
-Simple health check that returns immediately if the service is running.
+Returns basic API information including version.
 
 ### Response
 
 ```json
 {
-  "status": "ok",
-  "message": "CCProxy is running"
+  "message": "LLMs API",
+  "version": "1.0.0"
 }
 ```
 
@@ -36,11 +36,11 @@ curl http://localhost:3456/
 ```
 
 ### Use Cases
-- Load balancer health checks
-- Container orchestration probes
 - Quick service availability checks
+- Version verification
+- Basic connectivity test
 
-## Detailed Health Check
+## Health Check
 
 ### Endpoint
 ```
@@ -48,33 +48,49 @@ GET /health
 ```
 
 ### Description
-Comprehensive health check that validates the service configuration and provider connectivity.
+Returns the current health status of the service. Requires authentication (API key or localhost access).
+
+### Authentication
+This endpoint requires one of the following:
+- Request from localhost (127.0.0.1)
+- Valid API key via `Authorization: Bearer <key>` or `x-api-key: <key>` header
 
 ### Response
 
+#### Without Authentication (or basic status)
+```json
+{
+  "status": "healthy"
+}
+```
+
+#### With Authentication (detailed status)
 ```json
 {
   "status": "healthy",
-  "timestamp": "2025-01-17T10:30:00.000Z",
+  "timestamp": "2025-01-17T10:30:00Z",
+  "uptime": 7945000000000,
   "version": "1.0.0",
-  "uptime": "2h 15m 30s",
-  "provider": {
-    "name": "groq",
-    "status": "healthy",
-    "model": "moonshotai/kimi-k2-instruct",
-    "last_check": "2025-01-17T10:29:45.000Z",
-    "response_time": "250ms"
+  "config": {
+    "host": "127.0.0.1",
+    "port": 3456,
+    "providers": 2,
+    "api_key_configured": true
   },
-  "system": {
-    "memory_usage": "45.2%",
-    "cpu_usage": "12.8%",
-    "goroutines": 23
-  },
-  "requests": {
-    "total": 1250,
-    "successful": 1198,
-    "failed": 52,
-    "success_rate": "95.8%"
+  "performance": {
+    "memory_mb": 15.2,
+    "goroutines": 23,
+    "requests": {
+      "total": 1250,
+      "success": 1198,
+      "failed": 52
+    },
+    "latency": {
+      "avg_ms": 245,
+      "p50_ms": 200,
+      "p95_ms": 450,
+      "p99_ms": 890
+    }
   }
 }
 ```
@@ -83,54 +99,31 @@ Comprehensive health check that validates the service configuration and provider
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `status` | string | Overall health status |
-| `timestamp` | string | Current timestamp (ISO 8601) |
+| `status` | string | Always "healthy" if service is running |
+| `timestamp` | string | Current time (ISO format) |
+| `uptime` | number | Uptime in nanoseconds |
 | `version` | string | CCProxy version |
-| `uptime` | string | Service uptime |
-| `provider` | object | Provider-specific health info |
-| `system` | object | System resource usage |
-| `requests` | object | Request statistics |
+| `config` | object | Configuration summary (authenticated only) |
+| `performance` | object | Performance metrics (authenticated only) |
 
-### Health Status Values
+### Examples
 
-| Status | Description |
-|--------|-------------|
-| `healthy` | All systems operational |
-| `degraded` | Service running but with issues |
-| `unhealthy` | Service not functioning properly |
-
-### Example
-
+#### Unauthenticated Request
 ```bash
-curl http://localhost:3456/health
+curl http://your-server:3456/health
+# Returns: {"status":"healthy"}
 ```
 
-### Error Response
+#### Authenticated Request from Localhost
+```bash
+curl http://localhost:3456/health
+# Returns detailed health information
+```
 
-```json
-{
-  "status": "unhealthy",
-  "timestamp": "2025-01-17T10:30:00.000Z",
-  "version": "1.0.0",
-  "uptime": "2h 15m 30s",
-  "provider": {
-    "name": "groq",
-    "status": "unhealthy",
-    "error": "API key invalid",
-    "last_check": "2025-01-17T10:29:45.000Z"
-  },
-  "system": {
-    "memory_usage": "45.2%",
-    "cpu_usage": "12.8%",
-    "goroutines": 23
-  },
-  "requests": {
-    "total": 1250,
-    "successful": 1100,
-    "failed": 150,
-    "success_rate": "88.0%"
-  }
-}
+#### Authenticated Request with API Key
+```bash
+curl -H "x-api-key: your-api-key" http://your-server:3456/health
+# Returns detailed health information
 ```
 
 ## Status Endpoint
@@ -141,44 +134,33 @@ GET /status
 ```
 
 ### Description
-Provides detailed information about the current provider configuration and operational status.
+Provides information about the service status and configuration. Requires authentication (API key or localhost access).
+
+### Authentication
+This endpoint requires one of the following:
+- Request from localhost (127.0.0.1)
+- Valid API key via `Authorization: Bearer <key>` or `x-api-key: <key>` header
 
 ### Response
 
 ```json
 {
-  "service": {
-    "name": "CCProxy",
+  "service": "CCProxy",
+  "version": "1.0.0",
+  "status": "running",
+  "uptime": "2h 15m 30s",
+  "pid": 12345,
+  "host": "127.0.0.1",
+  "port": 3456,
+  "api_key_configured": true,
+  "providers": {
+    "count": 2,
+    "active": ["anthropic", "openai"]
+  },
+  "build": {
     "version": "1.0.0",
-    "build": "abc123",
-    "start_time": "2025-01-17T08:15:00.000Z",
-    "uptime": "2h 15m 30s"
-  },
-  "provider": {
-    "name": "groq",
-    "model": "moonshotai/kimi-k2-instruct",
-    "base_url": "https://api.groq.com/openai/v1",
-    "max_tokens": 16384,
-    "status": "active",
-    "capabilities": [
-      "text_generation",
-      "function_calling",
-      "streaming"
-    ]
-  },
-  "configuration": {
-    "port": 3456,
-    "log_level": "info",
-    "timeout": "120s",
-    "cors_enabled": true
-  },
-  "metrics": {
-    "requests_total": 1250,
-    "requests_successful": 1198,
-    "requests_failed": 52,
-    "avg_response_time": "850ms",
-    "tokens_processed": 2485000,
-    "uptime_percentage": "99.2%"
+    "commit": "abc123def",
+    "date": "2025-01-17T08:00:00Z"
   }
 }
 ```
@@ -187,91 +169,63 @@ Provides detailed information about the current provider configuration and opera
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `service` | object | Service information |
-| `provider` | object | Current provider configuration |
-| `configuration` | object | Runtime configuration |
-| `metrics` | object | Operational metrics |
+| `service` | string | Service name |
+| `version` | string | Service version |
+| `status` | string | Service status (running/stopped) |
+| `uptime` | string | Human-readable uptime |
+| `pid` | number | Process ID |
+| `host` | string | Bind host |
+| `port` | number | Bind port |
+| `api_key_configured` | boolean | Whether API key is set |
+| `providers` | object | Provider information |
+| `build` | object | Build information |
 
-### Example
+### Examples
 
+#### Request from Localhost
 ```bash
 curl http://localhost:3456/status
 ```
 
-### Provider-Specific Status
-
-Different providers return different capability information:
-
-#### Groq Provider
-```json
-{
-  "provider": {
-    "name": "groq",
-    "model": "moonshotai/kimi-k2-instruct",
-    "capabilities": ["text_generation", "function_calling", "streaming"],
-    "rate_limits": {
-      "requests_per_minute": 30,
-      "tokens_per_minute": 6000
-    }
-  }
-}
+#### Request with API Key
+```bash
+curl -H "x-api-key: your-api-key" http://your-server:3456/status
 ```
 
-#### OpenAI Provider
-```json
-{
-  "provider": {
-    "name": "openai",
-    "model": "gpt-4o",
-    "capabilities": ["text_generation", "function_calling", "vision", "streaming"],
-    "rate_limits": {
-      "requests_per_minute": 10000,
-      "tokens_per_minute": 30000000
-    }
-  }
-}
-```
+### Provider-Specific Information
 
-#### Ollama Provider
-```json
-{
-  "provider": {
-    "name": "ollama", 
-    "model": "llama3.2",
-    "base_url": "http://localhost:11434",
-    "capabilities": ["text_generation", "function_calling", "local_processing"],
-    "rate_limits": {
-      "requests_per_minute": "unlimited",
-      "tokens_per_minute": "unlimited"
-    }
-  }
-}
-```
+CCProxy supports the following providers with their specific capabilities:
+
+#### Anthropic Provider
+- Models: claude-3-opus, claude-3-sonnet, claude-3-haiku
+- Full API compatibility with native format
+- Supports all Claude features including vision and tools
+
+#### OpenAI Provider  
+- Models: gpt-4, gpt-4-turbo, gpt-3.5-turbo
+- Automatic API translation from Anthropic format
+- Full support for function calling and streaming
+
+#### Google Gemini Provider
+- Models: gemini-1.5-flash, gemini-1.5-pro
+- Multimodal support with vision capabilities
+- API translation for tool use
+
+#### DeepSeek Provider
+- Models: deepseek-coder, deepseek-chat
+- Optimized for code generation tasks
+- Full streaming support
+
+#### OpenRouter Provider
+- Access to 100+ models through unified API
+- Model-specific routing and optimization
+- Pay-per-use pricing model
 
 ## Monitoring Integration
 
-### Prometheus Metrics
+### Health Check Integration
 
-CCProxy exposes metrics in Prometheus format at `/metrics`:
-
-```
-# HELP ccproxy_requests_total Total number of requests
-# TYPE ccproxy_requests_total counter
-ccproxy_requests_total{provider="groq",status="success"} 1198
-ccproxy_requests_total{provider="groq",status="error"} 52
-
-# HELP ccproxy_request_duration_seconds Request duration
-# TYPE ccproxy_request_duration_seconds histogram
-ccproxy_request_duration_seconds_bucket{provider="groq",le="0.1"} 245
-ccproxy_request_duration_seconds_bucket{provider="groq",le="0.5"} 856
-ccproxy_request_duration_seconds_bucket{provider="groq",le="1.0"} 1150
-ccproxy_request_duration_seconds_bucket{provider="groq",le="+Inf"} 1250
-
-# HELP ccproxy_tokens_processed_total Total tokens processed
-# TYPE ccproxy_tokens_processed_total counter
-ccproxy_tokens_processed_total{provider="groq",type="input"} 1245000
-ccproxy_tokens_processed_total{provider="groq",type="output"} 1240000
-```
+CCProxy provides health endpoints that can be integrated with various monitoring systems. The `/health` endpoint provides detailed metrics when authenticated, including request counts, latency percentiles, and resource usage.
 
 ### Health Check Scripts
 
@@ -322,7 +276,7 @@ esac
 
 #### Dockerfile
 ```dockerfile
-FROM golang:1.21-alpine AS builder
+FROM golang:1.23-alpine AS builder
 # ... build steps ...
 
 FROM alpine:latest
@@ -332,10 +286,10 @@ COPY --from=builder /app/ccproxy .
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:3456/health || exit 1
+  CMD curl -f http://localhost:3456/ || exit 1
 
 EXPOSE 3456
-CMD ["./ccproxy"]
+CMD ["./ccproxy", "start", "--foreground"]
 ```
 
 #### Docker Compose
@@ -346,11 +300,10 @@ services:
     build: .
     ports:
       - "3456:3456"
-    environment:
-      - PROVIDER=groq
-      - GROQ_API_KEY=${GROQ_API_KEY}
+    volumes:
+      - ./config.json:/home/ccproxy/.ccproxy/config.json
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3456/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:3456/"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -379,14 +332,10 @@ spec:
         image: ccproxy:latest
         ports:
         - containerPort: 3456
-        env:
-        - name: PROVIDER
-          value: "groq"
-        - name: GROQ_API_KEY
-          valueFrom:
-            secretKeyRef:
-              name: ccproxy-secrets
-              key: groq-api-key
+        volumeMounts:
+        - name: config
+          mountPath: /home/ccproxy/.ccproxy/config.json
+          subPath: config.json
         livenessProbe:
           httpGet:
             path: /
@@ -404,44 +353,46 @@ spec:
           timeoutSeconds: 10
           successThreshold: 1
           failureThreshold: 3
+      volumes:
+      - name: config
+        configMap:
+          name: ccproxy-config
 ```
 
 ## Alerting
 
-### Grafana Alerts
+### Health-Based Monitoring
 
-Example Grafana alert rules:
+Set up alerts based on the health endpoint responses:
 
-```yaml
-# High error rate
-- alert: CCProxy High Error Rate
-  expr: rate(ccproxy_requests_total{status="error"}[5m]) / rate(ccproxy_requests_total[5m]) > 0.1
-  for: 2m
-  labels:
-    severity: warning
-  annotations:
-    summary: "CCProxy error rate is high"
-    description: "Error rate is {{ $value | humanizePercentage }} for the last 5 minutes"
+#### Service Availability
+Monitor the basic endpoint for service availability:
+```bash
+# Alert if service returns non-200 status
+curl -f http://localhost:3456/ || alert "CCProxy is down"
+```
 
-# Service down
-- alert: CCProxy Down
-  expr: up{job="ccproxy"} == 0
-  for: 1m
-  labels:
-    severity: critical
-  annotations:
-    summary: "CCProxy is down"
-    description: "CCProxy has been down for more than 1 minute"
+#### Performance Monitoring
+Use the authenticated health endpoint to monitor performance metrics:
+```bash
+# Check error rate from health endpoint
+ERROR_RATE=$(curl -s -H "x-api-key: $API_KEY" http://localhost:3456/health | \
+  jq -r '(.performance.requests.failed / .performance.requests.total) * 100')
 
-# High response time
-- alert: CCProxy High Response Time
-  expr: histogram_quantile(0.95, rate(ccproxy_request_duration_seconds_bucket[5m])) > 2
-  for: 5m
-  labels:
-    severity: warning
-  annotations:
-    summary: "CCProxy response time is high"
-    description: "95th percentile response time is {{ $value }}s"
+if (( $(echo "$ERROR_RATE > 10" | bc -l) )); then
+  alert "High error rate: ${ERROR_RATE}%"
+fi
+```
+
+#### Latency Monitoring
+```bash
+# Check P95 latency
+P95_LATENCY=$(curl -s -H "x-api-key: $API_KEY" http://localhost:3456/health | \
+  jq -r '.performance.latency.p95_ms')
+
+if [ "$P95_LATENCY" -gt 1000 ]; then
+  alert "High P95 latency: ${P95_LATENCY}ms"
+fi
 ```
 
 ### PagerDuty Integration
@@ -471,62 +422,46 @@ fi
 
 ### 1. Health Check Frequency
 
-```bash
-# For load balancers: every 5-10 seconds
-# For monitoring systems: every 30-60 seconds
-# For alerting: every 1-5 minutes
-```
+- **Load balancers**: Check `/` every 5-10 seconds
+- **Monitoring systems**: Check `/health` every 30-60 seconds  
+- **Alerting**: Poll authenticated endpoints every 1-5 minutes
 
 ### 2. Timeout Configuration
 
-```bash
-# Set appropriate timeouts for health checks
-# Basic health check: 1-2 seconds
-# Detailed health check: 5-10 seconds
-```
+- **Basic health check** (`/`): 1-2 second timeout
+- **Detailed health check** (`/health`): 5-10 second timeout
+- **Status check** (`/status`): 5-10 second timeout
 
-### 3. Monitoring Stack
+### 3. Authentication for Monitoring
 
-```bash
-# Recommended monitoring stack:
-# - Prometheus for metrics collection
-# - Grafana for visualization
-# - AlertManager for alerting
-# - PagerDuty/Slack for notifications
-```
+- Use API keys for production monitoring
+- Restrict health endpoint access to monitoring systems
+- Rotate API keys regularly
 
-### 4. Health Check Endpoints
+### 4. Endpoint Usage Guidelines
 
-```bash
-# Use `/` for simple availability checks
-# Use `/health` for detailed status monitoring
-# Use `/status` for configuration validation
-```
+- Use `/` for simple uptime checks
+- Use `/health` with auth for detailed metrics
+- Use `/status` with auth for configuration info
 
 ## Troubleshooting
 
 ### Common Issues
 
 #### Health Check Timeouts
-```bash
-# Increase timeout values
-# Check system resources
-# Verify provider connectivity
-```
+- Increase timeout values in monitoring config
+- Check network connectivity
+- Verify CCProxy resource usage
 
-#### False Positives
-```bash
-# Tune health check sensitivity
-# Implement retry logic
-# Use appropriate intervals
-```
+#### Authentication Failures
+- Verify API key is correctly configured
+- Check request headers format
+- Ensure monitoring from allowed IPs
 
-#### Missing Metrics
-```bash
-# Verify Prometheus endpoint
-# Check metric labels
-# Validate scrape configuration
-```
+#### Incomplete Metrics
+- Confirm authentication is working
+- Check if requesting from localhost
+- Verify API key permissions
 
 ## Next Steps
 
