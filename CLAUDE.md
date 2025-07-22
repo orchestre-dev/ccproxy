@@ -2,7 +2,9 @@
 
 ## Project Overview
 
-CCProxy is a high-performance Go proxy server that enables Claude Code to work with multiple AI providers through intelligent routing, multi-provider support, and comprehensive request/response transformation. This is a complete rewrite from TypeScript to Go with enhanced security, performance, and reliability features.
+CCProxy is a high-performance Go-based API translation proxy that enables Claude Code to work with multiple AI providers. It acts as a middleware layer that translates Anthropic's API format to various provider-specific formats, enabling seamless integration without modifying Claude Code. This is a complete rewrite from TypeScript to Go with enhanced security, performance, and reliability features.
+
+**Important**: CCProxy is a translation proxy - it does not add new capabilities beyond API format translation. It requires models with function calling support for Claude Code compatibility.
 
 ## Architecture
 
@@ -19,8 +21,13 @@ CCProxy is a high-performance Go proxy server that enables Claude Code to work w
 
 ### Key Features
 
-- **Intelligent Routing**: Automatic model selection based on token count (>60K → longContext), model type, and thinking parameters
-- **Multi-Provider Support**: Anthropic, OpenAI, Gemini, DeepSeek, OpenRouter
+- **API Translation**: Converts Anthropic API format to provider-specific formats
+- **Intelligent Routing**: Automatic model selection based on:
+  - Token count (>60K → longContext route)
+  - Model type (haiku models → background route)
+  - Boolean thinking parameter (thinking: true → think route)
+  - Explicit provider selection (format: "provider,model")
+- **Provider Support**: Full transformers for Anthropic, OpenAI, Gemini, DeepSeek, OpenRouter
 - **Streaming Support**: Server-Sent Events (SSE) for real-time responses
 - **Process Management**: Background service with PID file locking and graceful shutdown
 - **Claude Code Integration**: Auto-start, environment variable management, reference counting
@@ -67,6 +74,8 @@ CCProxy is a high-performance Go proxy server that enables Claude Code to work w
 - `CCPROXY_HOST` - Override default host  
 - `CCPROXY_API_KEY` - Set API key for authentication
 - `CCPROXY_CONFIG` - Path to configuration file
+- `CCPROXY_PROVIDERS_0_API_KEY` - Override first provider's API key
+- `CCPROXY_PROVIDERS_1_API_KEY` - Override second provider's API key
 - `LOG` - Enable file logging to ~/.ccproxy/ccproxy.log
 
 ## Commands
@@ -103,7 +112,7 @@ make test-race          # Run tests with race detection
 - **Security Tests**: Authentication and authorization flows
 
 ### Dependencies
-- **Go 1.23+** required
+- **Go 1.21+** required
 - **Gin** - HTTP web framework
 - **Cobra** - CLI framework
 - **Viper** - Configuration management
@@ -216,21 +225,43 @@ Enable detailed logging by setting `LOG=true` environment variable. Logs are wri
 - Process management with proper cleanup
 - Atomic state transitions
 
-## Provider Support
+## Provider Support & Limitations
 
-### Full Support (with Transformers)
+### Implemented Providers (with Transformers)
 These providers have dedicated transformer implementations in `internal/transformer/`:
-- **Anthropic** (`anthropic.go`) - Complete Claude API support
-- **OpenAI** (`openai.go`) - Full GPT model compatibility  
-- **Google Gemini** (`gemini.go`) - Multimodal capabilities
-- **DeepSeek** (`deepseek.go`) - Specialized for coding
-- **OpenRouter** (`openrouter.go`) - Multi-provider access
 
-### Basic Routing Support
-These providers have basic routing in the codebase but lack dedicated transformers:
-- Groq, Mistral, XAI, Ollama - Limited to basic message routing
+- **Anthropic** (`anthropic.go`) - Full Claude API support with function calling
+  - Removes unsupported OpenAI parameters: `frequency_penalty`, `presence_penalty`
+  - Complete tool/function calling support
+  
+- **OpenAI** (`openai.go`) - Most complete parameter support
+  - Supports all standard parameters including `frequency_penalty`, `presence_penalty`
+  - Full function calling support
+  
+- **Google Gemini** (`gemini.go`) - Limited tool support
+  - Maps parameters to Gemini format: `max_tokens` → `maxOutputTokens`
+  - Wraps parameters in `generationConfig` object
+  - Function calling may have compatibility issues
+  - No support for provider-specific features like `thinkingBudget`
+  
+- **DeepSeek** (`deepseek.go`) - NO function calling support
+  - Hard limit of 8192 max_tokens
+  - Special handling for `reasoning_content` in streaming
+  - NOT recommended for Claude Code due to lack of tool support
+  
+- **OpenRouter** (`openrouter.go`) - Multi-provider gateway
+  - Passes through to underlying providers
+  - Function calling depends on selected model
 
-For production deployments, use providers with full transformer support.
+### Not Implemented
+These providers appear in the codebase but have NO transformer implementations:
+- Groq, Mistral, XAI/Grok, Ollama - Referenced but not functional
+
+### Claude Code Compatibility
+For Claude Code usage, only providers with function calling support are recommended:
+- ✅ **Best**: Anthropic, OpenAI (full tool support)
+- ⚠️ **Limited**: Gemini (may have issues)
+- ❌ **Not Compatible**: DeepSeek (no tool support)
 
 ## Recent Security Fixes (2025-07-21)
 
@@ -245,11 +276,59 @@ For production deployments, use providers with full transformer support.
 
 All fixes validated with comprehensive test suite and race detection. Build confirmed working on production binary v53140a8-dirty.
 
+## Model Selection & Routing
+
+### Routing Priority (Highest to Lowest)
+1. **Explicit Provider Selection**: "provider,model" format (e.g., "anthropic,claude-3-opus")
+2. **Direct Model Routes**: Exact model name matches in routes config
+3. **Long Context Routing**: Token count > 60,000 triggers longContext route
+4. **Background Routing**: Models starting with "claude-3-5-haiku" use background route
+5. **Thinking Routing**: Boolean `thinking: true` parameter triggers think route
+6. **Default Route**: Fallback for all unmatched requests
+
+### Configuration Example
+```json
+{
+  "providers": [
+    {
+      "name": "anthropic",
+      "api_key": "sk-ant-...",
+      "models": ["claude-opus-4", "claude-sonnet-4"],  // For validation only
+      "enabled": true
+    }
+  ],
+  "routes": {
+    "default": {
+      "provider": "anthropic",
+      "model": "claude-sonnet-4"  // Actual model used
+    },
+    "longContext": {
+      "provider": "anthropic",
+      "model": "claude-opus-4"
+    },
+    "think": {  // Optional - triggered by thinking: true
+      "provider": "openai",
+      "model": "o3"
+    }
+  }
+}
+```
+
+### Parameter Support
+**Standard Parameters** (all providers):
+- `model`, `messages`, `max_tokens`, `temperature`, `top_p`, `stream`
+
+**Provider-Specific Handling**:
+- **OpenAI**: Also supports `top_k`, `presence_penalty`, `frequency_penalty`
+- **Anthropic**: Strips `presence_penalty`, `frequency_penalty` 
+- **Gemini**: Transforms to Gemini format, wraps in `generationConfig`
+- **DeepSeek**: Enforces 8192 token limit
+
 ## Development Guidelines
 
-- Use cognitive triangulation approach for complex changes
+- CCProxy is a translation proxy - do not add features beyond API translation
+- Always verify function calling support for Claude Code compatibility
 - Run tests with race detection: `go test -race ./...`
 - Validate security implications of all changes
-- Maintain 100% compatibility with Claude Code integration
-- Follow Go best practices and project conventions
+- Document only implemented features in provider docs
 - Update this CLAUDE.md file when making significant changes
