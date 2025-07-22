@@ -113,7 +113,8 @@ func TestStreamingProcessor_ProcessStreamingResponse(t *testing.T) {
 			Body:       io.NopCloser(strings.NewReader(sseData)),
 		}
 
-		w := httptest.NewRecorder()
+		recorder := httptest.NewRecorder()
+		w := &safeTestWriter{ResponseWriter: recorder}
 		ctx, cancel := context.WithCancel(context.Background())
 
 		// Cancel context immediately
