@@ -1,4 +1,4 @@
-# CCProxy
+# CCProxy - AI Request Proxy for Claude Code
 
 [![CI](https://github.com/orchestre-dev/ccproxy/actions/workflows/ci.yml/badge.svg)](https://github.com/orchestre-dev/ccproxy/actions/workflows/ci.yml)
 [![Pre-Release](https://github.com/orchestre-dev/ccproxy/actions/workflows/pre-release.yml/badge.svg)](https://github.com/orchestre-dev/ccproxy/actions/workflows/pre-release.yml)
@@ -7,7 +7,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Documentation](https://img.shields.io/badge/docs-ccproxy.dev-blue)](https://ccproxy.pages.dev)
 
-CCProxy is a high-performance Go proxy server that enables Claude Code to work with multiple AI providers through intelligent routing and API translation.
+CCProxy is a high-performance AI request proxy for Claude Code, enabling it to work with multiple AI providers through intelligent routing and API translation.
 
 📚 **[Full Documentation](https://ccproxy.pages.dev)** | 🐛 **[Report Issues](https://github.com/orchestre-dev/ccproxy/issues)** | 💬 **[Discussions](https://github.com/orchestre-dev/ccproxy/discussions)**
 
@@ -331,6 +331,8 @@ Contributions are welcome! Please read our [Contributing Guidelines](docs/guide/
 ## 🙏 Acknowledgments
 
 Built with ❤️ for the Claude Code community.
+
+Inspired by the original [Claude Code Router](https://github.com/musistudio/claude-code-router) project.
 
 ## 🐛 Troubleshooting
 

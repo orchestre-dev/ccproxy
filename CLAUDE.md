@@ -1,4 +1,4 @@
-# CCProxy - AI Request Proxy (Go Implementation)
+# CCProxy - AI Request Proxy for Claude Code (Go Implementation)
 
 ## Project Overview
 
