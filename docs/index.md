@@ -1,13 +1,13 @@
 ---
 layout: home
-title: CCProxy - Universal AI Proxy for Claude Code with Kimi K2 Support
-description: Universal AI proxy supporting Claude Code with Groq Kimi K2, OpenAI GPT, Google Gemini, Mistral AI, XAI Grok, and Ollama. Experience blazing-fast inference with zero configuration changes.
-keywords: CCProxy, Claude Code, AI proxy, Kimi K2, Groq, OpenAI, Gemini, Mistral, XAI, Grok, Ollama, multi-provider
+title: CCProxy - AI Request Proxy for Claude Code | Multi-Provider LLM Gateway
+description: CCProxy is the premier AI request proxy for Claude Code, enabling seamless integration with OpenAI GPT-4, Google Gemini, DeepSeek, Kimi K2, and more. Transform Claude Code into a multi-provider AI development platform.
+keywords: CCProxy, AI proxy for Claude Code, Claude Code proxy server, LLM gateway, AI model router, OpenAI proxy, Anthropic proxy, Google Gemini proxy, multi-provider AI, Claude Code integration
 
 hero:
   name: "CCProxy"
-  text: "Universal AI Proxy for Claude Code"
-  tagline: "Connect Claude Code to Kimi K2, OpenAI, Gemini, and 7+ AI providers with zero config changes"
+  text: "AI Request Proxy for Claude Code"
+  tagline: "Enable Claude Code to work with OpenAI, Google Gemini, DeepSeek, and 7+ AI providers through intelligent routing"
   image:
     src: /ccproxy_icon.png
     alt: CCProxy - Universal AI Proxy
