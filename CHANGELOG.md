@@ -118,3 +118,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - force vitepress build mode with CI=true environment variable
 
+## [1.2.5] - 2025-07-22
+
+### 🐛 Bug Fixes
+
+- remove vitepress --version command that triggers dev server
+- clean up docs workflow and simplify build process
+- update blog post and clean up GPT-4 references
+
+### 🔧 Other Changes
+
+- docs: fix readme
+
