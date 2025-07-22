@@ -151,7 +151,7 @@ func (t *MaxTokenTransformer) TransformResponseOut(ctx context.Context, response
 	if err != nil {
 		return response, nil // Pass through on error
 	}
-	response.Body.Close()
+	_ = response.Body.Close() // Safe to ignore: already read all data
 
 	// Try to parse as JSON
 	var responseData map[string]interface{}

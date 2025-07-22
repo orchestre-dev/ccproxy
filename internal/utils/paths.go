@@ -205,8 +205,8 @@ func WriteFileAtomic(path string, data []byte, perm os.FileMode) error {
 	// Clean up on error
 	defer func() {
 		if tempFile != nil {
-			tempFile.Close()
-			os.Remove(tempPath)
+			_ = tempFile.Close()    // Best effort cleanup
+			_ = os.Remove(tempPath) // Best effort cleanup
 		}
 	}()
 

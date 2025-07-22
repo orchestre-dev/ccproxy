@@ -505,7 +505,7 @@ func (s *Server) setupReadinessChecks() {
 			}
 			return fmt.Errorf("cannot bind to %s: %w", addr, err)
 		}
-		listener.Close()
+		_ = listener.Close() // Safe to ignore: just checking port availability
 		return nil
 	})
 }

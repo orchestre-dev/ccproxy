@@ -240,7 +240,7 @@ func (t *GeminiTransformer) TransformResponseOut(ctx context.Context, response *
 
 	// Handle non-streaming response
 	body, err := io.ReadAll(response.Body)
-	response.Body.Close()
+	_ = response.Body.Close() // Safe to ignore: already read all data
 	if err != nil {
 		return nil, err
 	}

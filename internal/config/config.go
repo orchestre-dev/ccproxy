@@ -327,7 +327,7 @@ func (s *Service) loadEnvFile() error {
 					value := strings.TrimSpace(parts[1])
 					// Remove quotes if present
 					value = strings.Trim(value, `"'`)
-					os.Setenv(key, value)
+					_ = os.Setenv(key, value) // Best effort env var setting
 				}
 			}
 			return nil

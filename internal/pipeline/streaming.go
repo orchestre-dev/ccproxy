@@ -53,8 +53,8 @@ func (p *StreamingProcessor) ProcessStreamingResponse(
 	go func() {
 		select {
 		case <-ctx.Done():
-			reader.Close()
-			writer.Close()
+			_ = reader.Close() // Safe to ignore: context canceled, force close
+			_ = writer.Close() // Safe to ignore: context canceled, force close
 		case <-done:
 			// Normal completion
 		}

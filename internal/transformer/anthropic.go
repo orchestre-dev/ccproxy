@@ -292,7 +292,7 @@ func (t *AnthropicTransformer) TransformResponseOut(ctx context.Context, respons
 func (t *AnthropicTransformer) transformNonStreamingResponse(ctx context.Context, response *http.Response) (*http.Response, error) {
 	// Read the response body
 	body, err := io.ReadAll(response.Body)
-	response.Body.Close()
+	_ = response.Body.Close() // Safe to ignore: already read all data
 	if err != nil {
 		return nil, err
 	}

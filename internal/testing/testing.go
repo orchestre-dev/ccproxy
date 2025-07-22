@@ -25,7 +25,7 @@ func SetupTest(t *testing.T) *TestConfig {
 
 	// Setup cleanup function
 	cleanup := func() {
-		os.RemoveAll(tempDir)
+		_ = os.RemoveAll(tempDir) // Safe to ignore: best effort cleanup
 	}
 
 	// Register cleanup to run after test

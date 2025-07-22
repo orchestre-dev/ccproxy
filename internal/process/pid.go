@@ -272,7 +272,7 @@ func (pm *PIDManager) ReleaseLock() error {
 		pidStr := strings.TrimSpace(string(data))
 		if pid, err := strconv.Atoi(pidStr); err == nil && pid == os.Getpid() {
 			// It's our PID, remove the file
-			os.Remove(pm.pidPath)
+			_ = os.Remove(pm.pidPath) // Safe to ignore: best effort cleanup
 		}
 	}
 
