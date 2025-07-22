@@ -111,6 +111,7 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy dist --project-name=ccproxy --branch=pr-${{ github.event.pull_request.number }}
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Comment PR with preview URL
         uses: actions/github-script@v7
@@ -172,6 +173,7 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy dist --project-name=ccproxy --branch=main
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Purge Cloudflare Cache
         run: |
