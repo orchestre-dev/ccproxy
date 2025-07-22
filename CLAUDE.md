@@ -286,6 +286,25 @@ All fixes validated with comprehensive test suite and race detection. Build conf
 5. **Thinking Routing**: Boolean `thinking: true` parameter triggers think route
 6. **Default Route**: Fallback for all unmatched requests
 
+### Route Configuration Structure
+
+Routes are defined as a map where keys can be:
+- **Special route names**: `default`, `longContext`, `background`, `think`
+- **Anthropic model names**: Direct model-to-provider mappings (e.g., `"claude-opus-4"`, `"claude-3-5-sonnet-20241022"`)
+
+Each route contains:
+```json
+{
+  "provider": "provider_name",    // Must match a configured provider name
+  "model": "actual_model_name",   // The actual model to use at the target provider
+  "conditions": []                // Optional conditions (defined but not currently implemented)
+}
+```
+
+**Important**: Direct model routes use Anthropic model names as keys because CCProxy acts as a proxy for Claude Code, which only sends Anthropic model names. These routes allow you to redirect specific Anthropic models to different providers or models.
+
+**Note**: While the `conditions` field exists in the Route struct for future extensibility, it is not currently used by the router implementation. All routing decisions are based on the hardcoded logic described in the routing priority section above.
+
 ### Configuration Example
 ```json
 {
@@ -295,20 +314,46 @@ All fixes validated with comprehensive test suite and race detection. Build conf
       "api_key": "sk-ant-...",
       "models": ["claude-opus-4", "claude-sonnet-4"],  // For validation only
       "enabled": true
+    },
+    {
+      "name": "openai",
+      "api_key": "sk-...",
+      "models": ["gpt-4.1", "o3"],
+      "enabled": true
+    },
+    {
+      "name": "deepseek",
+      "api_key": "sk-...",
+      "models": ["deepseek-chat", "deepseek-reasoner"],
+      "enabled": true
     }
   ],
   "routes": {
+    // Special routes - triggered by conditions
     "default": {
       "provider": "anthropic",
-      "model": "claude-sonnet-4"  // Actual model used
+      "model": "claude-sonnet-4-20250720"
     },
     "longContext": {
       "provider": "anthropic",
-      "model": "claude-opus-4"
+      "model": "claude-opus-4-20250720"
     },
-    "think": {  // Optional - triggered by thinking: true
+    "background": {
       "provider": "openai",
-      "model": "o3"
+      "model": "gpt-4.1-mini"
+    },
+    "think": {
+      "provider": "deepseek",
+      "model": "deepseek-reasoner"
+    },
+    // Direct model routes - map Anthropic model names to any provider
+    "claude-opus-4": {
+      "provider": "openai",
+      "model": "gpt-4.1-turbo"  // Route claude-opus-4 requests to GPT-4.1 Turbo
+    },
+    "claude-3-5-sonnet-20241022": {
+      "provider": "deepseek",
+      "model": "deepseek-chat"  // Route specific Sonnet model to DeepSeek
     }
   }
 }

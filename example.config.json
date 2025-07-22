@@ -65,10 +65,6 @@
       "provider": "anthropic",
       "model": "claude-opus-4-20250720"
     },
-    "gpt-4.1": {
-      "provider": "openai",
-      "model": "gpt-4.1-turbo"
-    },
     "claude-opus-4": {
       "provider": "anthropic",
       "model": "claude-opus-4-20250720"
