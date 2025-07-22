@@ -52,18 +52,23 @@ jobs:
         run: |
           # Set base URL for preview deployments
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            export BASE_URL="/pr-${{ github.event.pull_request.number }}/"
+            export VITE_BASE="/pr-${{ github.event.pull_request.number }}/"
             echo "Building preview for PR #${{ github.event.pull_request.number }}"
+            echo "Base URL: $VITE_BASE"
           else
-            export BASE_URL="/"
+            export VITE_BASE="/"
             echo "Building for production"
           fi
+          
+          # Clean any existing build
+          rm -rf .vitepress/dist
           
           # Show VitePress version
           npx vitepress --version || echo "VitePress version check failed"
           
-          # Build with error details
-          npm run build || (echo "Build failed" && exit 1)
+          # Build the documentation (not dev server!)
+          echo "Running: vitepress build"
+          npx vitepress build --base="$VITE_BASE" || (echo "Build failed" && exit 1)
           
           # Verify build output
           if [ ! -d ".vitepress/dist" ]; then
