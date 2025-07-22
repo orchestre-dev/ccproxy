@@ -100,3 +100,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - resolve all dead links in documentation
 
+## [1.2.2] - 2025-07-22
+
+### 🐛 Bug Fixes
+
+- add gitHubToken to Cloudflare Pages deployment
+
