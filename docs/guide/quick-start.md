@@ -12,25 +12,62 @@ Get CCProxy running with Claude Code in under 2 minutes.
 
 ## 1. Install CCProxy
 
+### macOS/Linux
+
 Install with one command:
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/orchestre-dev/ccproxy/main/install.sh | bash
 ```
 
-Or download manually from the [releases page](https://github.com/orchestre-dev/ccproxy/releases).
+The installer will:
+- ✅ Install ccproxy binary to `/usr/local/bin/ccproxy`
+- ✅ Create configuration directory at `/Users/yourname/.ccproxy` (macOS) or `/home/yourname/.ccproxy` (Linux)
+- ✅ Generate starter config at `~/.ccproxy/config.json` with example API key placeholder
+- ✅ Add `/usr/local/bin` to PATH in `.bashrc` or `.zshrc` if not already present
+- ✅ Display exact next steps with your specific file paths
 
-## 2. Configure and Start
+### Windows
 
-Create a configuration file:
+**Option 1: Automated Installation (Recommended)**
 
-```bash
-mkdir -p ~/.ccproxy
-cat > ~/.ccproxy/config.json << 'EOF'
+In PowerShell:
+```powershell
+# Download and run the installer
+irm https://raw.githubusercontent.com/orchestre-dev/ccproxy/main/install.ps1 | iex
+
+# Or download first, then run
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/orchestre-dev/ccproxy/main/install.ps1" -OutFile install.ps1
+.\install.ps1
+```
+
+The installer will:
+- ✅ Download latest ccproxy.exe to `C:\Program Files\CCProxy\`
+- ✅ Create configuration directory at `C:\Users\YourName\.ccproxy\`
+- ✅ Generate starter config with example API key placeholder
+- ✅ Add CCProxy to your PATH automatically
+- ✅ Display exact next steps with your specific file paths
+
+**Option 2: Manual Installation**
+
+1. Go to [releases page](https://github.com/orchestre-dev/ccproxy/releases/latest)
+2. Download `ccproxy-windows-amd64.exe`
+3. Create folder: `C:\Program Files\CCProxy`
+4. Move downloaded file there and rename to `ccproxy.exe`
+5. Add `C:\Program Files\CCProxy` to your PATH
+6. Create the configuration directory and file:
+```powershell
+# In PowerShell
+# Create directory
+mkdir $env:USERPROFILE\.ccproxy
+
+# Create config file with starter template
+@'
 {
   "providers": [{
     "name": "openai",
-    "api_key": "your-openai-api-key",
+    "api_key": "your-openai-api-key-here",
+    "api_base_url": "https://api.openai.com/v1",
     "models": ["gpt-4o", "gpt-4o-mini"],
     "enabled": true
   }],
@@ -41,28 +78,108 @@ cat > ~/.ccproxy/config.json << 'EOF'
     }
   }
 }
-EOF
+'@ | Out-File -FilePath "$env:USERPROFILE\.ccproxy\config.json" -Encoding UTF8
 ```
 
-**Important**: The `models` array lists available models for validation. The `routes` section defines which provider and model handle your requests.
+This creates:
+- Config directory at `C:\Users\YourName\.ccproxy`
+- Config file at `C:\Users\YourName\.ccproxy\config.json`
 
-Start CCProxy:
+## 2. Configure Your API Key
+
+### Find Your Config File
+
+- **macOS**: `/Users/YourName/.ccproxy/config.json`
+- **Linux**: `/home/YourName/.ccproxy/config.json`
+- **Windows**: `C:\Users\YourName\.ccproxy\config.json`
+
+### Edit the Configuration
+
+**macOS/Linux:**
+```bash
+# Using nano (simple editor)
+nano ~/.ccproxy/config.json
+
+# Or using VS Code
+code ~/.ccproxy/config.json
+
+# Or using vim
+vim ~/.ccproxy/config.json
+```
+
+**Windows (PowerShell):**
+```powershell
+# Using Notepad
+notepad $env:USERPROFILE\.ccproxy\config.json
+
+# Or using VS Code
+code $env:USERPROFILE\.ccproxy\config.json
+```
+
+### Add Your API Key
+
+In the config file, replace `your-openai-api-key-here` with your actual API key:
+
+```json
+{
+  "providers": [{
+    "name": "openai",
+    "api_key": "sk-proj-...",  // <- Your actual API key here
+    "models": ["gpt-4o", "gpt-4o-mini"],
+    "enabled": true
+  }],
+  "routes": {
+    "default": {
+      "provider": "openai",
+      "model": "gpt-4o"
+    }
+  }
+}
+```
+
+## 3. Start CCProxy
+
+**All platforms:**
 ```bash
 ccproxy start
 ```
 
-## 3. Connect Claude Code
-
-Use the auto-configuration:
-```bash
-./ccproxy code
+You'll see:
+```
+Starting CCProxy on port 3456...
+✅ Server started successfully
 ```
 
-Or configure manually:
+## 4. Connect Claude Code
+
+**All platforms:**
+```bash
+ccproxy code
+```
+
+This command:
+- Sets environment variables for Claude Code
+- Verifies the connection
+- Shows you're ready to go
+
+**Manual configuration:**
+
+macOS/Linux:
 ```bash
 export ANTHROPIC_BASE_URL=http://localhost:3456
 export ANTHROPIC_AUTH_TOKEN=test
-claude "Write a Python function to reverse a string"
+```
+
+Windows (PowerShell):
+```powershell
+$env:ANTHROPIC_BASE_URL = "http://localhost:3456"
+$env:ANTHROPIC_AUTH_TOKEN = "test"
+```
+
+Windows (Command Prompt):
+```cmd
+set ANTHROPIC_BASE_URL=http://localhost:3456
+set ANTHROPIC_AUTH_TOKEN=test
 ```
 
 ## 🎉 Done!
@@ -144,11 +261,77 @@ CCProxy uses intelligent routing to select the appropriate model based on your r
 
 ## Troubleshooting
 
-**Connection refused?** Check if CCProxy is running:
+### "ccproxy: command not found"
+
+**macOS/Linux:**
 ```bash
-./ccproxy status
+# Option 1: Reload your shell configuration
+source ~/.bashrc    # For bash
+source ~/.zshrc     # For zsh
+
+# Option 2: Use the full path
+/usr/local/bin/ccproxy start
+
+# Option 3: Check if it's installed
+ls -la /usr/local/bin/ccproxy
 ```
 
-**API key error?** Verify your provider API key in config.json.
+**Windows:**
+```powershell
+# Option 1: Restart your terminal (PATH changes need this)
+
+# Option 2: Use the full path
+"C:\Program Files\CCProxy\ccproxy.exe" start
+
+# Option 3: Check your PATH
+echo $env:PATH
+
+# Option 4: Verify it's installed
+Test-Path "C:\Program Files\CCProxy\ccproxy.exe"
+```
+
+### "Connection refused"
+Check if CCProxy is running:
+```bash
+ccproxy status
+```
+
+If not running, start it:
+```bash
+ccproxy start
+```
+
+### "API key error"
+1. Check your configuration file:
+   ```bash
+   cat ~/.ccproxy/config.json
+   ```
+
+2. Ensure you replaced `your-openai-api-key-here` with your actual API key
+
+3. Verify the API key format:
+   - OpenAI: Starts with `sk-`
+   - Anthropic: Starts with `sk-ant-`
+   - Google: Starts with `AI`
+
+### "Config file not found"
+
+**macOS/Linux:**
+```bash
+# Check if config exists
+ls -la ~/.ccproxy/config.json
+
+# If missing, create it:
+mkdir -p ~/.ccproxy
+# Then copy the example config from Step 2 above
+```
+
+**Windows:**
+```powershell
+# Check if config exists
+Test-Path "$env:USERPROFILE\.ccproxy\config.json"
+
+# If missing, run the PowerShell commands from Step 1 to create it
+```
 
 **Need help?** [💬 GitHub Discussions](https://github.com/orchestre-dev/ccproxy/discussions) • [🐛 Report Issues](https://github.com/orchestre-dev/ccproxy/issues)

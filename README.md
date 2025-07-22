@@ -47,18 +47,30 @@ CCProxy intelligently routes requests based on:
 
 ## 🚀 Quick Start
 
-### Option 1: Download Pre-built Binary
+### Automated Installation (Recommended)
 
-1. Download the latest binary for your platform from the [releases page](https://github.com/orchestre-dev/ccproxy/releases)
-2. Create a configuration file:
-   ```bash
-   cp example.config.json config.json
-   # Edit config.json to add your provider API keys
-   ```
-3. Start CCProxy:
-   ```bash
-   ./ccproxy start
-   ```
+**macOS/Linux:**
+```bash
+curl -sSL https://raw.githubusercontent.com/orchestre-dev/ccproxy/main/install.sh | bash
+```
+
+**Windows (PowerShell):**
+```powershell
+irm https://raw.githubusercontent.com/orchestre-dev/ccproxy/main/install.ps1 | iex
+```
+
+Both installers will:
+- Download and install CCProxy
+- Create configuration directory with starter config
+- Update your PATH
+- Show you exactly what to do next
+
+### Manual Installation
+
+Download the latest binary for your platform from the [releases page](https://github.com/orchestre-dev/ccproxy/releases):
+- **macOS**: `ccproxy-darwin-amd64` (Intel) or `ccproxy-darwin-arm64` (Apple Silicon)
+- **Linux**: `ccproxy-linux-amd64` or `ccproxy-linux-arm64`
+- **Windows**: `ccproxy-windows-amd64.exe`
 
 ### Option 2: Build from Source
 
@@ -86,18 +98,23 @@ docker build -t ccproxy .
 docker run -d -p 3456:3456 -v $(pwd)/config.json:/home/ccproxy/.ccproxy/config.json ccproxy
 ```
 
-### Option 4: One-Command Setup (Recommended)
+### Configure and Start
+
+After installation, CCProxy needs your API keys:
+
+**Config file location:**
+- macOS/Linux: `~/.ccproxy/config.json`
+- Windows: `%USERPROFILE%\.ccproxy\config.json`
+
+Edit the config to add your API key(s), then:
 
 ```bash
-# Fastest setup - auto-configures everything
-./ccproxy code
-```
+# Start the proxy server
+ccproxy start
 
-This command automatically:
-- Starts the proxy server
-- Configures environment variables
-- Sets up the connection
-- Enables access to all configured providers
+# Configure Claude Code (sets environment variables)
+ccproxy code
+```
 
 ## 🔧 Configuration Guide
 

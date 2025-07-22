@@ -381,6 +381,208 @@ install_binary() {
     fi
 }
 
+# Validate JSON configuration
+validate_json_config() {
+    local file="$1"
+    
+    if [ ! -f "$file" ]; then
+        return 1
+    fi
+    
+    # Try different JSON validators in order of preference
+    if command -v python3 &> /dev/null; then
+        if python3 -c "import json; json.load(open('$file'))" 2>/dev/null; then
+            echo -e "${GREEN}Configuration validated successfully${NC}"
+            return 0
+        else
+            echo -e "${YELLOW}Warning: Configuration has JSON syntax issues${NC}"
+            return 1
+        fi
+    elif command -v python &> /dev/null; then
+        if python -c "import json; json.load(open('$file'))" 2>/dev/null; then
+            echo -e "${GREEN}Configuration validated successfully${NC}"
+            return 0
+        else
+            echo -e "${YELLOW}Warning: Configuration has JSON syntax issues${NC}"
+            return 1
+        fi
+    elif command -v jq &> /dev/null; then
+        if jq . "$file" > /dev/null 2>&1; then
+            echo -e "${GREEN}Configuration validated successfully${NC}"
+            return 0
+        else
+            echo -e "${YELLOW}Warning: Configuration has JSON syntax issues${NC}"
+            return 1
+        fi
+    else
+        echo -e "${YELLOW}Note: Could not validate JSON (no validator found)${NC}"
+        return 0  # Don't fail if no validator available
+    fi
+}
+
+# Backup existing configuration
+backup_config() {
+    local config_file="$1"
+    
+    if [ -f "$config_file" ]; then
+        local backup_file="${config_file}.backup.$(date +%Y%m%d_%H%M%S)"
+        cp "$config_file" "$backup_file"
+        echo -e "${BLUE}Backed up existing config to: $backup_file${NC}"
+    fi
+}
+
+# Setup CCProxy configuration
+setup_config() {
+    local config_dir="$HOME/.ccproxy"
+    local config_file="$config_dir/config.json"
+    
+    # Create config directory
+    if [ ! -d "$config_dir" ]; then
+        echo -e "${BLUE}Creating configuration directory: $config_dir${NC}"
+        mkdir -p "$config_dir"
+    fi
+    
+    # Create default config if it doesn't exist
+    if [ ! -f "$config_file" ]; then
+        echo -e "${BLUE}Creating default configuration file...${NC}"
+        cat > "$config_file" << 'EOF'
+{
+  "providers": [
+    {
+      "name": "openai",
+      "api_key": "your-openai-api-key-here",
+      "api_base_url": "https://api.openai.com/v1",
+      "models": ["gpt-4o", "gpt-4o-mini"],
+      "enabled": true
+    }
+  ],
+  "routes": {
+    "default": {
+      "provider": "openai",
+      "model": "gpt-4o"
+    }
+  }
+}
+EOF
+        echo -e "${GREEN}Created default configuration at: $config_file${NC}"
+        
+        # Create example config with additional providers
+        local example_file="$config_dir/config.example.json"
+        cat > "$example_file" << 'EOF'
+{
+  "_comment": "Example configuration with multiple providers",
+  "providers": [
+    {
+      "name": "openai",
+      "api_key": "your-openai-api-key-here",
+      "api_base_url": "https://api.openai.com/v1",
+      "models": ["gpt-4o", "gpt-4o-mini"],
+      "enabled": true
+    },
+    {
+      "_comment": "Anthropic Claude models",
+      "name": "anthropic",
+      "api_key": "sk-ant-...",
+      "api_base_url": "https://api.anthropic.com",
+      "models": ["claude-3-5-sonnet-20241022", "claude-3-5-haiku-20241022"],
+      "enabled": false
+    },
+    {
+      "_comment": "Google Gemini models",
+      "name": "gemini",
+      "api_key": "AI...",
+      "api_base_url": "https://generativelanguage.googleapis.com/v1",
+      "models": ["gemini-2.0-flash-exp", "gemini-1.5-pro"],
+      "enabled": false
+    }
+  ],
+  "routes": {
+    "default": {
+      "provider": "openai",
+      "model": "gpt-4o"
+    },
+    "_comment_routes": "Special routes can be added here",
+    "longContext": {
+      "provider": "anthropic",
+      "model": "claude-3-5-sonnet-20241022"
+    }
+  }
+}
+EOF
+        echo -e "${BLUE}Example configuration saved at: $example_file${NC}"
+        
+        # Validate the generated config
+        validate_json_config "$config_file"
+    else
+        echo -e "${YELLOW}Configuration already exists at: $config_file${NC}"
+        # Optionally backup existing config
+        backup_config "$config_file"
+    fi
+}
+
+# Update PATH in shell configuration
+update_shell_path() {
+    local shell_rc=""
+    local shell_name=""
+    
+    # Determine shell configuration file
+    if [ -n "$ZSH_VERSION" ]; then
+        shell_rc="$HOME/.zshrc"
+        shell_name="zsh"
+    elif [ -n "$BASH_VERSION" ]; then
+        shell_rc="$HOME/.bashrc"
+        shell_name="bash"
+    else
+        # Try to detect from SHELL variable
+        case "$SHELL" in
+            */zsh)
+                shell_rc="$HOME/.zshrc"
+                shell_name="zsh"
+                ;;
+            */bash)
+                shell_rc="$HOME/.bashrc"
+                shell_name="bash"
+                ;;
+            *)
+                echo -e "${YELLOW}Warning: Could not detect shell type${NC}"
+                return
+                ;;
+        esac
+    fi
+    
+    # Enhanced PATH detection - check more thoroughly
+    local path_needs_update=false
+    
+    # Check if directory is in PATH using multiple methods
+    if ! command -v "$BINARY_NAME" &> /dev/null; then
+        # Binary not found, check if install dir is in PATH
+        if ! echo "$PATH" | tr ':' '\n' | grep -Fx "$INSTALL_DIR" > /dev/null 2>&1; then
+            path_needs_update=true
+        fi
+    fi
+    
+    if [ "$path_needs_update" = true ]; then
+        echo -e "${BLUE}Adding $INSTALL_DIR to PATH in $shell_rc${NC}"
+        
+        # Add PATH update to shell rc file
+        if [ -f "$shell_rc" ]; then
+            # Check if PATH export already exists for this directory
+            if ! grep -q "export PATH=.*$INSTALL_DIR" "$shell_rc"; then
+                echo "" >> "$shell_rc"
+                echo "# Added by CCProxy installer" >> "$shell_rc"
+                echo "export PATH=\"$INSTALL_DIR:\$PATH\"" >> "$shell_rc"
+                echo -e "${GREEN}Updated PATH in $shell_rc${NC}"
+                echo -e "${YELLOW}Note: Run 'source $shell_rc' or start a new terminal for PATH changes to take effect${NC}"
+            fi
+        else
+            echo -e "${YELLOW}Warning: Shell configuration file $shell_rc not found${NC}"
+            echo -e "${YELLOW}You may need to manually add $INSTALL_DIR to your PATH${NC}"
+        fi
+    else
+        echo -e "${GREEN}$INSTALL_DIR is already in your PATH${NC}"
+    fi
+}
+
 # Verify installation
 verify_installation() {
     # Check if binary is in PATH
@@ -398,10 +600,41 @@ verify_installation() {
     fi
 }
 
+# Check for concurrent installation
+check_concurrent_install() {
+    local lock_file="/tmp/ccproxy_install.lock"
+    local pid_file="/tmp/ccproxy_install.pid"
+    
+    # Check if lock file exists
+    if [ -f "$lock_file" ]; then
+        # Check if the PID is still running
+        if [ -f "$pid_file" ]; then
+            local old_pid=$(cat "$pid_file" 2>/dev/null)
+            if [ -n "$old_pid" ] && kill -0 "$old_pid" 2>/dev/null; then
+                echo -e "${RED}Another installation is already in progress (PID: $old_pid)${NC}"
+                echo -e "${YELLOW}If this is incorrect, remove $lock_file and try again${NC}"
+                exit 1
+            fi
+        fi
+        # Stale lock file, remove it
+        rm -f "$lock_file" "$pid_file"
+    fi
+    
+    # Create lock file
+    touch "$lock_file"
+    echo $$ > "$pid_file"
+    
+    # Ensure cleanup on exit
+    trap "rm -f '$lock_file' '$pid_file' 2>/dev/null || true" EXIT INT TERM
+}
+
 # Main installation flow
 main() {
     echo -e "${GREEN}=== CCProxy Installation ===${NC}"
     echo
+    
+    # Check for concurrent installation
+    check_concurrent_install
     
     # Detect platform
     detect_platform
@@ -428,11 +661,17 @@ main() {
     temp_file="${download_result%%:*}"
     temp_dir="${download_result##*:}"
     
-    # Set trap to clean up temp directory
-    trap "rm -rf '$temp_dir'" EXIT
+    # Update trap to include temp directory cleanup
+    trap "rm -rf '$temp_dir' 2>/dev/null || true; rm -f '/tmp/ccproxy_install.lock' '/tmp/ccproxy_install.pid' 2>/dev/null || true" EXIT INT TERM
     
     # Install binary
     install_binary "$temp_file"
+    
+    # Setup configuration
+    setup_config
+    
+    # Update PATH if needed
+    update_shell_path
     
     # Verify installation
     verify_installation
@@ -440,12 +679,38 @@ main() {
     echo
     echo -e "${GREEN}=== Installation Complete ===${NC}"
     echo
-    echo -e "${BLUE}Quick start:${NC}"
-    echo "  1. Create a config file with your provider API keys"
-    echo "  2. Run: ccproxy start"
-    echo "  3. Run: ccproxy code  # For Claude Code integration"
+    echo -e "${BLUE}Next Steps:${NC}"
     echo
-    echo -e "${BLUE}For more information, visit: https://github.com/${REPO}${NC}"
+    echo "1. ${YELLOW}Edit your configuration file:${NC}"
+    echo "   Location: $HOME/.ccproxy/config.json"
+    echo "   "
+    if [ -n "$EDITOR" ]; then
+        echo "   Run: $EDITOR $HOME/.ccproxy/config.json"
+    elif command -v code &> /dev/null; then
+        echo "   Run: code $HOME/.ccproxy/config.json"
+    elif command -v vim &> /dev/null; then
+        echo "   Run: vim $HOME/.ccproxy/config.json"
+    elif command -v nano &> /dev/null; then
+        echo "   Run: nano $HOME/.ccproxy/config.json"
+    else
+        echo "   Open in your text editor"
+    fi
+    echo "   "
+    echo "   Replace 'your-openai-api-key-here' with your actual API key"
+    echo
+    echo "2. ${YELLOW}Start CCProxy:${NC}"
+    echo "   ccproxy start"
+    echo
+    echo "3. ${YELLOW}Configure Claude Code:${NC}"
+    echo "   ccproxy code"
+    echo
+    echo -e "${BLUE}Documentation:${NC}"
+    echo "  Configuration Guide: https://ccproxy.orchestre.dev/guide/configuration"
+    echo "  Provider Setup: https://ccproxy.orchestre.dev/providers/"
+    echo "  Quick Start: https://ccproxy.orchestre.dev/guide/quick-start"
+    echo
+    echo -e "${GREEN}Tip:${NC} If 'ccproxy' command is not found, run:"
+    echo "  source ~/.bashrc  # or ~/.zshrc for zsh users"
 }
 
 # Run main function with all arguments
