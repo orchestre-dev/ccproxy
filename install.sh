@@ -381,6 +381,56 @@ install_binary() {
     fi
 }
 
+# Validate JSON configuration
+validate_json_config() {
+    local file="$1"
+    
+    if [ ! -f "$file" ]; then
+        return 1
+    fi
+    
+    # Try different JSON validators in order of preference
+    if command -v python3 &> /dev/null; then
+        if python3 -c "import json; json.load(open('$file'))" 2>/dev/null; then
+            echo -e "${GREEN}Configuration validated successfully${NC}"
+            return 0
+        else
+            echo -e "${YELLOW}Warning: Configuration has JSON syntax issues${NC}"
+            return 1
+        fi
+    elif command -v python &> /dev/null; then
+        if python -c "import json; json.load(open('$file'))" 2>/dev/null; then
+            echo -e "${GREEN}Configuration validated successfully${NC}"
+            return 0
+        else
+            echo -e "${YELLOW}Warning: Configuration has JSON syntax issues${NC}"
+            return 1
+        fi
+    elif command -v jq &> /dev/null; then
+        if jq . "$file" > /dev/null 2>&1; then
+            echo -e "${GREEN}Configuration validated successfully${NC}"
+            return 0
+        else
+            echo -e "${YELLOW}Warning: Configuration has JSON syntax issues${NC}"
+            return 1
+        fi
+    else
+        echo -e "${YELLOW}Note: Could not validate JSON (no validator found)${NC}"
+        return 0  # Don't fail if no validator available
+    fi
+}
+
+# Backup existing configuration
+backup_config() {
+    local config_file="$1"
+    
+    if [ -f "$config_file" ]; then
+        local backup_file="${config_file}.backup.$(date +%Y%m%d_%H%M%S)"
+        cp "$config_file" "$backup_file"
+        echo -e "${BLUE}Backed up existing config to: $backup_file${NC}"
+    fi
+}
+
 # Setup CCProxy configuration
 setup_config() {
     local config_dir="$HOME/.ccproxy"
@@ -405,38 +455,68 @@ setup_config() {
       "models": ["gpt-4o", "gpt-4o-mini"],
       "enabled": true
     }
-    // Add more providers below (uncomment and configure as needed):
-    // {
-    //   "name": "anthropic",
-    //   "api_key": "sk-ant-...",
-    //   "api_base_url": "https://api.anthropic.com",
-    //   "models": ["claude-3-5-sonnet-20241022", "claude-3-5-haiku-20241022"],
-    //   "enabled": true
-    // },
-    // {
-    //   "name": "gemini",
-    //   "api_key": "AI...",
-    //   "api_base_url": "https://generativelanguage.googleapis.com/v1",
-    //   "models": ["gemini-2.0-flash-exp", "gemini-1.5-pro"],
-    //   "enabled": true
-    // }
   ],
   "routes": {
     "default": {
       "provider": "openai",
       "model": "gpt-4o"
     }
-    // Special routes (uncomment to enable):
-    // "longContext": {
-    //   "provider": "anthropic",
-    //   "model": "claude-3-5-sonnet-20241022"
-    // }
   }
 }
 EOF
         echo -e "${GREEN}Created default configuration at: $config_file${NC}"
+        
+        # Create example config with additional providers
+        local example_file="$config_dir/config.example.json"
+        cat > "$example_file" << 'EOF'
+{
+  "_comment": "Example configuration with multiple providers",
+  "providers": [
+    {
+      "name": "openai",
+      "api_key": "your-openai-api-key-here",
+      "api_base_url": "https://api.openai.com/v1",
+      "models": ["gpt-4o", "gpt-4o-mini"],
+      "enabled": true
+    },
+    {
+      "_comment": "Anthropic Claude models",
+      "name": "anthropic",
+      "api_key": "sk-ant-...",
+      "api_base_url": "https://api.anthropic.com",
+      "models": ["claude-3-5-sonnet-20241022", "claude-3-5-haiku-20241022"],
+      "enabled": false
+    },
+    {
+      "_comment": "Google Gemini models",
+      "name": "gemini",
+      "api_key": "AI...",
+      "api_base_url": "https://generativelanguage.googleapis.com/v1",
+      "models": ["gemini-2.0-flash-exp", "gemini-1.5-pro"],
+      "enabled": false
+    }
+  ],
+  "routes": {
+    "default": {
+      "provider": "openai",
+      "model": "gpt-4o"
+    },
+    "_comment_routes": "Special routes can be added here",
+    "longContext": {
+      "provider": "anthropic",
+      "model": "claude-3-5-sonnet-20241022"
+    }
+  }
+}
+EOF
+        echo -e "${BLUE}Example configuration saved at: $example_file${NC}"
+        
+        # Validate the generated config
+        validate_json_config "$config_file"
     else
         echo -e "${YELLOW}Configuration already exists at: $config_file${NC}"
+        # Optionally backup existing config
+        backup_config "$config_file"
     fi
 }
 
@@ -470,8 +550,18 @@ update_shell_path() {
         esac
     fi
     
-    # Check if PATH needs updating
-    if ! echo "$PATH" | grep -q "$INSTALL_DIR"; then
+    # Enhanced PATH detection - check more thoroughly
+    local path_needs_update=false
+    
+    # Check if directory is in PATH using multiple methods
+    if ! command -v "$BINARY_NAME" &> /dev/null; then
+        # Binary not found, check if install dir is in PATH
+        if ! echo "$PATH" | tr ':' '\n' | grep -Fx "$INSTALL_DIR" > /dev/null 2>&1; then
+            path_needs_update=true
+        fi
+    fi
+    
+    if [ "$path_needs_update" = true ]; then
         echo -e "${BLUE}Adding $INSTALL_DIR to PATH in $shell_rc${NC}"
         
         # Add PATH update to shell rc file
@@ -510,10 +600,41 @@ verify_installation() {
     fi
 }
 
+# Check for concurrent installation
+check_concurrent_install() {
+    local lock_file="/tmp/ccproxy_install.lock"
+    local pid_file="/tmp/ccproxy_install.pid"
+    
+    # Check if lock file exists
+    if [ -f "$lock_file" ]; then
+        # Check if the PID is still running
+        if [ -f "$pid_file" ]; then
+            local old_pid=$(cat "$pid_file" 2>/dev/null)
+            if [ -n "$old_pid" ] && kill -0 "$old_pid" 2>/dev/null; then
+                echo -e "${RED}Another installation is already in progress (PID: $old_pid)${NC}"
+                echo -e "${YELLOW}If this is incorrect, remove $lock_file and try again${NC}"
+                exit 1
+            fi
+        fi
+        # Stale lock file, remove it
+        rm -f "$lock_file" "$pid_file"
+    fi
+    
+    # Create lock file
+    touch "$lock_file"
+    echo $$ > "$pid_file"
+    
+    # Ensure cleanup on exit
+    trap "rm -f '$lock_file' '$pid_file' 2>/dev/null || true" EXIT INT TERM
+}
+
 # Main installation flow
 main() {
     echo -e "${GREEN}=== CCProxy Installation ===${NC}"
     echo
+    
+    # Check for concurrent installation
+    check_concurrent_install
     
     # Detect platform
     detect_platform
@@ -540,8 +661,8 @@ main() {
     temp_file="${download_result%%:*}"
     temp_dir="${download_result##*:}"
     
-    # Set trap to clean up temp directory
-    trap "rm -rf '$temp_dir'" EXIT
+    # Update trap to include temp directory cleanup
+    trap "rm -rf '$temp_dir' 2>/dev/null || true; rm -f '/tmp/ccproxy_install.lock' '/tmp/ccproxy_install.pid' 2>/dev/null || true" EXIT INT TERM
     
     # Install binary
     install_binary "$temp_file"
