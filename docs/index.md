@@ -16,19 +16,19 @@ hero:
       text: Get Started
       link: /guide/
     - theme: alt
-      text: Try Qwen3 235B
-      link: /guide/routing#qwen3
+      text: Try Kimi K2
+      link: /blog/kimi-k2-claude-code-ultimate-guide
     - theme: alt
       text: Share Feedback
       link: https://github.com/orchestre-dev/ccproxy/discussions
 
 features:
-  - icon: ⚡
-    title: Top-Ranked Qwen3 235B via OpenRouter
-    details: Access the #1 ranked model with 70.3 AIME score - Qwen3 235B delivers superior reasoning and problem-solving capabilities!
+  - icon: 🔥
+    title: Kimi K2 - Claude Sonnet Performance at 1/10th Cost
+    details: Experience 65.8% SWE-bench performance with sub-second responses. Kimi K2 beats Claude Sonnet for coding at a fraction of the price!
   - icon: 🌐
     title: 5 AI Providers with 100+ Models via OpenRouter
-    details: Anthropic, OpenAI, Google Gemini, DeepSeek, and OpenRouter (100+ models including Qwen3, Kimi K2, Grok, and more)
+    details: Anthropic, OpenAI, Google Gemini, DeepSeek, and OpenRouter (100+ models featuring Kimi K2, Qwen3 235B, Grok 4, and more)
   - icon: 🔄
     title: Perfect Claude Code Integration
     details: Seamless Anthropic API compatibility - just set environment variables and you're ready to go
@@ -49,27 +49,27 @@ features:
 
 <NewsletterForm />
 
-## 🌟 Featured: Qwen3 235B + Claude Code
+## 🌟 Featured: Kimi K2 & Qwen3 235B + Claude Code
 
 <div class="showcase-grid">
   <div class="showcase-item">
-    <div class="showcase-title">🏆 #1 Ranked Model: Qwen3 235B</div>
+    <div class="showcase-title">🔥 Kimi K2: Claude Sonnet Killer</div>
     <div class="showcase-description">
-      Access the top-ranked AI model via OpenRouter. Qwen3 235B achieves an impressive 70.3 AIME score, surpassing other models in reasoning, mathematics, and complex problem-solving tasks.
+      Get Claude Sonnet-level coding performance at 1/10th the cost! Kimi K2 achieves 65.8% SWE-bench score with lightning-fast sub-second responses via OpenRouter.
+    </div>
+    <a href="/blog/kimi-k2-claude-code-ultimate-guide" class="showcase-link">Learn More →</a>
+  </div>
+  
+  <div class="showcase-item">
+    <div class="showcase-title">🏆 #1 Reasoning: Qwen3 235B</div>
+    <div class="showcase-description">
+      Access the top-ranked AI model for reasoning. Qwen3 235B achieves an impressive 70.3 AIME score, surpassing other models in mathematics and complex problem-solving.
     </div>
     <a href="/guide/routing#qwen3" class="showcase-link">Learn More →</a>
   </div>
   
   <div class="showcase-item">
-    <div class="showcase-title">🌐 100+ Models via OpenRouter</div>
-    <div class="showcase-description">
-      Beyond Qwen3, access Kimi K2, XAI Grok, Mistral, and 100+ other models through OpenRouter. One API key unlocks the entire AI ecosystem with intelligent routing.
-    </div>
-    <a href="/guide/providers#openrouter" class="showcase-link">See All Models →</a>
-  </div>
-  
-  <div class="showcase-item">
-    <div class="showcase-title">🔧 Zero Setup Required</div>
+    <div class="showcase-title">🔧 Minimal Setup Required</div>
     <div class="showcase-description">
       Works instantly with Claude Code. No API changes, no code modifications - just set two environment variables and unlock the power of 100+ models through CCProxy.
     </div>
@@ -137,7 +137,7 @@ CCProxy transforms Claude Code into a **universal AI development tool** by conne
   <div class="showcase-item">
     <div class="showcase-title">🎯 Top AI Providers</div>
     <div class="showcase-description">
-      <strong>OpenRouter:</strong> 100+ models including Qwen3 235B (#1 ranked), Kimi K2, XAI Grok, Mistral, and more<br><br>
+      <strong>OpenRouter:</strong> 100+ models featuring Kimi K2 (Claude Sonnet killer), Qwen3 235B (#1 reasoning), XAI Grok, Mistral, and more<br><br>
       <strong>OpenAI GPT:</strong> Industry-standard models with latest features<br><br>
       <strong>Google Gemini:</strong> Advanced multimodal capabilities<br><br>
       <strong>DeepSeek:</strong> Cost-effective Chinese models with strong coding abilities<br><br>
