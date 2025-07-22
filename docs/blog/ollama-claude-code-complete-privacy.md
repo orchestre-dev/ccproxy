@@ -12,9 +12,9 @@ tags: ["Local AI", "Privacy", "Healthcare", "Legal", "Research", "Air-Gapped", "
 
 *Published on July 10, 2025*
 
-<SocialShare />
-
 Whether you're a healthcare worker handling patient data, a legal professional managing confidential cases, a researcher working with sensitive information, or simply someone who values privacy, local AI offers a compelling solution. This guide explores how to use Ollama and Claude Code through CCProxy to get AI assistance that never leaves your device—perfect for professionals who can't afford to risk data exposure.
+
+<SocialShare />
 
 ## Understanding Local AI and Why It Matters
 

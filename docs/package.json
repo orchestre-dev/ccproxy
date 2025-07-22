@@ -1,7 +1,7 @@
 {
   "name": "ccproxy-docs",
   "version": "1.0.0",
-  "description": "Documentation for CCProxy",
+  "description": "Documentation for CCProxy - The AI Request Proxy for Claude Code | Multi-Provider LLM Gateway",
   "scripts": {
     "dev": "vitepress dev",
     "clean": "rm -rf .vitepress/dist",

@@ -10,34 +10,46 @@ keywords: CCProxy quick start, Claude Code integration, AI proxy setup
 
 Get CCProxy running with Claude Code in under 2 minutes.
 
-## 1. Download CCProxy
+## 1. Install CCProxy
 
-Download the latest binary for your platform from the [releases page](https://github.com/orchestre-dev/ccproxy/releases).
+Install with one command:
 
 ```bash
-# Example for macOS/Linux
-chmod +x ccproxy
+curl -sSL https://raw.githubusercontent.com/orchestre-dev/ccproxy/main/install.sh | bash
 ```
+
+Or download manually from the [releases page](https://github.com/orchestre-dev/ccproxy/releases).
 
 ## 2. Configure and Start
 
-Create a `config.json` file:
+Create a configuration file:
 
-```json
+```bash
+mkdir -p ~/.ccproxy
+cat > ~/.ccproxy/config.json << 'EOF'
 {
-  "host": "127.0.0.1",
-  "port": 3456,
   "providers": [{
-    "name": "anthropic",
-    "api_key": "your-anthropic-api-key",
+    "name": "openai",
+    "api_base_url": "https://api.openai.com/v1",
+    "api_key": "your-openai-api-key",
+    "models": ["gpt-4o", "gpt-4o-mini"],
     "enabled": true
-  }]
+  }],
+  "routes": {
+    "default": {
+      "provider": "openai",
+      "model": "gpt-4o"
+    }
+  }
 }
+EOF
 ```
+
+**Important**: The `models` array lists available models for validation. The `routes` section defines which provider and model handle your requests.
 
 Start CCProxy:
 ```bash
-./ccproxy start
+ccproxy start
 ```
 
 ## 3. Connect Claude Code
@@ -74,21 +86,56 @@ Add more providers to your config.json:
     {
       "name": "anthropic",
       "api_key": "sk-ant-...",
+      "models": ["claude-3-5-sonnet-20241022", "claude-3-5-haiku-20241022"],
       "enabled": true
     },
     {
       "name": "openai",
       "api_key": "sk-...",
+      "models": ["gpt-4o", "gpt-4o-mini"],
       "enabled": true
     },
     {
       "name": "gemini",
       "api_key": "AI...",
+      "models": ["gemini-2.0-flash-exp", "gemini-1.5-pro"],
+      "enabled": true
+    },
+    {
+      "name": "deepseek",
+      "api_key": "sk-...",
+      "models": ["deepseek-chat", "deepseek-coder"],
       "enabled": true
     }
-  ]
+  ],
+  "routes": {
+    "default": {
+      "provider": "openai",
+      "model": "gpt-4o"
+    },
+    "longContext": {
+      "provider": "anthropic",
+      "model": "claude-3-5-sonnet-20241022"
+    }
+  }
 }
 ```
+
+The `routes` section controls which provider handles different types of requests. Requests with >60K tokens automatically use the `longContext` route.
+
+**Note:** For Claude Code integration, ensure your selected models support function calling. Most modern models from major providers (Anthropic Claude, OpenAI GPT-4, Google Gemini, DeepSeek) include this capability.
+
+## Understanding Model Selection
+
+CCProxy uses intelligent routing to select the appropriate model based on your request:
+
+1. **Explicit model routes** - If you define a route with the exact model name, it uses that
+2. **Long context routing** - Requests exceeding 60,000 tokens automatically use the `longContext` route
+3. **Background routing** - Claude Haiku models (claude-3-5-haiku-*) use the `background` route if defined
+4. **Thinking mode** - Requests with `thinking: true` parameter use the `think` route if defined
+5. **Default routing** - All other requests use the `default` route
+
+💡 **Tip:** For latest model information, check [models.dev](https://models.dev)
 
 ## Next Steps
 

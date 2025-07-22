@@ -2,6 +2,8 @@
 
 CCProxy provides a RESTful API that's fully compatible with Anthropic's Messages API, plus additional endpoints for health monitoring and status checking.
 
+<SocialShare />
+
 ## Base URL
 
 ```
@@ -306,4 +308,4 @@ curl -X POST http://localhost:3456/v1/messages \
 
 - [Messages Endpoint](/api/messages) - Detailed API documentation
 - [Health Endpoints](/api/health) - Monitoring and status
-- [Claude Code Integration](/api/claude-code) - Setup guide
+- [Claude Code Integration](/api/claude) - Setup guide

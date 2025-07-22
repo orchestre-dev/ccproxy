@@ -12,9 +12,9 @@ tags: ["Groq", "Claude Code", "LPU", "Performance", "AI Infrastructure", "Speed"
 
 *Published on July 15, 2025*
 
-<SocialShare />
-
 If you've used Claude Code, you know it's incredibly powerful - but you've probably also noticed those moments when you're waiting for a response and your train of thought gets derailed. Whether you're debugging code, analyzing research data, or reviewing marketing content, those delays break your flow. What if that waiting could be eliminated almost entirely? That's the promise of combining Claude Code with Groq through CCProxy.
+
+<SocialShare />
 
 ## What Makes Groq Special for Claude Code Users
 
@@ -123,7 +123,7 @@ export ANTHROPIC_BASE_URL=http://localhost:3456
 export ANTHROPIC_API_KEY=dummy
 
 # Use Claude Code normally - now with Groq speed!
-claude-code "Explain this function"
+claude "Explain this function"
 ```
 
 ### Choosing the Right Model

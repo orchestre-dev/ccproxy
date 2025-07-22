@@ -1,16 +1,21 @@
 ---
 title: "CCProxy Blog - AI Development Insights & Tutorials"
-description: "Expert guides and tutorials for maximizing Claude Code performance with multiple AI providers. Learn about Kimi K2, Groq, OpenAI, Gemini, and more."
-keywords: "CCProxy blog, Claude Code tutorials, AI development, Kimi K2, Groq, OpenAI, Gemini, Mistral, XAI, Ollama, AI proxy"
+description: "Expert guides and tutorials for maximizing Claude Code performance with 5 AI providers and 100+ models. Learn about Qwen3 235B, Kimi K2, OpenAI, Gemini, and more."
+keywords: "CCProxy blog, Claude Code tutorials, AI development, Qwen3 235B, Kimi K2, OpenRouter, OpenAI, Gemini, DeepSeek, AI proxy"
 ---
 
 # CCProxy Blog
 
-<SocialShare />
-
 Welcome to the CCProxy blog! Here you'll find expert guides, tutorials, and insights about maximizing your Claude Code experience with different AI providers for optimal performance and flexibility.
 
+<SocialShare />
+
 ## Latest Posts
+
+### [Qwen3 235B: The New King of AI Models via CCProxy](/blog/qwen3-235b-top-model)
+*July 22, 2025*
+
+Alibaba's Qwen3 235B shatters benchmarks with a 70.3 AIME score, crushing GPT-4o's 26.7. Learn how to access this game-changing model for FREE through CCProxy and OpenRouter.
 
 ### [Claude Code Reliability Challenges: Why We Built a Backup Solution](/blog/claude-code-reliability-challenges-solution)
 *July 17, 2025*
@@ -54,7 +59,7 @@ Discover how to use Ollama's local AI models with Claude Code for completely pri
 
 ## About CCProxy
 
-CCProxy is a universal AI proxy that connects Claude Code to 7+ AI providers including Kimi K2, OpenAI, Google Gemini, Mistral AI, XAI Grok, and Ollama. Break free from vendor lock-in and choose the best AI model for every development task.
+CCProxy is a universal AI proxy that connects Claude Code to 5 major AI providers with access to 100+ models through OpenRouter, including the top-ranked Qwen3 235B, Kimi K2, XAI Grok, and many more. Break free from vendor lock-in and choose the best AI model for every development task.
 
 **[Get Started with CCProxy →](/guide/)**
 

@@ -2,6 +2,8 @@
 
 Monitor CCProxy performance, health, and usage with comprehensive monitoring solutions.
 
+<SocialShare />
+
 ## Key Metrics to Monitor
 
 ### Service Health

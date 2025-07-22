@@ -2,6 +2,8 @@
 
 The `/v1/messages` endpoint is the main proxy endpoint that converts Anthropic Messages API requests to the configured provider's format.
 
+<SocialShare />
+
 ## Endpoint
 
 ```
@@ -521,5 +523,5 @@ async function retryRequest(request, maxRetries = 3) {
 ## Next Steps
 
 - Learn about [health endpoints](/api/health) for monitoring
-- Explore [Claude Code integration](/api/claude-code) for seamless usage
+- Explore [Claude Code integration](/api/claude) for seamless usage
 - Check out [provider-specific features](/providers/) for optimization

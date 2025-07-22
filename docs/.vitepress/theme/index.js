@@ -4,6 +4,7 @@ import SocialShare from './components/SocialShare.vue'
 import CookieConsent from './components/CookieConsent.vue'
 import Layout from './components/Layout.vue'
 import Mermaid from 'vitepress-plugin-mermaid/Mermaid.vue'
+import NewsletterForm from './components/NewsletterForm.vue'
 import './style.css'
 
 export default {
@@ -15,6 +16,8 @@ export default {
     app.component('CookieConsent', CookieConsent)
     // Register the Mermaid component globally
     app.component('Mermaid', Mermaid)
+    // Register the NewsletterForm component globally
+    app.component('NewsletterForm', NewsletterForm)
   },
   Layout
 }

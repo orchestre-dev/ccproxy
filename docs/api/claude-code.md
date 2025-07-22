@@ -2,6 +2,8 @@
 
 CCProxy is specifically designed to work seamlessly with [Claude Code](https://claude.ai/code), Anthropic's official CLI tool. This integration allows you to use multiple AI providers while maintaining the familiar Claude Code interface.
 
+<SocialShare />
+
 ## Quick Setup with Auto-Configuration
 
 ### One-Command Setup
@@ -31,14 +33,22 @@ Create or edit `config.json`:
     {
       "name": "anthropic",
       "api_key": "your-anthropic-key",
+      "models": ["claude-3-sonnet-20240229", "claude-3-opus-20240229"],
       "enabled": true
     },
     {
       "name": "openai",
       "api_key": "your-openai-key",
+      "models": ["gpt-4", "gpt-3.5-turbo"],
       "enabled": true
     }
-  ]
+  ],
+  "routes": {
+    "default": {
+      "provider": "anthropic",
+      "model": "claude-3-sonnet-20240229"
+    }
+  }
 }
 ```
 
@@ -285,7 +295,13 @@ done
       "models": ["gpt-4", "gpt-3.5-turbo"],
       "enabled": true
     }
-  ]
+  ],
+  "routes": {
+    "default": {
+      "provider": "openai",
+      "model": "gpt-4"
+    }
+  }
 }
 ```
 
@@ -336,9 +352,16 @@ cp config.test.json config.json
     {
       "name": "anthropic",
       "api_key": "${ANTHROPIC_API_KEY}",
+      "models": ["claude-3-sonnet-20240229"],
       "enabled": true
     }
-  ]
+  ],
+  "routes": {
+    "default": {
+      "provider": "anthropic",
+      "model": "claude-3-sonnet-20240229"
+    }
+  }
 }
 ```
 
@@ -352,6 +375,20 @@ cp config.test.json config.json
   "performance": {
     "rate_limit_enabled": true,
     "metrics_enabled": true
+  },
+  "providers": [
+    {
+      "name": "openai",
+      "api_key": "${OPENAI_API_KEY}",
+      "models": ["gpt-4", "gpt-3.5-turbo"],
+      "enabled": true
+    }
+  ],
+  "routes": {
+    "default": {
+      "provider": "openai",
+      "model": "gpt-4"
+    }
   }
 }
 ```
@@ -651,7 +688,7 @@ CMD ["ccproxy", "start", "--foreground"]
 
 ```bash
 # Monitor Claude Code requests through CCProxy
-tail -f ccproxy.log | grep claude-code
+tail -f ccproxy.log | grep claude
 
 # Track usage patterns
 curl http://localhost:3456/status | jq '.metrics'

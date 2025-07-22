@@ -1,62 +1,129 @@
 # Supported Providers
 
-CCProxy supports 7 major AI providers, each with unique strengths and characteristics. This page provides an overview of all supported providers.
+CCProxy supports 5 major AI providers, each with unique strengths and characteristics. This page provides an overview of all supported providers.
 
 ## Provider Overview
 
-| Provider | Speed | Cost | Models | Use Case |
-|----------|-------|------|--------|----------|
-| **[Groq](/providers/groq)** | ⚡⚡⚡ | 💰 | 15+ | Ultra-fast inference |
-| **[OpenRouter](/providers/openrouter)** | ⚡⚡ | 💰💰 | 100+ | Model diversity |
-| **[OpenAI](/providers/openai)** | ⚡⚡ | 💰💰💰 | 10+ | Industry standard |
-| **[XAI (Grok)](/providers/xai)** | ⚡⚡ | 💰💰 | 3+ | Real-time data |
-| **[Google Gemini](/providers/gemini)** | ⚡⚡ | 💰💰 | 5+ | Multimodal AI |
-| **[Mistral AI](/providers/mistral)** | ⚡⚡ | 💰💰 | 8+ | European choice |
-| **[Ollama](/providers/ollama)** | ⚡ | 🆓 | 50+ | Local & private |
+| Provider | Speed | Cost | Models | Use Case | Status |
+|----------|-------|------|--------|----------|---------|
+| **[Anthropic](/providers/anthropic)** | ⚡⚡⚡ | 💰💰💰 | 4+ | Best reasoning & coding | ✅ Fully Implemented |
+| **[DeepSeek](/providers/deepseek)** | ⚡⚡ | 💰💰 | 3+ | Advanced reasoning | ✅ Implemented |
+| **[OpenRouter](/providers/openrouter)** | ⚡⚡ | 💰💰 | 100+ | Model diversity | ✅ Implemented |
+| **[OpenAI](/providers/openai)** | ⚡⚡ | 💰💰💰 | 10+ | Industry standard | ✅ Implemented |
+| **[Google Gemini](/providers/gemini)** | ⚡⚡ | 💰💰 | 5+ | Multimodal AI | ✅ Implemented |
+
+**Note**: While the codebase contains references to additional providers (Groq, XAI, Mistral, Ollama), these are not yet fully implemented with request/response transformers. Only the providers listed above have complete transformer implementations and are fully functional.
 
 ## Quick Setup
 
-Each provider requires different setup steps. Here's the minimal configuration for each:
+CCProxy uses a JSON configuration file. Here's the minimal configuration for each provider:
 
 ::: code-group
 
-```bash [Groq]
-export PROVIDER=groq
-export GROQ_API_KEY=gsk_your_key_here
+```json [Anthropic]
+{
+  "providers": [{
+    "name": "anthropic",
+    "api_base_url": "https://api.anthropic.com/v1",
+    "api_key": "sk-ant-your_key_here",
+    "models": ["claude-sonnet-4-20250720", "claude-opus-4-20250720"],
+    "enabled": true
+  }],
+  "routes": {
+    "default": {
+      "provider": "anthropic",
+      "model": "claude-sonnet-4-20250720"
+    }
+  }
+}
 ```
 
-```bash [OpenRouter]
-export PROVIDER=openrouter
-export OPENROUTER_API_KEY=sk-or-v1-your_key_here
+
+```json [OpenRouter]
+{
+  "providers": [{
+    "name": "openrouter",
+    "api_base_url": "https://openrouter.ai/api/v1",
+    "api_key": "sk-or-v1-your_key_here",
+    "models": ["anthropic/claude-3.5-sonnet", "google/gemini-pro-1.5"],
+    "enabled": true
+  }],
+  "routes": {
+    "default": {
+      "provider": "openrouter",
+      "model": "anthropic/claude-3.5-sonnet"
+    }
+  }
+}
 ```
 
-```bash [OpenAI]
-export PROVIDER=openai
-export OPENAI_API_KEY=sk-your_key_here
+```json [OpenAI]
+{
+  "providers": [{
+    "name": "openai",
+    "api_base_url": "https://api.openai.com/v1",
+    "api_key": "sk-your_key_here",
+    "models": ["gpt-4", "gpt-3.5-turbo"],
+    "enabled": true
+  }],
+  "routes": {
+    "default": {
+      "provider": "openai",
+      "model": "gpt-4"
+    }
+  }
+}
 ```
 
-```bash [XAI (Grok)]
-export PROVIDER=xai
-export XAI_API_KEY=xai-your_key_here
+
+```json [Google Gemini]
+{
+  "providers": [{
+    "name": "gemini",
+    "api_base_url": "https://generativelanguage.googleapis.com/v1",
+    "api_key": "your_key_here",
+    "models": ["gemini-1.5-pro", "gemini-1.5-flash"],
+    "enabled": true
+  }],
+  "routes": {
+    "default": {
+      "provider": "gemini",
+      "model": "gemini-1.5-pro"
+    }
+  }
+}
 ```
 
-```bash [Google Gemini]
-export PROVIDER=gemini
-export GEMINI_API_KEY=your_key_here
-```
 
-```bash [Mistral AI]
-export PROVIDER=mistral
-export MISTRAL_API_KEY=your_key_here
-```
 
-```bash [Ollama]
-export PROVIDER=ollama
-export OLLAMA_MODEL=llama3.2
-# Requires Ollama running locally
+```json [DeepSeek]
+{
+  "providers": [{
+    "name": "deepseek",
+    "api_base_url": "https://api.deepseek.com/v1",
+    "api_key": "your_key_here",
+    "models": ["deepseek-chat", "deepseek-reasoner", "deepseek-coder-v2"],
+    "enabled": true
+  }],
+  "routes": {
+    "default": {
+      "provider": "deepseek",
+      "model": "deepseek-chat"
+    },
+    "think": {
+      "provider": "deepseek",
+      "model": "deepseek-reasoner"
+    }
+  }
+}
 ```
 
 :::
+
+**Important Note**: In each configuration above:
+- The `models` array lists available models for validation
+- The `routes` section defines which model actually handles requests
+- You must define at least a `default` route for CCProxy to work
 
 ## Provider Comparison
 
@@ -64,54 +131,58 @@ export OLLAMA_MODEL=llama3.2
 
 ```mermaid
 graph TB
-    A[Ultra Fast<br/>< 100ms] --> B[Groq]
-    C[Fast<br/>< 500ms] --> D[OpenRouter]
-    C --> E[OpenAI]
-    C --> F[XAI]
-    C --> G[Gemini]
-    C --> H[Mistral]
-    I[Variable<br/>depends on model] --> J[Ollama]
+    A[Fast<br/>< 500ms] --> B[Anthropic]
+    A --> C[DeepSeek]
+    A --> D[OpenRouter]
+    A --> E[OpenAI]
+    A --> F[Gemini]
 ```
 
 ### Cost Comparison
 
 | Provider | Free Tier | Pricing Model | Best For |
 |----------|-----------|---------------|----------|
-| **Groq** | ✅ Generous | Pay-per-use | Speed & development |
+| **Anthropic** | ❌ | Pay-per-use | Complex reasoning & coding |
+| **DeepSeek** | ✅ Limited | Pay-per-use | Advanced reasoning |
 | **OpenRouter** | ✅ Limited | Pay-per-use | Model variety |
 | **OpenAI** | ✅ Limited | Pay-per-use | Enterprise reliability |
-| **XAI** | ❌ | Pay-per-use | Real-time data |
 | **Gemini** | ✅ Generous | Pay-per-use | Multimodal tasks |
-| **Mistral** | ❌ | Pay-per-use | European compliance |
-| **Ollama** | ✅ Unlimited | Local/Free | Privacy & control |
 
 For current pricing information, visit each provider's official pricing page.
 
 ### Model Capabilities
 
-| Provider | Text | Code | Function Calls | Vision | Reasoning |
-|----------|------|------|---------------|--------|-----------|
-| **Groq** | ✅ | ✅ | ✅ | ❌ | ✅ |
-| **OpenRouter** | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **OpenAI** | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **XAI** | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **Gemini** | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **Mistral** | ✅ | ✅ | ✅ | ❌ | ✅ |
-| **Ollama** | ✅ | ✅ | ✅ | ✅* | ✅ |
+| Provider | Text | Code | Function Calling | Vision | Reasoning | Claude Code Compatible |
+|----------|------|------|-----------------|--------|-----------|----------------------|
+| **Anthropic** | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ Full Support |
+| **DeepSeek** | ✅ | ✅ | ❌ | ❌ | ✅✅ | ⚠️ Limited (no tools) |
+| **OpenRouter** | ✅ | ✅ | ✅* | ✅* | ✅ | ✅ Model dependent |
+| **OpenAI** | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ Full Support |
+| **Gemini** | ✅ | ✅ | ⚠️ | ✅ | ✅ | ⚠️ Limited support |
 
-*Depends on specific model
+*Depends on specific model routed through OpenRouter
 
 ## Important: Tool Calling Requirement
 
-**⚠️ Critical for Claude Code Users**: You must select models that support **tool calling** or **function calling** capabilities, as Claude Code requires these features to operate correctly. When choosing models from any provider, verify they support function calling.
+**⚠️ Critical for Claude Code Users**: You must select models that support **tool calling** or **function calling** capabilities, as Claude Code requires these features to operate correctly. 
+
+### Provider Tool Support Status:
+- **Anthropic**: ✅ Full tool/function calling support - **Recommended for Claude Code**
+- **OpenAI**: ✅ Full function calling support - **Recommended for Claude Code**  
+- **OpenRouter**: ✅ Supports tools (model-dependent) - **Check specific model capabilities**
+- **DeepSeek**: ❌ No tool support in transformer - **NOT recommended for Claude Code**
+- **Google Gemini**: ⚠️ Limited tool support - **May have compatibility issues with Claude Code**
+
+For best Claude Code compatibility, use Anthropic or OpenAI providers with models that explicitly support function calling.
 
 ## Provider Selection Guide
 
-### Choose **Groq** if you want:
-- ⚡ Fastest possible inference speeds
-- 💰 Cost-effective pricing
-- 🆓 Generous free tier
-- 📊 Simple, reliable service
+### Choose **Anthropic** if you want:
+- 🧠 Best-in-class reasoning capabilities
+- 💻 Superior coding performance (SWE-bench 72.5%)
+- 📚 Long context window support (200K tokens)
+- 🤔 Advanced thinking mode for complex problems
+
 
 ### Choose **OpenRouter** if you want:
 - 🎯 Access to 100+ different models
@@ -125,11 +196,6 @@ For current pricing information, visit each provider's official pricing page.
 - 👁️ Advanced vision capabilities
 - 🎯 Proven reliability
 
-### Choose **XAI (Grok)** if you want:
-- 📰 Real-time information access
-- 🐦 X/Twitter integration
-- 🆕 Cutting-edge capabilities
-- 🚀 Elon Musk's AI vision
 
 ### Choose **Google Gemini** if you want:
 - 🎥 Advanced multimodal capabilities
@@ -137,17 +203,13 @@ For current pricing information, visit each provider's official pricing page.
 - 📊 Strong analytical capabilities
 - 🔍 Integration with Google services
 
-### Choose **Mistral AI** if you want:
-- 🇪🇺 European AI alternative
-- 🔒 Strong privacy focus
-- 💼 Enterprise-grade features
-- 🎯 Multilingual excellence
 
-### Choose **Ollama** if you want:
-- 🔒 Complete privacy (local processing)
-- 🌐 Offline capabilities
-- 💸 Zero ongoing costs
-- 🎛️ Full control over your models
+### Choose **DeepSeek** if you want:
+- 🧠 Exceptional reasoning capabilities (87.5% on AIME 2025)
+- 🎯 45-50% less hallucination
+- 💻 Specialized coding models
+- 🔬 Advanced mathematical and scientific analysis
+
 
 ## Model Selection Guidelines
 

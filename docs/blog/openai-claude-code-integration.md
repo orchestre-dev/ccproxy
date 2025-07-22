@@ -13,11 +13,11 @@ readTime: "8 min read"
 
 *Published on July 14, 2025*
 
-<SocialShare />
-
 Claude Code is a powerful AI assistant tool, but what if you want to use it with different AI models like OpenAI's GPT-4? This scenario is common among professionals who want to leverage different AI capabilities for different tasks.
 
 Today, we'll explore how CCProxy enables this integration by acting as a simple API proxy that translates between different AI provider formats, allowing you to use OpenAI models seamlessly with Claude Code. Whether you're building applications with modern development tools or simply want more flexibility in your AI workflow, this guide will show you how to bridge these powerful systems.
+
+<SocialShare />
 
 ## The Integration Challenge
 

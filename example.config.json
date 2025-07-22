@@ -1,51 +1,84 @@
 {
-  "host": "0.0.0.0",
+  "host": "127.0.0.1",
   "port": 3456,
   "log": true,
-  "log_file": "",
-  "apikey": "your-api-key-here",
+  "log_file": "~/.ccproxy/ccproxy.log",
+  "apikey": "",
   "providers": [
     {
       "name": "anthropic",
       "api_base_url": "https://api.anthropic.com",
-      "api_key": "your-anthropic-api-key",
+      "api_key": "sk-ant-...",
       "models": [
-        "claude-3-opus-20240229",
-        "claude-3-sonnet-20240229",
-        "claude-3-haiku-20240307"
+        "claude-opus-4-20250720",
+        "claude-sonnet-4-20250720",
+        "claude-3-5-haiku-20241022"
       ],
-      "enabled": true,
-      "transformers": [
-        {
-          "name": "anthropic"
-        }
-      ]
+      "enabled": true
     },
     {
       "name": "openai",
       "api_base_url": "https://api.openai.com/v1",
-      "api_key": "your-openai-api-key",
+      "api_key": "sk-...",
       "models": [
-        "gpt-4",
-        "gpt-4-turbo",
-        "gpt-3.5-turbo"
+        "gpt-4.1",
+        "gpt-4.1-turbo",
+        "gpt-4.1-mini"
       ],
-      "enabled": false,
-      "transformers": [
-        {
-          "name": "openai"
-        }
-      ]
+      "enabled": true
+    },
+    {
+      "name": "gemini",
+      "api_base_url": "https://generativelanguage.googleapis.com/v1",
+      "api_key": "AIza...",
+      "models": [
+        "gemini-2.5-flash",
+        "gemini-2.5-pro"
+      ],
+      "enabled": false
+    },
+    {
+      "name": "deepseek",
+      "api_base_url": "https://api.deepseek.com",
+      "api_key": "sk-...",
+      "models": [
+        "deepseek-chat",
+        "deepseek-coder"
+      ],
+      "enabled": false
     }
   ],
   "routes": {
     "default": {
       "provider": "anthropic",
-      "model": "claude-3-sonnet-20240229"
+      "model": "claude-sonnet-4-20250720"
     },
-    "gpt-4": {
+    "longContext": {
+      "provider": "anthropic",
+      "model": "claude-opus-4-20250720"
+    },
+    "background": {
       "provider": "openai",
-      "model": "gpt-4"
+      "model": "gpt-4.1-mini"
+    },
+    "think": {
+      "provider": "anthropic",
+      "model": "claude-opus-4-20250720"
+    },
+    "gpt-4.1": {
+      "provider": "openai",
+      "model": "gpt-4.1-turbo"
+    },
+    "claude-opus-4": {
+      "provider": "anthropic",
+      "model": "claude-opus-4-20250720"
     }
+  },
+  "performance": {
+    "request_timeout": "30s",
+    "max_request_body_size": 10485760,
+    "metrics_enabled": true,
+    "rate_limit_enabled": false,
+    "circuit_breaker_enabled": true
   }
 }

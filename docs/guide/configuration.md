@@ -29,11 +29,20 @@ CCProxy uses a `config.json` file for all configuration. The file is typically l
     {
       "name": "anthropic",
       "api_key": "sk-ant-...",
+      "models": ["claude-3-sonnet-20240229"],
       "enabled": true
     }
-  ]
+  ],
+  "routes": {
+    "default": {
+      "provider": "anthropic",
+      "model": "claude-3-sonnet-20240229"
+    }
+  }
 }
 ```
+
+**Note**: The `routes` section is required. Without it, CCProxy cannot determine which provider and model to use for requests.
 
 ### Full Configuration Example
 
@@ -221,11 +230,75 @@ export ANTHROPIC_API_KEY="sk-ant-..."
 
 ## Routing Configuration
 
-CCProxy can route requests based on various criteria:
+CCProxy uses routes to determine which provider and model handle your requests. This is separate from the `models` array in provider configuration, which is used for validation.
+
+### Understanding Routes vs Models
+
+1. **`models` array** (in providers): Lists available models for validation
+2. **`routes` section**: Defines which provider/model actually handles requests
+
+## Model Selection Explained
+
+The `models` array in provider config lists available models for validation.
+The `routes` section defines which provider/model actually handles requests.
+
+### Example: Multi-Provider Setup
+```json
+{
+  "providers": [
+    {
+      "name": "anthropic",
+      "models": ["claude-opus-4-20250720", "claude-sonnet-4-20250720"],
+      "api_key": "..."
+    },
+    {
+      "name": "openai", 
+      "models": ["gpt-4.1", "o3", "o4-mini"],
+      "api_key": "..."
+    }
+  ],
+  "routes": {
+    "default": {
+      "provider": "anthropic",
+      "model": "claude-sonnet-4-20250720"
+    },
+    "gpt-4": {  // Direct route for compatibility
+      "provider": "openai",
+      "model": "gpt-4.1"
+    }
+  }
+}
+```
+
+## Model Currency
+
+It's important to keep your model configurations up-to-date with the latest available models. AI providers frequently release new models with improved capabilities, better performance, and lower costs.
+
+### Why Model Currency Matters
+- **Better Performance**: Newer models often provide faster responses and better quality outputs
+- **Cost Efficiency**: Latest models may offer better pricing tiers
+- **Feature Support**: New models include the latest features like improved context windows, better tool use, and enhanced reasoning capabilities
+- **Deprecation**: Older models are eventually deprecated and removed from service
+
+### Staying Current
+Check [models.dev](https://models.dev) for the latest model information across all providers. This resource provides:
+- Current model names and versions
+- Pricing information
+- Context window sizes
+- Feature support comparison
+- Deprecation notices
+
+Update your CCProxy configuration regularly to ensure you're using the best available models for your use case.
 
 ### Default Routing
 ```json
 {
+  "providers": [{
+    "name": "anthropic",
+    "api_key": "sk-ant-...",
+    "models": ["claude-3-sonnet-20240229", "claude-3-opus-20240229"],
+    "enabled": true
+  }],
   "routes": {
     "default": {
       "provider": "anthropic",
@@ -253,6 +326,7 @@ Requests with >60K tokens automatically route to long-context models:
 ```
 
 ### Model-Specific Routing
+When a request specifies a model name, CCProxy looks for a matching route:
 ```json
 {
   "routes": {
@@ -263,10 +337,16 @@ Requests with >60K tokens automatically route to long-context models:
     "gpt-4": {
       "provider": "openai",
       "model": "gpt-4"
+    },
+    "default": {
+      "provider": "openai",
+      "model": "gpt-3.5-turbo"
     }
   }
 }
 ```
+
+**Important**: Without routes configuration, CCProxy cannot determine which provider to use. Always define at least a `default` route.
 
 ## Performance Configuration
 
@@ -365,6 +445,121 @@ export API_TIMEOUT_MS=600000
 # Verify it's working
 claude "Hello, can you help me with coding?"
 ```
+
+## Request Parameters
+
+### Standard Parameters
+
+CCProxy supports standard request parameters that work across all providers:
+
+```json
+{
+  "model": "claude-3-sonnet-20240229",
+  "messages": [
+    {"role": "user", "content": "Hello!"}
+  ],
+  "max_tokens": 1024,
+  "temperature": 0.7,
+  "top_p": 0.9,
+  "top_k": 40,
+  "stream": false,
+  "stop_sequences": ["\n\n"],
+  "tools": [],
+  "tool_choice": "auto"
+}
+```
+
+**Supported Parameters:**
+- `model` - Model identifier (required)
+- `messages` - Array of message objects (required)
+- `max_tokens` - Maximum tokens to generate
+- `temperature` - Randomness (0-2)
+- `top_p` - Nucleus sampling threshold
+- `top_k` - Top-k sampling
+- `stream` - Enable streaming responses
+- `stop_sequences` - Stop generation at these sequences
+- `tools` - Function calling definitions
+- `tool_choice` - How to use tools ("auto", "none", or specific tool)
+
+**Note:** Provider-specific parameters like `thinkingBudget`, `frequency_penalty`, and `presence_penalty` are not supported and will be ignored or cause errors.
+
+### Parameter Mapping
+
+CCProxy automatically maps parameters for different providers:
+
+#### Gemini Parameter Mapping
+- `max_tokens` → `maxOutputTokens` (wrapped in `generationConfig`)
+- All generation parameters wrapped in `generationConfig` object
+- Example transformation:
+  ```json
+  // Input
+  {
+    "max_tokens": 1024,
+    "temperature": 0.7
+  }
+  
+  // Transformed for Gemini
+  {
+    "generationConfig": {
+      "maxOutputTokens": 1024,
+      "temperature": 0.7
+    }
+  }
+  ```
+
+#### Anthropic Parameter Handling
+- Removes unsupported parameters: `frequency_penalty`, `presence_penalty`
+- Native support for all other standard parameters
+- Supports Anthropic-specific features like system messages
+
+#### DeepSeek Constraints
+- Enforces maximum `max_tokens` limit of 8192
+- If you request more than 8192 tokens, it will be capped
+- Supports all standard OpenAI-compatible parameters
+
+#### OpenAI Compatibility
+- Full support for all standard parameters
+- Native `frequency_penalty` and `presence_penalty` support
+- Compatible with GPT-3.5 and GPT-4 models
+
+### Function Calling
+
+Function calling (tools) requires specific formatting:
+
+```json
+{
+  "messages": [
+    {"role": "user", "content": "What's the weather in Paris?"}
+  ],
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "get_weather",
+        "description": "Get current weather",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "location": {
+              "type": "string",
+              "description": "City name"
+            }
+          },
+          "required": ["location"]
+        }
+      }
+    }
+  ],
+  "tool_choice": "auto"
+}
+```
+
+**Provider Support:**
+- ✅ Anthropic - Full support
+- ✅ OpenAI - Full support
+- ✅ Gemini - Full support (transformed to Gemini format)
+- ❌ DeepSeek - Limited support
+- ✅ OpenRouter - Depends on underlying model
 
 ## Advanced Configuration
 
@@ -485,13 +680,45 @@ curl http://localhost:3456/health
 # Provider status
 curl http://localhost:3456/status
 
-# Test message
+# Test message with standard parameters only
 curl -X POST http://localhost:3456/v1/messages \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "claude-3-sonnet",
+    "model": "claude-3-sonnet-20240229",
     "messages": [{"role": "user", "content": "Hello!"}],
-    "max_tokens": 100
+    "max_tokens": 100,
+    "temperature": 0.7
+  }'
+
+# Test streaming
+curl -X POST http://localhost:3456/v1/messages \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-3-sonnet-20240229",
+    "messages": [{"role": "user", "content": "Tell me a short story"}],
+    "max_tokens": 200,
+    "stream": true
+  }'
+
+# Test function calling
+curl -X POST http://localhost:3456/v1/messages \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-3-sonnet-20240229",
+    "messages": [{"role": "user", "content": "What is 2+2?"}],
+    "tools": [{
+      "type": "function",
+      "function": {
+        "name": "calculate",
+        "description": "Perform calculations",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "expression": {"type": "string"}
+          }
+        }
+      }
+    }]
   }'
 ```
 
@@ -514,10 +741,22 @@ curl -X POST http://localhost:3456/v1/messages \
 - Check if the model is available for your API key
 - Try the default model for your provider
 
+**Parameter Errors:**
+- Use only standard parameters (avoid provider-specific ones like `thinkingBudget`)
+- Check parameter names match exactly (case-sensitive)
+- Verify parameter values are within acceptable ranges
+- For Gemini, parameters are automatically wrapped in `generationConfig`
+- For DeepSeek, `max_tokens` is capped at 8192
+
 **Rate Limiting:**
 - Switch to a different provider
 - Implement retry logic
 - Consider upgrading your API plan
+
+**Function Calling Errors:**
+- Ensure tools array is properly formatted
+- Check that the provider supports function calling
+- Verify tool_choice is set to "auto", "none", or a specific tool name
 
 ### Getting Help
 

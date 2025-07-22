@@ -1,37 +1,26 @@
 ---
 title: OpenRouter with Claude Code - 100+ AI Models via CCProxy
-description: Access 100+ AI models including Kimi K2, Claude, GPT-4, Llama, and Mistral with Claude Code through CCProxy and OpenRouter. Major supporter of Kimi K2 with reliable access and competitive pricing.
-keywords: OpenRouter, Claude Code, CCProxy, Kimi K2, 100+ AI models, model fallbacks, Claude 3.5, GPT-4, Llama, model comparison, unified AI API
+description: Access 100+ AI models including Qwen3 235B (AIME25 70.3), Kimi K2, Grok, Claude, and GPT-4 with Claude Code through CCProxy and OpenRouter. Features the top-performing Qwen3 235B model with record-breaking benchmarks.
+keywords: OpenRouter, Claude Code, CCProxy, Qwen3 235B, AIME25, Kimi K2, Grok, 100+ AI models, model fallbacks, Claude 3.5, GPT-4, Llama, model comparison, unified AI API, top performance, benchmark
 ---
 
 # OpenRouter Provider
 
-<div class="social-share">
-  <button class="share-twitter" onclick="shareToTwitter()">
-    🐦 Share on Twitter
-  </button>
-  <button class="share-linkedin" onclick="shareToLinkedIn()">
-    💼 Share on LinkedIn
-  </button>
-  <button class="share-reddit" onclick="shareToReddit()">
-    🔗 Share on Reddit
-  </button>
-  <button class="share-copy" onclick="copyToClipboard()">
-    📋 Copy Link
-  </button>
-</div>
+**OpenRouter unlocks the full AI ecosystem** by providing access to 100+ different AI models through a single API, including the **top-performing Qwen3 235B** with its record-breaking AIME25 score of 70.3. As a **major supporter of cutting-edge models**, OpenRouter offers reliable access to Qwen3 235B, Kimi K2's ultra-fast inference, Grok's real-time data capabilities, alongside Claude, GPT-4, and many others. When combined with **Claude Code and CCProxy**, OpenRouter becomes the ultimate platform for AI experimentation, allowing you to leverage the most advanced models for each development task.
 
-**OpenRouter unlocks the full AI ecosystem** by providing access to 100+ different AI models through a single API. As a **major supporter of Kimi K2**, OpenRouter offers reliable access to Moonshot AI's breakthrough model alongside Claude, GPT-4, and many others. When combined with **Claude Code and CCProxy**, OpenRouter becomes the ultimate platform for AI experimentation, allowing you to find the perfect model for each development task.
+<SocialShare />
 
 ## 🎯 Why Choose OpenRouter for Claude Code?
 
-- ⚡ **Kimi K2 access**: Major supporter offering reliable Kimi K2 with 128k context window
+- 🏆 **Top performance**: Access to Qwen3 235B with AIME25 score of 70.3 (vs GPT-4o's 26.7)
+- ⚡ **Ultra-fast options**: Kimi K2 with 128K context for lightning-fast inference
+- 🌐 **Real-time data**: Grok models with current web information access
 - 🎯 **100+ models**: Access to all major AI models through familiar Claude Code interface
 - 🔄 **Model fallbacks**: Automatic failover between models for maximum reliability
 - 📊 **Usage analytics**: Detailed tracking and monitoring integrated with CCProxy
 - 💰 **Cost optimization**: Compare and choose the most cost-effective models for each task
 - 🧪 **Perfect for experimentation**: Test different models without changing your Claude Code workflow
-- ⚡ **Unified API**: Single integration for Kimi K2, Claude 3.5, GPT-4, Llama, Mistral, and more
+- ⚡ **Unified API**: Single integration for Qwen3, Kimi K2, Grok, Claude 3.5, GPT-4, and more
 
 ## Setup
 
@@ -70,16 +59,43 @@ export OPENROUTER_SITE_URL=https://yourapp.com
 export OPENROUTER_SITE_NAME="Your App Name"
 ```
 
+## 🌟 Top Models Available
+
+### Qwen3 235B A22B 2507 - Leading Performance
+
+**The current top-performing model on OpenRouter**, Qwen3 235B delivers exceptional capabilities:
+
+- **🏆 AIME25 Score: 70.3** - Crushing GPT-4o's 26.7 score
+- **💡 Advanced reasoning**: State-of-the-art mathematical and logical capabilities
+- **📊 Massive scale**: 235B parameters with optimized inference
+- **🚀 Production ready**: Reliable performance for demanding applications
+
+### Kimi K2 - Ultra-Fast Inference
+
+- **⚡ Lightning fast**: Optimized for rapid responses
+- **📄 128K context**: Handle large documents and codebases
+- **🎯 Tool calling**: Full Claude Code compatibility
+- **💰 Cost effective**: Great performance-to-price ratio
+
+### Grok Models - Real-Time Data
+
+- **🌐 Real-time access**: Current information and web data
+- **🔄 Dynamic updates**: Always up-to-date responses
+- **🛠️ Tool support**: Compatible with Claude Code workflows
+- **📈 Continuous learning**: Incorporates latest information
+
 ## Available Models
 
 OpenRouter provides access to 100+ AI models from leading providers including:
 
+- **Qwen** - Top-performing Qwen3 235B with record-breaking benchmarks
 - **Anthropic** - Claude series with advanced reasoning
 - **OpenAI** - GPT-4 series and reasoning models
+- **Moonshot AI** - Kimi K2 with ultra-fast inference
+- **xAI** - Grok models with real-time data access
 - **Meta** - Llama models for open-source applications  
 - **Google** - Gemini models with multimodal capabilities
 - **Mistral** - European privacy-focused models
-- **Moonshot AI** - Advanced language models
 - **Many others** - Including specialized coding and reasoning models
 
 **🔧 Critical for Claude Code**: You must select models that support **tool calling** or **function calling** capabilities, as Claude Code requires these features to operate correctly.
@@ -119,6 +135,36 @@ For current, accurate pricing information, visit [OpenRouter's official pricing 
 # .env file
 PROVIDER=openrouter
 OPENROUTER_API_KEY=sk-or-v1-your_api_key_here
+```
+
+### Top Performance Setup - Qwen3 235B
+
+```bash
+# For the highest performing model (AIME25: 70.3)
+PROVIDER=openrouter
+OPENROUTER_API_KEY=sk-or-v1-your_api_key_here
+OPENROUTER_MODEL=qwen/qwen-3-235b-a22b-2507
+OPENROUTER_MAX_TOKENS=16384
+```
+
+### Ultra-Fast Setup - Kimi K2
+
+```bash
+# For ultra-fast inference with large context
+PROVIDER=openrouter
+OPENROUTER_API_KEY=sk-or-v1-your_api_key_here
+OPENROUTER_MODEL=moonshotai/kimi-k2-instruct
+OPENROUTER_MAX_TOKENS=8192
+```
+
+### Real-Time Data Setup - Grok
+
+```bash
+# For real-time information access
+PROVIDER=openrouter
+OPENROUTER_API_KEY=sk-or-v1-your_api_key_here
+OPENROUTER_MODEL=xai/grok-beta
+OPENROUTER_MAX_TOKENS=8192
 ```
 
 ### High-Performance Setup
@@ -185,6 +231,24 @@ claude "Compare different sorting algorithms"
 
 ## Advanced Features
 
+### Model Routing Examples
+
+Configure intelligent model routing based on task requirements:
+
+```bash
+# For maximum performance tasks
+export OPENROUTER_MODEL=qwen/qwen-3-235b-a22b-2507
+export OPENROUTER_FALLBACK=anthropic/claude-3-opus
+
+# For speed-critical applications  
+export OPENROUTER_MODEL=moonshotai/kimi-k2-instruct
+export OPENROUTER_FALLBACK=openai/gpt-4o-mini
+
+# For real-time information needs
+export OPENROUTER_MODEL=xai/grok-beta
+export OPENROUTER_FALLBACK=xai/grok-2
+```
+
 ### Model Fallbacks
 
 Configure automatic failover between models:
@@ -217,11 +281,17 @@ export OPENROUTER_X_TITLE="Your Request Title"
 ### 1. Choose the Right Model
 
 ```bash
-# For speed: Use smaller, faster models
-export OPENROUTER_MODEL=openai/gpt-4o-mini
+# For maximum performance: Use the top-scoring model
+export OPENROUTER_MODEL=qwen/qwen-3-235b-a22b-2507
+
+# For speed: Use ultra-fast models
+export OPENROUTER_MODEL=moonshotai/kimi-k2-instruct
 
 # For quality: Use larger, more capable models
 export OPENROUTER_MODEL=anthropic/claude-3-opus
+
+# For real-time data: Use models with web access
+export OPENROUTER_MODEL=xai/grok-beta
 
 # For cost: Use open-source models
 export OPENROUTER_MODEL=qwen/qwen-2.5-72b-instruct
@@ -303,17 +373,23 @@ curl -H "Authorization: Bearer $OPENROUTER_API_KEY" \
 
 ## Model Selection Guide
 
-### For General Use
-- `anthropic/claude-3.5-sonnet` - Best all-around performance
-- `openai/gpt-4o` - Strong reasoning and tool use
+### For Top Performance
+- `qwen/qwen-3-235b-a22b-2507` - **#1 Overall** - AIME25 score 70.3 (vs GPT-4o's 26.7)
+- `anthropic/claude-3-opus` - Highest quality responses
+- `openai/o1-preview` - Advanced reasoning
 
-### For Speed
+### For Ultra-Fast Speed
+- `moonshotai/kimi-k2-instruct` - **Fastest inference** with 128K context
 - `openai/gpt-4o-mini` - Fast and cost-effective
 - `anthropic/claude-3-haiku` - Ultra-fast responses
 
-### For Quality
-- `anthropic/claude-3-opus` - Highest quality responses
-- `openai/o1-preview` - Advanced reasoning
+### For Real-Time Data
+- `xai/grok-beta` - **Real-time web access** and current information
+- `xai/grok-2` - Enhanced reasoning with real-time data
+
+### For General Use
+- `anthropic/claude-3.5-sonnet` - Best all-around performance
+- `openai/gpt-4o` - Strong reasoning and tool use
 
 ### For Cost
 - `qwen/qwen-2.5-72b-instruct` - Great quality-to-cost ratio
@@ -322,6 +398,7 @@ curl -H "Authorization: Bearer $OPENROUTER_API_KEY" \
 ### For Coding
 - `deepseek/deepseek-coder` - Specialized for code
 - `anthropic/claude-3.5-sonnet` - Excellent code understanding
+- `qwen/qwen-3-235b-a22b-2507` - Superior problem solving
 
 ## Monitoring
 
@@ -343,33 +420,3 @@ curl http://localhost:3456/status
 - Learn about model fallbacks for production reliability
 - Set up [usage monitoring](/guide/monitoring) to optimize model selection and costs
 - Try [Groq with Kimi K2](/providers/groq) for ultra-fast inference alongside OpenRouter
-
-<script>
-function shareToTwitter() {
-  const url = encodeURIComponent(window.location.href);
-  const text = encodeURIComponent('🎯 OpenRouter + Claude Code + CCProxy = Access to 100+ AI models! Claude 3.5, GPT-4, Llama, Mistral, and more through unified API');
-  window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`, '_blank');
-}
-
-function shareToLinkedIn() {
-  const url = encodeURIComponent(window.location.href);
-  window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank');
-}
-
-function shareToReddit() {
-  const url = encodeURIComponent(window.location.href);
-  const title = encodeURIComponent('OpenRouter with Claude Code - 100+ AI Models via CCProxy');
-  window.open(`https://reddit.com/submit?url=${url}&title=${title}`, '_blank');
-}
-
-function copyToClipboard() {
-  navigator.clipboard.writeText(window.location.href).then(() => {
-    const button = event.target;
-    const originalText = button.textContent;
-    button.textContent = '✅ Copied!';
-    setTimeout(() => {
-      button.textContent = originalText;
-    }, 2000);
-  });
-}
-</script>

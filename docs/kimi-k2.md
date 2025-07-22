@@ -1,29 +1,31 @@
 ---
 title: Kimi K2 with Claude Code - The Ultimate AI Development Experience
-description: Discover how to use Moonshot AI's Kimi K2 model with Claude Code through CCProxy via Groq and OpenRouter. Experience ultra-fast inference with 128k context and competitive pricing.
-keywords: Kimi K2, Claude Code, Moonshot AI, Groq, OpenRouter, AI development, fast inference, 128k context, competitive pricing
+description: Discover how to use Moonshot AI's Kimi K2 model with Claude Code through CCProxy via OpenRouter. Experience ultra-fast inference with 128k context and competitive pricing.
+keywords: Kimi K2, Claude Code, Moonshot AI, OpenRouter, AI development, fast inference, 128k context, competitive pricing, Qwen3 235B
 ---
 
 # Kimi K2 with Claude Code
 
-<SocialShare />
+Experience the **cutting-edge Kimi K2 model** from Moonshot AI through CCProxy via OpenRouter! This powerful combination delivers ultra-fast inference, intelligent code completion, and seamless integration with Claude Code.
 
-Experience the **cutting-edge Kimi K2 model** from Moonshot AI through CCProxy! This powerful combination delivers ultra-fast inference, intelligent code completion, and seamless integration with Claude Code.
+> **Note:** For even higher performance, consider **Qwen3 235B** - an alternative model available through OpenRouter that offers state-of-the-art capabilities with 235B parameters.
+
+<SocialShare />
 
 ## 🚀 Why Kimi K2 is Taking the World by Storm
 
 Kimi K2 (`moonshotai/kimi-k2-instruct`) has become the **hottest AI model** in the development community, and for good reason:
 
 ### ⚡ **Lightning-Fast Performance**
-- **Sub-second response times** via Groq's LPU infrastructure
+- **Sub-second response times** via OpenRouter (using Groq's infrastructure)
 - **32B activated parameters** with 1T total parameters (Mixture-of-Experts)
 - **Optimized for agentic intelligence** including tool use and coding
 
 ### 💰 **Exceptional Value**
 - **Significantly cheaper** than GPT-4 with comparable quality
-- **Available via Groq** for ultra-fast inference
 - **Available via OpenRouter** for reliable access with 100+ other models
-- **Free access options** available through multiple platforms
+- **Access to Groq's infrastructure** through OpenRouter integration
+- **Multiple tier options** available through OpenRouter platform
 
 ### 🧠 **Advanced Capabilities**
 - **State-of-the-art performance** on coding benchmarks
@@ -69,32 +71,37 @@ The combination of **Kimi K2 + Claude Code + CCProxy** creates an unmatched deve
 
 ## 🚀 Get Started
 
-**[Complete setup guide →](/guide/quick-start)** | **[Groq setup →](/providers/groq)** | **[OpenRouter setup →](/providers/openrouter)**
+**[Complete setup guide →](/guide/quick-start)** | **[OpenRouter setup →](/providers/openrouter)** | **[API Documentation →](/api/)**
 
 ## 📊 Performance Comparison
 
 | Provider | Speed | Value | Best For |
 |----------|-------|-------|----------|
-| **Groq + Kimi K2** | ⚡⚡⚡ | **Exceptional** | **Ultra-fast development** |
-| **OpenRouter + Kimi K2** | ⚡⚡ | **Excellent** | **Reliable access + model variety** |
+| **OpenRouter + Kimi K2** | ⚡⚡⚡ | **Exceptional** | **Ultra-fast development via Groq infrastructure** |
+| **OpenRouter + Qwen3 235B** | ⚡⚡⚡ | **Excellent** | **Highest performance for complex tasks** |
 | GPT-4 | ⚡ | Expensive | Long context tasks |
 | Claude 3.5 | ⚡⚡ | Premium | Complex reasoning |
 
 **Key Advantages of Kimi K2:**
 - 🏆 **53.7% accuracy** on LiveCodeBench (vs GPT-4's 44.7%)
 - 🧠 **97.4% score** on MATH-500 (vs GPT-4's 92.4%)
-- ⚡ **Sub-second inference** via Groq's LPU technology
+- ⚡ **Sub-second inference** via OpenRouter (using Groq's infrastructure)
 - 💰 **Significantly cheaper** than major proprietary alternatives
+
+**Note on Qwen3 235B:**
+- 🚀 **Even higher accuracy** on complex coding benchmarks
+- 🧠 **235B parameters** for superior reasoning capabilities
+- ⚡ **Also available via OpenRouter** with competitive pricing
 
 ## 🚀 Ultra-Fast Development with Kimi K2 + Orchestre
 
-**Kimi K2's blazing speed** through CCProxy makes it perfect for rapid iteration cycles. Pair it with **Orchestre's context intelligence** for the ultimate development velocity:
+**Kimi K2's blazing speed** through CCProxy via OpenRouter makes it perfect for rapid iteration cycles. Pair it with **Orchestre's context intelligence** for the ultimate development velocity:
 
 <div class="showcase-grid">
   <div class="showcase-item">
     <div class="showcase-title">⚡ Speed Advantage</div>
     <div class="showcase-description">
-      <strong>Sub-second responses</strong> from Kimi K2 via Groq<br><br>
+      <strong>Sub-second responses</strong> from Kimi K2 via OpenRouter<br><br>
       <strong>Instant feedback loops</strong> during development<br><br>
       <strong>Rapid prototyping</strong> with immediate results<br><br>
       <strong>Real-time code assistance</strong> without waiting
@@ -154,16 +161,41 @@ The combination of **Kimi K2 + Claude Code + CCProxy** creates an unmatched deve
 - Include relevant documentation and specs
 - Provide error logs and stack traces
 
-### 3. **Use Specific Commands**
-```bash
-# Code review
-claude-code "Review this Pull Request for security issues and performance optimizations"
+### 3. **Configure OpenRouter for Kimi K2**
+```json
+{
+  "providers": {
+    "openrouter": {
+      "api_key": "your-openrouter-api-key",
+      "base_url": "https://openrouter.ai/api/v1",
+      "models": {
+        "kimi-k2": "moonshotai/kimi-k2-instruct",
+        "qwen3-235b": "qwen/qwen-3-235b-instruct"
+      }
+    }
+  },
+  "routing": {
+    "default": "openrouter:kimi-k2",
+    "rules": [
+      {
+        "pattern": "complex-reasoning",
+        "provider": "openrouter:qwen3-235b"
+      }
+    ]
+  }
+}
+```
 
-# Architecture planning
-claude-code "Design a microservices architecture for this e-commerce platform"
+### 4. **Use Specific Commands**
+```bash
+# Code review with Kimi K2
+claude "Review this Pull Request for security issues and performance optimizations"
+
+# Architecture planning with Qwen3 235B for complex tasks
+claude --model openrouter:qwen3-235b "Design a microservices architecture for this e-commerce platform"
 
 # Testing strategies
-claude-code "Generate comprehensive unit tests for this authentication module"
+claude "Generate comprehensive unit tests for this authentication module"
 ```
 
 
@@ -173,7 +205,7 @@ claude-code "Generate comprehensive unit tests for this authentication module"
   <div class="showcase-item">
     <div class="showcase-title">📖 Setup Guide</div>
     <div class="showcase-description">
-      Follow our comprehensive guide to get Kimi K2 running with Claude Code in under 5 minutes.
+      Follow our comprehensive guide to get Kimi K2 running with Claude Code via OpenRouter in under 5 minutes.
     </div>
     <a href="/guide/quick-start" class="showcase-link">Quick Start →</a>
   </div>
@@ -181,9 +213,9 @@ claude-code "Generate comprehensive unit tests for this authentication module"
   <div class="showcase-item">
     <div class="showcase-title">🔧 Provider Configuration</div>
     <div class="showcase-description">
-      Detailed configuration options for both Groq and OpenRouter providers.
+      Detailed configuration options for OpenRouter provider to access Kimi K2 and other models.
     </div>
-    <a href="/providers/groq" class="showcase-link">Groq Setup →</a>
+    <a href="/providers/openrouter" class="showcase-link">OpenRouter Setup →</a>
   </div>
   
   <div class="showcase-item">

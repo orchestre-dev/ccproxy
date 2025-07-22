@@ -1,27 +1,49 @@
-# CCProxy - AI Request Proxy for Claude Code
+# CCProxy
 
 [![CI](https://github.com/orchestre-dev/ccproxy/actions/workflows/ci.yml/badge.svg)](https://github.com/orchestre-dev/ccproxy/actions/workflows/ci.yml)
 [![Pre-Release](https://github.com/orchestre-dev/ccproxy/actions/workflows/pre-release.yml/badge.svg)](https://github.com/orchestre-dev/ccproxy/actions/workflows/pre-release.yml)
 [![Release](https://github.com/orchestre-dev/ccproxy/actions/workflows/release.yml/badge.svg)](https://github.com/orchestre-dev/ccproxy/actions/workflows/release.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/orchestre-dev/ccproxy)](https://goreportcard.com/report/github.com/orchestre-dev/ccproxy)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Documentation](https://img.shields.io/badge/docs-ccproxy.dev-blue)](https://ccproxy.pages.dev)
+[![Documentation](https://img.shields.io/badge/docs-ccproxy.orchestre.dev-blue)](https://ccproxy.orchestre.dev)
 
-CCProxy is a high-performance AI request proxy for Claude Code, enabling it to work with multiple AI providers through intelligent routing and API translation.
+A high-performance proxy that enables Claude Code to work with multiple AI providers. Route requests to OpenAI, Google Gemini, DeepSeek, and more through a single interface.
 
-📚 **[Full Documentation](https://ccproxy.pages.dev)** | 🐛 **[Report Issues](https://github.com/orchestre-dev/ccproxy/issues)** | 💬 **[Discussions](https://github.com/orchestre-dev/ccproxy/discussions)**
+📚 **[Documentation](https://ccproxy.pages.dev)** | 🐛 **[Issues](https://github.com/orchestre-dev/ccproxy/issues)** | 💬 **[Discussions](https://github.com/orchestre-dev/ccproxy/discussions)**
+
+## 🎯 Why CCProxy?
+
+CCProxy enables Claude Code to work with multiple AI providers:
+
+- **Top-Ranked Model Access**: Use Qwen3 235B (#1 on AIME with 70.3 score) via OpenRouter
+- **100+ Models Through OpenRouter**: Access Qwen3, Kimi K2, Grok, and many more
+- **Cost Optimization**: Route requests to the most cost-effective provider
+- **Failover Protection**: Automatic fallback when providers are unavailable
+- **Token-Based Routing**: Intelligent routing based on context length
+- **Drop-in Replacement**: Works seamlessly without code changes
 
 ## 🌟 Features
 
-- **Multi-Provider Support**: Anthropic, OpenAI, Google Gemini, DeepSeek, OpenRouter
-- **Intelligent Routing**: Automatic model selection based on token count and parameters
-- **API Translation**: Seamless conversion between Anthropic and provider-specific formats
-- **Tool Support**: Full support for function calling across all compatible providers
-- **Streaming Support**: Server-Sent Events (SSE) for real-time responses
-- **Cross Platform**: Binaries available for Linux, macOS, and Windows (AMD64/ARM64)
-- **Process Management**: Background service with automatic startup and graceful shutdown
-- **Health Monitoring**: Built-in health checks and provider status tracking
-- **Security**: API key validation, IP-based access control, rate limiting
+- **Multi-Provider Support**: Anthropic, OpenAI, Google Gemini, DeepSeek, OpenRouter (100+ models)
+- **Intelligent Routing**: Automatic model selection based on context
+- **API Translation**: Seamless format conversion between providers
+- **Tool Support**: Function calling required for Claude Code compatibility
+- **Streaming Support**: Real-time responses via SSE
+- **Cross Platform**: Linux, macOS, and Windows (AMD64/ARM64)
+- **Process Management**: Background service with auto-startup
+- **Health Monitoring**: Built-in status tracking
+- **Security**: API validation, access control, rate limiting
+
+## 🎯 Model Selection Strategy
+
+CCProxy intelligently routes requests based on:
+- Token count (>60K → longContext route)
+- Model type (haiku models → background route)
+- Thinking parameter (thinking: true → think route if configured)
+- Explicit selection (provider,model format)
+- Access to top models like Qwen3 235B via OpenRouter
+
+**Note**: For Claude Code compatibility, models must support function calling (tool use).
 
 ## 🚀 Quick Start
 
@@ -64,20 +86,84 @@ docker build -t ccproxy .
 docker run -d -p 3456:3456 -v $(pwd)/config.json:/home/ccproxy/.ccproxy/config.json ccproxy
 ```
 
-### Option 4: One-Command Setup with Claude Code
+### Option 4: One-Command Setup (Recommended)
 
 ```bash
-# CCProxy will auto-start and configure Claude Code
+# Fastest setup - auto-configures everything
 ./ccproxy code
 ```
 
-## 🔧 Configuration
+This command automatically:
+- Starts the proxy server
+- Configures environment variables
+- Sets up the connection
+- Enables access to all configured providers
 
-CCProxy uses a layered configuration system with the following priority (highest to lowest):
-1. **Command-line flags** (e.g., `--config /path/to/config.json`)
-2. **Environment variables** (e.g., `CCPROXY_PORT=3456`)
-3. **Configuration file** (`config.json`)
-4. **Default values**
+## 🔧 Configuration Guide
+
+### Quick Start Configuration
+
+Create a configuration file with your provider API keys:
+
+1. **Create configuration directory** (if it doesn't exist):
+   ```bash
+   mkdir -p ~/.ccproxy
+   ```
+
+2. **Create config file** with your provider API keys:
+   ```bash
+   cat > ~/.ccproxy/config.json << 'EOF'
+   {
+     "providers": [
+       {
+         "name": "openai",
+         "api_base_url": "https://api.openai.com/v1",
+         "api_key": "your-openai-api-key",
+         "models": ["gpt-4.1", "gpt-4.1-mini"],  // Available models for validation
+         "enabled": true
+       }
+     ],
+     "routes": {
+       "default": {
+         "provider": "openai",
+         "model": "gpt-4.1"  // This is the actual model that will be used
+       }
+     }
+   }
+   EOF
+   ```
+
+3. **Start CCProxy and configure Claude Code**:
+   ```bash
+   ./ccproxy code
+   ```
+
+This single command will:
+- Start the CCProxy service
+- Set up environment variables for Claude Code
+- Enable Claude Code to use your configured AI providers
+
+### Configuration Priority System
+
+CCProxy uses a layered configuration system. Settings are applied in this order (highest priority first):
+
+1. **Command-line flags** - Override any other setting
+   ```bash
+   ccproxy start --port 8080 --config /custom/config.json
+   ```
+
+2. **Environment variables** - Override config file values
+   ```bash
+   export CCPROXY_PORT=8080
+   export CCPROXY_API_KEY=my-secret-key
+   ```
+
+3. **Configuration file** - Your main configuration
+   ```json
+   { "port": 3456, "apikey": "configured-key" }
+   ```
+
+4. **Built-in defaults** - Used when nothing else is specified
 
 ### Configuration File Locations
 
@@ -91,27 +177,44 @@ The first found file is used. You can also specify a custom path:
 ccproxy start --config /path/to/my/config.json
 ```
 
-### Understanding API Keys
+### 🔑 Understanding the Two-Level API Key System
 
-CCProxy uses API keys at two different levels, which can be confusing at first:
+CCProxy uses two types of API keys:
 
-#### 1. **CCProxy API Key** (Root Level)
-- **Purpose**: Authenticates requests TO CCProxy itself
-- **Used by**: Claude Code or other clients connecting to CCProxy
-- **Configuration**: `"apikey": "your-ccproxy-api-key"`
-- **Security**: 
-  - If not set, CCProxy only accepts requests from localhost (127.0.0.1)
-  - If set, required for all requests (via `Authorization: Bearer` or `x-api-key` header)
-- **Example**: When Claude Code connects to CCProxy, it uses this key
+#### 1. **CCProxy Authentication Key** (Optional)
 
-#### 2. **Provider API Keys** (Per Provider)
-- **Purpose**: Authenticates CCProxy's requests TO each AI provider (Anthropic, OpenAI, etc.)
-- **Used by**: CCProxy when forwarding requests to providers
-- **Configuration**: Each provider has its own `"api_key"` field
-- **Required**: Each enabled provider must have a valid API key from that provider
-- **Example**: When CCProxy forwards a request to OpenAI, it uses the OpenAI API key
+<table>
+<tr><td><b>What it does</b></td><td>Secures access to your CCProxy server</td></tr>
+<tr><td><b>Who uses it</b></td><td>Claude Code when connecting to CCProxy</td></tr>
+<tr><td><b>Configuration</b></td><td><code>"apikey": "your-secret-key"</code></td></tr>
+<tr><td><b>When to use</b></td><td>When CCProxy is accessible from non-localhost addresses</td></tr>
+<tr><td><b>Default behavior</b></td><td>If not set, only localhost connections are allowed</td></tr>
+</table>
 
-### Complete Configuration Example
+**Example scenario**: You're running CCProxy on a server and Claude Code connects from your laptop:
+```json
+{
+  "host": "0.0.0.0",  // Accessible from network
+  "apikey": "my-secret-ccproxy-key"  // Required for security
+}
+```
+
+#### 2. **AI Provider API Keys** (Required)
+
+<table>
+<tr><td><b>What they do</b></td><td>Authenticate CCProxy to AI services (OpenAI, Anthropic, etc.)</td></tr>
+<tr><td><b>Who uses them</b></td><td>CCProxy when forwarding your requests to AI providers</td></tr>
+<tr><td><b>Configuration</b></td><td>Each provider has its own <code>"api_key"</code></td></tr>
+<tr><td><b>When to use</b></td><td>Always - you need valid keys from each AI provider you want to use</td></tr>
+<tr><td><b>How to get them</b></td><td>Sign up at each provider's website (OpenAI, Anthropic, Google AI, etc.)</td></tr>
+</table>
+
+**Visual Flow**:
+```
+Claude Code → (uses CCProxy API key) → CCProxy → (uses Provider API key) → OpenAI/Anthropic/etc
+```
+
+### 📋 Complete Configuration Example
 
 ```json
 {
@@ -125,37 +228,62 @@ CCProxy uses API keys at two different levels, which can be confusing at first:
       "name": "anthropic",
       "api_base_url": "https://api.anthropic.com",
       "api_key": "sk-ant-...",  // Required: your Anthropic API key
-      "models": ["claude-3-opus-20240229", "claude-3-sonnet-20240229"],
+      "models": ["claude-opus-4-20250720", "claude-sonnet-4-20250720"],
       "enabled": true
     },
     {
       "name": "openai",
       "api_base_url": "https://api.openai.com/v1",
       "api_key": "sk-...",  // Required: your OpenAI API key
-      "models": ["gpt-4", "gpt-4-turbo", "gpt-3.5-turbo"],
+      "models": ["gpt-4.1", "gpt-4.1-turbo", "gpt-4.1-mini"],
       "enabled": true
     },
     {
       "name": "gemini",
       "api_base_url": "https://generativelanguage.googleapis.com/v1",
       "api_key": "AIza...",  // Required: your Google AI API key
-      "models": ["gemini-pro", "gemini-pro-vision"],
+      "models": ["gemini-2.5-flash", "gemini-2.5-pro"],
       "enabled": false
+    },
+    {
+      "name": "deepseek",
+      "api_base_url": "https://api.deepseek.com",
+      "api_key": "sk-...",  // Required: your DeepSeek API key
+      "models": ["deepseek-chat", "deepseek-coder"],
+      "enabled": true
+    },
+    {
+      "name": "openrouter",
+      "api_base_url": "https://openrouter.ai/api/v1",
+      "api_key": "sk-or-...",  // Required: your OpenRouter API key
+      "models": ["qwen/qwen-3-235b", "moonshotai/kimi-k2-instruct", "xai/grok-beta"],
+      "enabled": true
     }
   ],
   "routes": {
     "default": {
       "provider": "anthropic",
-      "model": "claude-3-sonnet-20240229"
+      "model": "claude-sonnet-4-20250720"
     },
     "longContext": {
       "provider": "anthropic",
-      "model": "claude-3-opus-20240229",
-      "conditions": [{
-        "type": "tokenCount",
-        "operator": ">",
-        "value": 60000
-      }]
+      "model": "claude-opus-4-20250720"
+    },
+    "background": {
+      "provider": "openai",
+      "model": "gpt-4.1-mini"
+    },
+    "think": {  // Optional: route for thinking parameter
+      "provider": "anthropic",
+      "model": "claude-opus-4-20250720"
+    },
+    "gpt-4.1": {
+      "provider": "openai",
+      "model": "gpt-4.1-turbo"
+    },
+    "qwen3-235b": {  // Top-ranked model via OpenRouter
+      "provider": "openrouter",
+      "model": "qwen/qwen-3-235b"
     }
   },
   "performance": {
@@ -166,6 +294,46 @@ CCProxy uses API keys at two different levels, which can be confusing at first:
     "circuit_breaker_enabled": true
   }
 }
+```
+
+### 🎯 How Model Selection Works
+
+CCProxy uses intelligent routing to select the appropriate model and provider:
+
+**1. Explicit Provider Selection** (Highest Priority)
+```json
+// Force a specific provider/model combination
+{"model": "openai,gpt-4.1-turbo"}
+```
+
+**2. Direct Model Routes**
+```json
+// If "gpt-4.1" is defined in routes, use that configuration
+{"model": "gpt-4.1"}
+```
+
+**3. Automatic Token-Based Routing**
+```json
+// Requests with >60K tokens automatically use longContext route
+{"model": "claude-sonnet-4", "messages": [/* very long context */]}
+```
+
+**4. Background Task Routing**
+```json
+// Models starting with "claude-3-5-haiku" use background route
+{"model": "claude-3-5-haiku-20241022"}
+```
+
+**5. Thinking Mode Routing**
+```json
+// Requests with thinking parameter use think route (if configured)
+{"model": "claude-sonnet-4", "thinking": true}
+```
+
+**6. Default Route**
+```json
+// Any unmatched model uses the default route
+{"model": "some-model"}
 ```
 
 ### Environment Variables
@@ -182,24 +350,97 @@ CCProxy uses API keys at two different levels, which can be confusing at first:
 | `CCPROXY_PROVIDERS_1_API_KEY` | | Override second provider's API key |
 | `LOG` | `false` | Alternative way to enable logging |
 
-### Configuration Priority Example
+### Real-World Configuration Examples
 
+#### Example 1: Simple Setup (Local Development)
+```json
+{
+  "providers": [
+    {
+      "name": "openai",
+      "api_key": "sk-proj-...",
+      "enabled": true
+    }
+  ],
+  "routes": {
+    "default": {
+      "provider": "openai",
+      "model": "gpt-4.1-turbo"
+    }
+  }
+}
+```
+
+#### Example 2: Multi-Provider Setup with Smart Routing
+```json
+{
+  "providers": [
+    {
+      "name": "anthropic",
+      "api_key": "sk-ant-...",
+      "enabled": true
+    },
+    {
+      "name": "openai",
+      "api_key": "sk-proj-...",
+      "enabled": true
+    },
+    {
+      "name": "deepseek",
+      "api_key": "sk-...",
+      "enabled": true
+    },
+    {
+      "name": "openrouter",
+      "api_base_url": "https://openrouter.ai/api/v1",
+      "api_key": "sk-or-...",  // Required: your OpenRouter API key
+      "models": ["qwen/qwen-3-235b", "moonshotai/kimi-k2-instruct", "xai/grok-beta"],
+      "enabled": true
+    }
+  ],
+  "routes": {
+    "default": {
+      "provider": "deepseek",
+      "model": "deepseek-chat"
+    },
+    "longContext": {  // Auto-selected for >60K tokens
+      "provider": "anthropic",
+      "model": "claude-opus-4-20250720"
+    },
+    "gpt-4.1": {  // Direct model mapping
+      "provider": "openai",
+      "model": "gpt-4.1-turbo"
+    },
+    "claude-opus-4": {  // Another direct mapping
+      "provider": "anthropic",
+      "model": "claude-opus-4-20250720"
+    },
+    "qwen3-235b": {  // Access top-ranked Qwen3 235B
+      "provider": "openrouter",
+      "model": "qwen/qwen-3-235b"
+    }
+  }
+}
+```
+
+#### Example 3: Priority Override Demonstration
 ```bash
-# 1. Default: port 3456
-# 2. Config file sets: port 8080
-# 3. Environment variable: CCPROXY_PORT=9090
-# 4. Command flag: ccproxy start --port 7070
+# Config file sets: port 8080
+# Environment variable: CCPROXY_PORT=9090
+# Command flag: ccproxy start --port 7070
 # Result: CCProxy uses port 7070 (command flag wins)
 ```
 
-## 🎯 Using with Claude Code
+## 🎯 Using CCProxy
 
 ### Automatic Setup (Recommended)
 
 ```bash
-# CCProxy will auto-start and configure Claude Code environment
+# One command setup
 ./ccproxy code
 ```
+
+✨ **What happens**: Automatic configuration enabling access to all configured providers.
 
 ### Manual Setup
 
@@ -219,33 +460,21 @@ CCProxy uses API keys at two different levels, which can be confusing at first:
    claude "Help me with my code"
    ```
 
-## 🏆 Supported Providers
+## 🏆 Supported AI Providers
 
-CCProxy supports multiple AI providers with full API translation:
+CCProxy provides seamless integration with 5 major providers:
 
 - **Anthropic** - Claude models with native support
-- **OpenAI** - GPT-4, GPT-3.5 models
+- **OpenAI** - GPT-4.1, GPT-4.1-mini models
 - **Google Gemini** - Advanced multimodal models
 - **DeepSeek** - Cost-effective coding models
-- **OpenRouter** - Access to 100+ models from various providers
+- **OpenRouter** - Gateway to 100+ models including:
+  - 🏆 **Qwen3 235B** - Top-ranked model with 70.3 AIME score
+  - ⚡ **Kimi K2** - Ultra-fast inference from Moonshot AI
+  - 🌐 **Grok** - Real-time data access from xAI
+  - And 100+ more models from various providers
 
-### Provider Support Levels
-
-CCProxy offers different levels of support for various providers:
-
-#### Full Support (with dedicated transformers)
-These providers have complete API translation and all features work seamlessly:
-- **Anthropic** - Native Claude API support
-- **OpenAI** - Complete GPT model compatibility
-- **Google Gemini** - Full multimodal support
-- **DeepSeek** - Optimized for coding tasks
-- **OpenRouter** - Unified access to multiple providers
-
-#### Basic Routing Support
-These providers have basic routing capabilities but may have limited functionality:
-- Groq, Mistral, XAI, Ollama - Basic message routing only
-
-For production use, we recommend using providers with full support.
+**Note**: Additional providers like Groq, Mistral, XAI, and Ollama are accessible through OpenRouter, giving you the flexibility to use virtually any AI model through a single interface.
 
 ### Configuration Example
 
@@ -258,7 +487,7 @@ Add providers to your `config.json`:
       "name": "openai",
       "api_base_url": "https://api.openai.com/v1",
       "api_key": "your-api-key",
-      "models": ["gpt-4", "gpt-3.5-turbo"],
+      "models": ["gpt-4.1", "gpt-4.1-mini"],
       "enabled": true
     }
   ]
@@ -275,14 +504,15 @@ Add providers to your `config.json`:
 - `PUT /providers/:name` - Update provider
 - `DELETE /providers/:name` - Remove provider
 
-### Example Request
+### Example Requests
 
+#### Basic Request (uses default route)
 ```bash
 curl -X POST http://localhost:3456/v1/messages \
   -H "Content-Type: application/json" \
   -H "x-api-key: your-api-key" \
   -d '{
-    "model": "claude-3-sonnet-20240229",
+    "model": "claude-sonnet-4-20250720",
     "max_tokens": 1000,
     "messages": [
       {
@@ -293,7 +523,41 @@ curl -X POST http://localhost:3456/v1/messages \
   }'
 ```
 
-## 🔨 Development
+#### Force Specific Provider
+```bash
+curl -X POST http://localhost:3456/v1/messages \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: your-api-key" \
+  -d '{
+    "model": "openai,gpt-4.1-turbo",
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+#### Long Context (auto-routes to longContext route)
+```bash
+curl -X POST http://localhost:3456/v1/messages \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: your-api-key" \
+  -d '{
+    "model": "any-model",
+    "messages": [{"role": "user", "content": "/* 100K+ token content */"}]
+  }'
+```
+
+#### Thinking Mode (routes to think route if configured)
+```bash
+curl -X POST http://localhost:3456/v1/messages \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: your-api-key" \
+  -d '{
+    "model": "claude-sonnet-4",
+    "thinking": true,
+    "messages": [{"role": "user", "content": "Solve this complex problem"}]
+  }'
+```
+
+## 🔨 Development Guide
 
 ### Building
 
@@ -332,7 +596,7 @@ Contributions are welcome! Please read our [Contributing Guidelines](docs/guide/
 
 Built with ❤️ for the Claude Code community.
 
-Inspired by the original [Claude Code Router](https://github.com/musistudio/claude-code-router) project.
+Inspired by the original [Claude Code Router](https://github.com/musistudio/claude-router) project.
 
 ## 🐛 Troubleshooting
 
@@ -366,6 +630,20 @@ LOG=true ./ccproxy start
 - 📖 [Documentation](https://ccproxy.orchestre.dev)
 - 🐛 [Issue Tracker](https://github.com/orchestre-dev/ccproxy/issues)
 - 💬 [Discussions](https://github.com/orchestre-dev/ccproxy/discussions)
+
+## 🌟 Summary
+
+CCProxy provides seamless multi-provider integration for AI-powered development. Access top-ranked models like Qwen3 235B, switch easily between OpenAI, Google Gemini, Anthropic Claude, DeepSeek, and leverage 100+ models through OpenRouter.
+
+### Key Benefits:
+- ✅ **Top-Ranked Models**: Access Qwen3 235B (70.3 AIME score) and 100+ models via OpenRouter
+- ✅ **Multi-Provider Support**: 5 major AI providers with full implementation
+- ✅ **Cost Optimization**: Route to cost-effective providers
+- ✅ **High Performance**: Minimal latency with Go
+- ✅ **Easy Setup**: One command configuration
+- ✅ **Enterprise Ready**: Built-in security and monitoring
+
+Start using CCProxy today to unlock multi-provider AI development!
 
 ---
 

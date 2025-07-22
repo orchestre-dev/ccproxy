@@ -1,410 +1,189 @@
 ---
-title: Installation Guide - CCProxy for All Operating Systems
-description: Complete installation guide for CCProxy on Windows, macOS, and Linux. Download binaries, use package managers, or build from source.
-keywords: CCProxy installation, Windows, macOS, Linux, binary download, package manager, Docker, build from source
+title: Installation Guide - CCProxy for Claude Code
+description: Install CCProxy on Windows, macOS, and Linux. Download pre-built binaries or build from source.
+keywords: CCProxy installation, AI proxy for Claude Code, Windows, macOS, Linux, binary download, Docker
 ---
 
 # Installation Guide
 
 <SocialShare />
 
-Install CCProxy on your system using the method that works best for you. CCProxy supports all major operating systems with pre-built binaries and multiple installation options.
+Install CCProxy on your system using the method that works best for you. CCProxy supports all major operating systems with pre-built binaries.
 
-<div id="os-detection" class="os-detection">
-  <div class="os-tabs">
-    <button class="os-tab" data-os="windows" onclick="switchOS('windows')">🪟 Windows</button>
-    <button class="os-tab" data-os="macos" onclick="switchOS('macos')">🍎 macOS</button>
-    <button class="os-tab" data-os="linux" onclick="switchOS('linux')">🐧 Linux</button>
-    <button class="os-tab" data-os="docker" onclick="switchOS('docker')">🐳 Docker</button>
-  </div>
-</div>
+## Quick Install (All Platforms)
 
-## Quick Install
+The fastest way to install CCProxy:
 
-<div class="os-content" id="windows-content">
-
-### Windows Installation
-
-#### Option 1: Direct Download (Recommended)
-```powershell
-# Download latest Windows binary
-Invoke-WebRequest -Uri "https://github.com/orchestre-dev/ccproxy/releases/latest/download/ccproxy-windows-amd64.exe" -OutFile "ccproxy.exe"
-
-# Make executable and run
-.\ccproxy.exe
-```
-
-#### Option 2: Using Scoop
-```powershell
-# Add the ccproxy bucket (coming soon)
-scoop bucket add ccproxy https://github.com/orchestre-dev/ccproxy-scoop
-scoop install ccproxy
-```
-
-#### Option 3: Using Chocolatey
-```powershell
-# Install via Chocolatey (coming soon)
-choco install ccproxy
-```
-
-#### Option 4: Manual Download
-1. Visit [CCProxy Releases](https://github.com/orchestre-dev/ccproxy/releases/latest)
-2. Download `ccproxy-windows-amd64.exe`
-3. Place in your preferred directory
-4. Run from Command Prompt or PowerShell
-
-</div>
-
-<div class="os-content" id="macos-content">
-
-### macOS Installation
-
-#### Option 1: Direct Download (Recommended)
 ```bash
-# Download for Apple Silicon (M1/M2/M3)
-curl -L "https://github.com/orchestre-dev/ccproxy/releases/latest/download/ccproxy-darwin-arm64" -o ccproxy
-chmod +x ccproxy
-
-# For Intel Macs
-curl -L "https://github.com/orchestre-dev/ccproxy/releases/latest/download/ccproxy-darwin-amd64" -o ccproxy
-chmod +x ccproxy
-
-# Run CCProxy
-./ccproxy
-```
-
-#### Option 2: Using Homebrew
-```bash
-# Add the ccproxy tap (coming soon)
-brew tap orchestre-dev/ccproxy
-brew install ccproxy
-```
-
-#### Option 3: One-Line Installer
-```bash
-# Auto-detect architecture and install
 curl -sSL https://raw.githubusercontent.com/orchestre-dev/ccproxy/main/install.sh | bash
 ```
 
-#### Option 4: Manual Download
+This script will:
+- Detect your operating system and architecture
+- Download the appropriate binary
+- Install it to `/usr/local/bin` (or `~/bin` on Windows)
+
+## Platform-Specific Installation
+
+### Windows
+
+#### Download Binary
 1. Visit [CCProxy Releases](https://github.com/orchestre-dev/ccproxy/releases/latest)
-2. Download `ccproxy-darwin-arm64` (Apple Silicon) or `ccproxy-darwin-amd64` (Intel)
-3. Make executable: `chmod +x ccproxy-*`
-4. Move to PATH: `sudo mv ccproxy-* /usr/local/bin/ccproxy`
+2. Download `ccproxy-windows-amd64.exe`
+3. Place in a directory in your PATH
+4. Run from Command Prompt or PowerShell:
+   ```powershell
+   ccproxy.exe version
+   ```
 
-</div>
+### macOS
 
-<div class="os-content" id="linux-content">
-
-### Linux Installation
-
-#### Option 1: Direct Download (Recommended)
+#### For Apple Silicon (M1/M2/M3)
 ```bash
-# For x86_64 systems
-curl -L "https://github.com/orchestre-dev/ccproxy/releases/latest/download/ccproxy-linux-amd64" -o ccproxy
+curl -L "https://github.com/orchestre-dev/ccproxy/releases/latest/download/ccproxy-darwin-arm64" -o ccproxy
 chmod +x ccproxy
-
-# For ARM64 systems
-curl -L "https://github.com/orchestre-dev/ccproxy/releases/latest/download/ccproxy-linux-arm64" -o ccproxy
-chmod +x ccproxy
-
-# Install system-wide
 sudo mv ccproxy /usr/local/bin/
 ```
 
-#### Option 2: Using Package Managers
-
-**Debian/Ubuntu (APT):**
+#### For Intel Macs
 ```bash
-# Add CCProxy repository (coming soon)
-curl -fsSL https://pkg.ccproxy.dev/gpg | sudo apt-key add -
-echo "deb https://pkg.ccproxy.dev/apt stable main" | sudo tee /etc/apt/sources.list.d/ccproxy.list
-sudo apt update && sudo apt install ccproxy
+curl -L "https://github.com/orchestre-dev/ccproxy/releases/latest/download/ccproxy-darwin-amd64" -o ccproxy
+chmod +x ccproxy
+sudo mv ccproxy /usr/local/bin/
 ```
 
-**RHEL/Fedora/CentOS (YUM/DNF):**
+### Linux
+
+#### For x86_64 systems
 ```bash
-# Add CCProxy repository (coming soon)
-sudo dnf config-manager --add-repo https://pkg.ccproxy.dev/rpm/ccproxy.repo
-sudo dnf install ccproxy
+curl -L "https://github.com/orchestre-dev/ccproxy/releases/latest/download/ccproxy-linux-amd64" -o ccproxy
+chmod +x ccproxy
+sudo mv ccproxy /usr/local/bin/
 ```
 
-**Arch Linux (AUR):**
+#### For ARM64 systems
 ```bash
-# Install from AUR (coming soon)
-yay -S ccproxy-bin
-# or
-paru -S ccproxy-bin
+curl -L "https://github.com/orchestre-dev/ccproxy/releases/latest/download/ccproxy-linux-arm64" -o ccproxy
+chmod +x ccproxy
+sudo mv ccproxy /usr/local/bin/
 ```
 
-#### Option 3: Snap Package
-```bash
-# Install via Snap (coming soon)
-sudo snap install ccproxy
-```
+## Docker Installation
 
-#### Option 4: AppImage
-```bash
-# Download and run AppImage (coming soon)
-curl -L "https://github.com/orchestre-dev/ccproxy/releases/latest/download/ccproxy-x86_64.AppImage" -o ccproxy.AppImage
-chmod +x ccproxy.AppImage
-./ccproxy.AppImage
-```
-
-</div>
-
-<div class="os-content" id="docker-content">
-
-### Docker Installation
-
-#### Option 1: Docker Run
-```bash
-# Run CCProxy in Docker
-docker run -p 3456:3456 \
-  -v $(pwd)/config.json:/home/ccproxy/.ccproxy/config.json \
-  orchestre-dev/ccproxy:latest
-```
-
-#### Option 2: Docker Compose
-```yaml
-# docker-compose.yml
-version: '3.8'
-services:
-  ccproxy:
-    image: orchestre-dev/ccproxy:latest
-    ports:
-      - "3456:3456"
-    volumes:
-      - ./config.json:/home/ccproxy/.ccproxy/config.json
-    restart: unless-stopped
-```
+Run CCProxy in a container:
 
 ```bash
-# Start with Docker Compose
+# Quick start with Docker
+docker run -d -p 3456:3456 \
+  -v ~/.ccproxy:/home/ccproxy/.ccproxy \
+  ghcr.io/orchestre-dev/ccproxy:latest
+
+# Or use Docker Compose
+curl -O https://raw.githubusercontent.com/orchestre-dev/ccproxy/main/docker-compose.yml
 docker-compose up -d
 ```
 
-#### Option 3: Kubernetes
-```yaml
-# ccproxy-deployment.yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: ccproxy
-spec:
-  replicas: 3
-  selector:
-    matchLabels:
-      app: ccproxy
-  template:
-    metadata:
-      labels:
-        app: ccproxy
-    spec:
-      containers:
-      - name: ccproxy
-        image: orchestre-dev/ccproxy:latest
-        ports:
-        - containerPort: 3456
-        volumeMounts:
-        - name: config
-          mountPath: /home/ccproxy/.ccproxy/config.json
-          subPath: config.json
-      volumes:
-      - name: config
-        configMap:
-          name: ccproxy-config
-```
+## Building from Source
 
-</div>
+If you want to build CCProxy yourself:
 
-## Build from Source
+### Prerequisites
+- Go 1.21 or later
+- Git
 
-For developers who want to build CCProxy from source:
-
+### Build Steps
 ```bash
 # Clone the repository
 git clone https://github.com/orchestre-dev/ccproxy.git
 cd ccproxy
 
-# Build for your platform
-go build -o ccproxy ./cmd/ccproxy
+# Build for your current platform
+make build
 
 # Or build for all platforms
-./scripts/build.sh
+make build-all
+
+# Install locally
+sudo make install
 ```
 
-## Verification
+## Verify Installation
 
 After installation, verify CCProxy is working:
 
 ```bash
 # Check version
-ccproxy --version
+ccproxy version
 
-# Test health endpoint
+# Check status
+ccproxy status
+
+# Run health check
+ccproxy start
 curl http://localhost:3456/health
-
-# Configure for Claude Code
-export ANTHROPIC_BASE_URL=http://localhost:3456
-export ANTHROPIC_AUTH_TOKEN=test
 ```
+
+## Configuration
+
+After installation, create a configuration file:
+
+```bash
+mkdir -p ~/.ccproxy
+cat > ~/.ccproxy/config.json << 'EOF'
+{
+  "providers": [
+    {
+      "name": "anthropic",
+      "api_key": "your-anthropic-key",
+      "models": ["claude-opus-4-20250720", "claude-sonnet-4-20250720", "claude-3-5-haiku-20241022"],
+      "enabled": true
+    }
+  ],
+  "routes": {
+    "default": {
+      "provider": "anthropic",
+      "model": "claude-sonnet-4-20250720"
+    },
+    "longContext": {
+      "provider": "anthropic", 
+      "model": "claude-opus-4-20250720"
+    }
+  }
+}
+EOF
+```
+
+**Note**: The `models` array validates available models, while the `routes` section defines which models are actually used for requests.
+
+⚠️ **Model names change frequently. Check provider documentation for latest models.**
 
 ## Next Steps
 
-1. **[Configuration](/guide/configuration)** - Set up your AI providers
-2. **[Quick Start](/guide/quick-start)** - Get up and running in 2 minutes
-3. **[Provider Guide](/providers/)** - Supported AI providers
+- [Quick Start Guide](/guide/quick-start) - Get running in 2 minutes
+- [Configuration Guide](/guide/configuration) - Detailed configuration options
+- [Provider Setup](/providers/) - Configure AI providers
 
 ## Troubleshooting
 
-### Common Issues
-
-**Permission Denied (macOS/Linux):**
+### Permission Denied
+If you get "permission denied" when running the install script:
 ```bash
-chmod +x ccproxy
+chmod +x install.sh
+./install.sh
 ```
 
-**Windows Security Warning:**
-Right-click the executable and select "Run anyway" or add an exception to Windows Defender.
-
-**Port Already in Use:**
+### Command Not Found
+If `ccproxy` is not found after installation, add the install directory to your PATH:
 ```bash
-# Edit config.json to use a different port
-{
-  "port": 8187
-}
+export PATH="$PATH:/usr/local/bin"
 ```
 
-**Firewall Issues:**
-Ensure port 3456 is open in your firewall settings.
+### Binary Not Found for Platform
+Available binaries:
+- `ccproxy-linux-amd64` - Linux x86_64
+- `ccproxy-linux-arm64` - Linux ARM64
+- `ccproxy-darwin-amd64` - macOS Intel
+- `ccproxy-darwin-arm64` - macOS Apple Silicon
+- `ccproxy-windows-amd64.exe` - Windows x86_64
 
-### Getting Help
-
-- 📖 [Documentation](/)
-- 💬 [Community Support](https://github.com/orchestre-dev/ccproxy/discussions) - Ask questions and get help
-- 🐛 [Report Issues](https://github.com/orchestre-dev/ccproxy/issues) - Bug reports and feature requests
-- 🔧 [Configuration Guide](/guide/configuration)
-
-<script>
-// Auto-detect operating system
-function detectOS() {
-  if (typeof navigator === 'undefined') return 'linux';
-  const userAgent = navigator.userAgent.toLowerCase();
-  if (userAgent.includes('win')) return 'windows';
-  if (userAgent.includes('mac')) return 'macos';
-  if (userAgent.includes('linux')) return 'linux';
-  return 'linux'; // default
-}
-
-// Switch between OS tabs
-function switchOS(os) {
-  if (typeof document === 'undefined') return;
-  
-  // Add js-loaded class to body for CSS
-  document.body.classList.add('js-loaded');
-  
-  // Hide all content and remove active classes
-  document.querySelectorAll('.os-content').forEach(content => {
-    content.style.display = 'none';
-    content.classList.remove('active');
-  });
-  
-  document.querySelectorAll('.os-tab').forEach(tab => {
-    tab.classList.remove('active');
-  });
-  
-  // Show selected content
-  const content = document.getElementById(os + '-content');
-  if (content) {
-    content.style.display = 'block';
-    content.classList.add('active');
-  }
-  
-  // Add active class to selected tab
-  const tab = document.querySelector(`[data-os="${os}"]`);
-  if (tab) {
-    tab.classList.add('active');
-  }
-}
-
-// Initialize on page load (client-side only)
-if (typeof window !== 'undefined') {
-  function initializeOS() {
-    const detectedOS = detectOS();
-    console.log('Detected OS:', detectedOS); // Debug log
-    switchOS(detectedOS);
-  }
-  
-  // Initialize when DOM is ready
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeOS);
-  } else {
-    // DOM is already loaded
-    initializeOS();
-  }
-}
-</script>
-
-<style>
-.os-detection {
-  margin: 24px 0;
-}
-
-.os-tabs {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 24px;
-  border-bottom: 1px solid var(--vp-c-border);
-}
-
-.os-tab {
-  padding: 12px 20px;
-  border: none;
-  background: transparent;
-  color: var(--vp-c-text-2);
-  cursor: pointer;
-  border-radius: 6px 6px 0 0;
-  font-weight: 500;
-  transition: all 0.2s;
-}
-
-.os-tab:hover {
-  background: var(--vp-c-bg-soft);
-  color: var(--vp-c-text-1);
-}
-
-.os-tab.active {
-  background: var(--vp-c-brand-1);
-  color: white;
-}
-
-.os-content {
-  display: none;
-}
-
-.os-content.active {
-  display: block;
-}
-
-/* Fallback: show macOS by default if JavaScript fails */
-#macos-content {
-  display: block;
-}
-
-/* Hide all when JavaScript loads */
-.js-loaded .os-content {
-  display: none;
-}
-
-@media (max-width: 640px) {
-  .os-tabs {
-    flex-wrap: wrap;
-  }
-  
-  .os-tab {
-    flex: 1;
-    min-width: 120px;
-  }
-}
-</style>
+If your platform isn't supported, please [build from source](#building-from-source).

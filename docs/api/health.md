@@ -2,6 +2,8 @@
 
 CCProxy provides several endpoints for monitoring the health and status of the service and underlying providers.
 
+<SocialShare />
+
 ## Endpoints Overview
 
 | Endpoint | Method | Purpose | Authentication |

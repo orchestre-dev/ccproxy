@@ -2,6 +2,8 @@
 
 CCProxy uses a JSON configuration file (`config.json`) as its primary configuration method. However, it supports environment variables for specific use cases, including sensitive data like API keys and Claude Code integration.
 
+<SocialShare />
+
 ## Environment Variable Support
 
 ### Variable Substitution in config.json
