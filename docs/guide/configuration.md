@@ -114,7 +114,7 @@ CCProxy uses a `config.json` file for all configuration. The file is typically l
 
 ### 🤖 OpenAI
 
-**GPT-4 and GPT-3.5 models with full compatibility**
+**OpenAI models with full compatibility**
 
 ```json
 {
@@ -632,7 +632,7 @@ CCProxy automatically maps parameters for different providers:
 #### OpenAI Compatibility
 - Full support for all standard parameters
 - Native `frequency_penalty` and `presence_penalty` support
-- Compatible with GPT-3.5 and GPT-4 models
+- Compatible with all OpenAI models
 
 ### Function Calling
 

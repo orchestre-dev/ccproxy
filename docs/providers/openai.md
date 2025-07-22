@@ -181,7 +181,7 @@ OpenAI has the most complete parameter support in CCProxy:
 
 ### Vision Capabilities
 
-GPT-4o and GPT-4.1 series models support image inputs:
+OpenAI's vision-capable models support image inputs:
 
 ```json
 {

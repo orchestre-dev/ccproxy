@@ -5,16 +5,10 @@ on:
     branches: [main]
     paths:
       - 'docs/**'
-      - 'README.md'
-      - 'CLAUDE.md'
-      - '.github/workflows/docs.yml'
   pull_request:
     branches: [main]
     paths:
       - 'docs/**'
-      - 'README.md'
-      - 'CLAUDE.md'
-      - '.github/workflows/docs.yml'
   workflow_dispatch:
     inputs:
       deploy_production:

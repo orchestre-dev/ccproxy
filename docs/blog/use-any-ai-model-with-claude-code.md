@@ -1,10 +1,10 @@
 ---
 title: "CCProxy v1.0: Use Any AI Model with Claude Code"
-description: "CCProxy Version 1.0 is here! Keep using Claude Code while accessing GPT-4, Gemini, Qwen3, and 100+ other models. Perfect for developers who want flexibility, marketers who need speed, and writers who demand quality."
+description: "CCProxy Version 1.0 is here! Keep using Claude Code while accessing OpenAI models, Gemini, Qwen3, and 100+ other models. Perfect for developers who want flexibility, marketers who need speed, and writers who demand quality."
 publishedAt: "2025-07-22"
 authors: ["CCProxy Team"]
 categories: ["Release", "Claude Code", "AI Models"]
-keywords: ["Claude Code with GPT-4", "Claude Code multiple models", "CCProxy v1.0", "Claude Code OpenAI", "Claude Code Gemini", "Claude Code alternatives", "multi-model Claude Code"]
+keywords: ["Claude Code with OpenAI", "Claude Code multiple models", "CCProxy v1.0", "Claude Code OpenAI", "Claude Code Gemini", "Claude Code alternatives", "multi-model Claude Code"]
 image: "/blog/claude-code-any-model-banner.png"
 ---
 
@@ -192,29 +192,32 @@ We've enhanced the user experience with:
 - **Latest Models card** showcasing July 2025 updates
 - **Responsive design** that works beautifully on all devices
 
-### 📚 Documentation That Actually Helps
+### 📚 Clear, Practical Documentation
 
-No more confusion about environment variables or configuration:
+Configuration is straightforward - just JSON, no complex CLI flags:
 
 ```json
-// ❌ This DOESN'T work:
-PROVIDER=groq GROQ_API_KEY=sk-... ccproxy start
-
-// ✅ This DOES work:
 {
   "providers": [{
-    "name": "openrouter",
-    "api_key": "${OPENROUTER_API_KEY}",
+    "name": "openai",
+    "api_key": "${OPENAI_API_KEY}",  // Use environment variables
+    "models": ["gpt-4o", "gpt-4o-mini"],
     "enabled": true
-  }]
+  }],
+  "routes": {
+    "default": {
+      "provider": "openai",
+      "model": "gpt-4o"
+    }
+  }
 }
 ```
 
-We've created:
-- **Comprehensive API documentation**
-- **Provider comparison matrices**
-- **Model routing guides**
-- **Real-world configuration examples**
+Our documentation includes:
+- **Step-by-step setup guides** for each provider
+- **Working examples** you can copy and use
+- **Troubleshooting tips** for common issues
+- **Performance optimization** strategies
 
 ## Why This Matters for Your Development Workflow
 
@@ -298,20 +301,47 @@ Our new installation script includes:
 - Binary integrity checks
 - Clear permission requests
 
-### 2. Keep Using Claude Code (Now Supercharged)
+### 2. Configure Your First Provider
+
+Create a basic configuration:
+```bash
+mkdir -p ~/.ccproxy
+cat > ~/.ccproxy/config.json << 'EOF'
+{
+  "providers": [{
+    "name": "openai",
+    "api_key": "your-openai-api-key",
+    "models": ["gpt-4o", "gpt-4o-mini"],
+    "enabled": true
+  }],
+  "routes": {
+    "default": {
+      "provider": "openai",
+      "model": "gpt-4o"
+    }
+  }
+}
+EOF
+```
+
+### 3. Start CCProxy and Connect Claude Code
 
 ```bash
 # Start CCProxy
 ccproxy start
 
-# Tell Claude Code to use CCProxy
+# Auto-configure Claude Code (recommended)
+ccproxy code
+
+# Or manually configure
 export ANTHROPIC_BASE_URL=http://localhost:3456
+export ANTHROPIC_AUTH_TOKEN=test
 
 # Use Claude Code as normal - but now with ANY model!
 claude "Help me write better code"
 ```
 
-### 3. Configure Models Based on Your Role
+### 4. Configure Models Based on Your Role
 
 **For Developers:**
 ```json
