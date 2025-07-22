@@ -120,7 +120,7 @@ export default withMermaid(defineConfig({
           text: 'Blog Posts',
           items: [
             { text: 'All Posts', link: '/blog/' },
-            { text: '🎉 v1+ Release Announcement', link: '/blog/ccproxy-release-multi-model-revolution' },
+            { text: '🎉 v1.0 Release: Use Any Model', link: '/blog/use-any-ai-model-with-claude-code' },
             { text: 'Qwen3 235B: Top Model', link: '/blog/qwen3-235b-top-model' },
             { text: 'OpenAI Integration', link: '/blog/openai-claude-code-integration' },
             { text: 'Google Gemini Guide', link: '/blog/google-gemini-claude-code-multimodal' },
