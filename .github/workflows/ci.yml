@@ -37,6 +37,14 @@ jobs:
         make fmt
         git diff --exit-code || (echo "Code not properly formatted. Run 'make fmt'" && exit 1)
 
+    - name: Install golangci-lint
+      uses: golangci/golangci-lint-action@v6
+      with:
+        version: latest
+        skip-pkg-cache: true
+        skip-build-cache: true
+        args: --version
+
     - name: Lint
       run: make lint
 

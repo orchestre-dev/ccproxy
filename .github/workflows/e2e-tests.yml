@@ -46,8 +46,13 @@ jobs:
         # Ensure no existing processes
         pkill -f "ccproxy" || true
         
-        # Run tests with timeout and limited parallelism
-        go test -v ./tests/e2e/... -count=1 -parallel=1 -timeout=10m
+        # Run integration tests if they exist
+        if [ -d "./tests" ]; then
+          go test -v ./tests/... -count=1 -parallel=1 -timeout=10m
+        else
+          # Run all tests as E2E since no dedicated E2E directory exists
+          go test -v ./... -count=1 -parallel=1 -timeout=10m -tags=integration
+        fi
         
         # Cleanup
         pkill -f "ccproxy" || true
