@@ -327,7 +327,7 @@ func (s *Service) checkProviderHealth(provider *config.Provider) {
 			healthy = false
 			errorMsg = fmt.Sprintf("request failed: %v", err)
 		} else {
-			resp.Body.Close()
+			_ = resp.Body.Close() // Safe to ignore: just checking health status
 
 			// Check response status
 			if resp.StatusCode >= 500 {

@@ -94,7 +94,7 @@ func (t *ToolUseTransformer) TransformResponseOut(ctx context.Context, response 
 func (t *ToolUseTransformer) transformNonStreamingResponse(ctx context.Context, response *http.Response) (*http.Response, error) {
 	// Read the response body
 	body, err := io.ReadAll(response.Body)
-	response.Body.Close()
+	_ = response.Body.Close() // Safe to ignore: already read all data
 	if err != nil {
 		return nil, err
 	}
@@ -316,6 +316,10 @@ func (t *ToolUseTransformer) transformStreamEvent(event *SSEEvent, state *toolUs
 	}
 
 	// Serialize the modified chunk
-	modifiedData, _ := json.Marshal(chunk)
+	modifiedData, err := json.Marshal(chunk)
+	if err != nil {
+		// Return original data on error
+		return event
+	}
 	return &SSEEvent{Data: string(modifiedData)}
 }

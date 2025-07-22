@@ -177,7 +177,7 @@ func (p *Pipeline) ProcessRequest(ctx context.Context, req *RequestContext) (*Re
 	if err != nil {
 		// Close response body to prevent leak
 		if httpResp.Body != nil {
-			httpResp.Body.Close()
+			_ = httpResp.Body.Close() // Safe to ignore: closing on error path
 		}
 		return nil, fmt.Errorf("response transformation failed: %w", err)
 	}
