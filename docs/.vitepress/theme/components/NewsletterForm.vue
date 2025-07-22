@@ -159,17 +159,23 @@ const handleSubmit = async () => {
   min-width: 140px;
   padding: 10px 16px;
   font-size: 16px;
-  border: 1px solid var(--vp-c-divider);
+  border: 2px solid var(--vp-c-brand-1);
   border-radius: 9999px;
   background: var(--vp-c-bg);
   color: var(--vp-c-text-1);
   transition: all 0.2s ease;
+  opacity: 0.7;
+}
+
+.form-input:hover {
+  opacity: 0.85;
 }
 
 .form-input:focus {
   outline: none;
   border-color: var(--vp-c-brand-1);
   background: var(--vp-c-bg-elv);
+  opacity: 1;
 }
 
 .form-input::placeholder {
@@ -279,7 +285,7 @@ const handleSubmit = async () => {
 
 .dark .form-input {
   background: var(--vp-c-bg);
-  border-color: rgba(255, 255, 255, 0.1);
+  border-color: var(--vp-c-brand-1);
 }
 
 .dark .form-input:focus {
