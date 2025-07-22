@@ -1,0 +1,8 @@
+{
+  "$schema": "https://developers.cloudflare.com/schemas/wrangler.json",
+  "name": "ccproxy",
+  "compatibility_date": "2025-07-22",
+  "pages": {
+    "build_output_directory": ".vitepress/dist"
+  }
+}

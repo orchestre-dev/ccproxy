@@ -1,0 +1,62 @@
+name: E2E Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  e2e-tests:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        go: ['1.22.x', '1.23.x']
+    timeout-minutes: 15
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: ${{ matrix.go }}
+    
+    - name: Cache Go modules
+      uses: actions/cache@v4
+      with:
+        path: ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-go-
+    
+    - name: Install dependencies
+      run: go mod download
+    
+    - name: Build CCProxy
+      run: go build -v ./cmd/ccproxy
+    
+    - name: Run E2E tests with safety
+      env:
+        CCPROXY_TEST_MODE: "1"
+        CCPROXY_SPAWN_DEPTH: "0"
+      run: |
+        # Ensure no existing processes
+        pkill -f "ccproxy" || true
+        
+        # Run tests with timeout and limited parallelism
+        go test -v ./tests/e2e/... -count=1 -parallel=1 -timeout=10m
+        
+        # Cleanup
+        pkill -f "ccproxy" || true
+    
+    - name: Check for leaked processes
+      if: always()
+      run: |
+        if pgrep -f "ccproxy"; then
+          echo "::warning::CCProxy processes still running after tests"
+          ps aux | grep ccproxy | grep -v grep || true
+          pkill -f "ccproxy" || true
+        fi
