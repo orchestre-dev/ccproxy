@@ -12,3 +12,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix auto-release version bump and remove Docker from all pipelines
 - Fix Go version inconsistency and file formatting
 
+## [1.0.2] - 2025-07-22
+
+### 🐛 Bug Fixes
+
+- Fix pre-release version detection to exclude rc tags
+- Format version.go with proper tab indentation
+- Update version.sh to generate Go files with tab indentation
+
