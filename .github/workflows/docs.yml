@@ -68,16 +68,11 @@ jobs:
           echo "Current directory: $(pwd)"
           echo "NODE_ENV: ${NODE_ENV}"
           
-          # Debug VitePress
-          echo "VitePress version:"
-          npx vitepress --version || echo "VitePress version check failed"
-          echo ""
-          echo "VitePress help:"
-          npx vitepress --help || echo "VitePress help failed"
-          echo ""
+          # Check VitePress installation
           echo "Checking VitePress binary:"
-          which vitepress || echo "vitepress not in PATH"
           ls -la ./node_modules/.bin/vitepress || echo "vitepress binary not found"
+          echo "Package.json scripts:"
+          cat package.json | grep -A5 '"scripts"' || echo "Could not read package.json"
           
           # Build the documentation explicitly
           echo "Starting build process..."
