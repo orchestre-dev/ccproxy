@@ -109,7 +109,8 @@ For flexibility, configure multiple providers with fallback:
       "provider": "openrouter",
       "model": "moonshot/kimi-k2-128k"
     },
-    "fallback": {
+    // Route specific Claude models to Anthropic
+    "claude-3-sonnet-20240229": {
       "provider": "anthropic",
       "model": "claude-3-sonnet-20240229"
     }

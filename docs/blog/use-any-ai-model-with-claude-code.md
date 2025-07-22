@@ -319,8 +319,9 @@ claude "Help me write better code"
   "routes": {
     "default": { "provider": "openrouter", "model": "xai/grok-4-code" },
     "longContext": { "provider": "gemini", "model": "gemini-2.5-pro" },
-    "quick": { "provider": "openrouter", "model": "moonshot/kimi-k2-128k" },
-    "free": { "provider": "gemini", "model": "gemini-2.0-flash" }
+    "background": { "provider": "openrouter", "model": "moonshot/kimi-k2-128k" },
+    // Map specific Claude models to alternatives
+    "claude-3-5-sonnet-20241022": { "provider": "gemini", "model": "gemini-2.0-flash" }
   }
 }
 ```
@@ -330,8 +331,9 @@ claude "Help me write better code"
 {
   "routes": {
     "default": { "provider": "openrouter", "model": "qwen/qwen3-235b:free" },
-    "analysis": { "provider": "gemini", "model": "gemini-2.5-pro" },
-    "creative": { "provider": "anthropic", "model": "claude-opus-4" }
+    "longContext": { "provider": "gemini", "model": "gemini-2.5-pro" },
+    // Keep using Claude for creative tasks
+    "claude-opus-4": { "provider": "anthropic", "model": "claude-opus-4-20250720" }
   }
 }
 ```
@@ -340,9 +342,10 @@ claude "Help me write better code"
 ```json
 {
   "routes": {
-    "default": { "provider": "anthropic", "model": "claude-sonnet-4" },
-    "research": { "provider": "gemini", "model": "gemini-2.5-pro" },
-    "technical": { "provider": "openrouter", "model": "qwen/qwen3-235b:free" }
+    "default": { "provider": "anthropic", "model": "claude-sonnet-4-20250720" },
+    "longContext": { "provider": "gemini", "model": "gemini-2.5-pro" },
+    // Route specific models to alternatives
+    "claude-3-5-sonnet-20241022": { "provider": "openrouter", "model": "qwen/qwen3-235b:free" }
   }
 }
 ```
@@ -405,10 +408,11 @@ claude --model "openrouter,xai/grok-4-code" "Implement this feature with tests"
     "enabled": true
   }],
   "routes": {
-    "benchmark": { "provider": "openrouter", "model": "auto" },
-    "test-reasoning": { "provider": "openrouter", "model": "qwen/qwen3-235b:free" },
-    "test-speed": { "provider": "openrouter", "model": "moonshot/kimi-k2" },
-    "test-vision": { "provider": "openrouter", "model": "xai/grok-4-vision" }
+    "default": { "provider": "openrouter", "model": "auto" },
+    // Route specific Claude models to test alternatives
+    "claude-opus-4": { "provider": "openrouter", "model": "qwen/qwen3-235b:free" },
+    "claude-sonnet-4": { "provider": "openrouter", "model": "moonshot/kimi-k2" },
+    "claude-3-5-haiku-20241022": { "provider": "openrouter", "model": "xai/grok-4-vision" }
   }
 }
 ```
