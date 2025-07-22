@@ -25,6 +25,20 @@ fi
 VERSION_FILE="internal/version/version.go"
 CHANGELOG_FILE="CHANGELOG.md"
 
+# Validate script is run from project root
+if [ ! -f "go.mod" ]; then
+    error "This script must be run from the project root directory"
+    exit 1
+fi
+
+# Validate version file directory exists
+VERSION_DIR=$(dirname "$VERSION_FILE")
+if [ ! -d "$VERSION_DIR" ]; then
+    error "Version directory '$VERSION_DIR' does not exist"
+    error "Please ensure the project structure is correct"
+    exit 1
+fi
+
 # Print colored message
 print_msg() {
     local color=$1

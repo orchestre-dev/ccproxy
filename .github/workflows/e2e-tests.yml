@@ -43,8 +43,29 @@ jobs:
         CCPROXY_TEST_MODE: "1"
         CCPROXY_SPAWN_DEPTH: "0"
       run: |
-        # Ensure no existing processes
-        pkill -f "ccproxy" || true
+        # Store PIDs of any ccproxy processes we start
+        CCPROXY_PIDS=""
+        
+        # Function to cleanup ccproxy processes
+        cleanup_ccproxy() {
+          if [ -n "$CCPROXY_PIDS" ]; then
+            for pid in $CCPROXY_PIDS; do
+              if kill -0 "$pid" 2>/dev/null; then
+                echo "Stopping ccproxy process $pid"
+                kill "$pid" 2>/dev/null || true
+                # Give it time to gracefully shutdown
+                sleep 1
+                # Force kill if still running
+                kill -9 "$pid" 2>/dev/null || true
+              fi
+            done
+          fi
+          # Final cleanup for any orphaned processes
+          pkill -x "ccproxy" || true
+        }
+        
+        # Set trap to cleanup on exit
+        trap cleanup_ccproxy EXIT
         
         # Run integration tests if they exist
         if [ -d "./tests" ]; then
@@ -53,9 +74,6 @@ jobs:
           # Run all tests as E2E since no dedicated E2E directory exists
           go test -v ./... -count=1 -parallel=1 -timeout=10m -tags=integration
         fi
-        
-        # Cleanup
-        pkill -f "ccproxy" || true
     
     - name: Check for leaked processes
       if: always()
