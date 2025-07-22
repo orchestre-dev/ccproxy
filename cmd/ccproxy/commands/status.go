@@ -42,7 +42,7 @@ func StatusCmd() *cobra.Command {
 
 			// Display status with exact formatting from TypeScript version
 			fmt.Println("")
-			fmt.Println("📊 Claude Code Router Status")
+			fmt.Println("📊 CCProxy Status")
 			fmt.Println("════════════════════════════════════════")
 
 			if runningPID > 0 {

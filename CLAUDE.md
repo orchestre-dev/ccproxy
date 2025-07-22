@@ -1,8 +1,8 @@
-# CCProxy - Claude Code Router (Go Implementation)
+# CCProxy - AI Request Proxy (Go Implementation)
 
 ## Project Overview
 
-CCProxy is a high-performance Go implementation of the Claude Code Router, providing intelligent model routing, multi-provider support, and comprehensive request/response transformation for AI services. This is a complete rewrite from TypeScript to Go with enhanced security, performance, and reliability features.
+CCProxy is a high-performance Go proxy server that enables Claude Code to work with multiple AI providers through intelligent routing, multi-provider support, and comprehensive request/response transformation. This is a complete rewrite from TypeScript to Go with enhanced security, performance, and reliability features.
 
 ## Architecture
 
