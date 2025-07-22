@@ -36,11 +36,21 @@ export default withMermaid(defineConfig({
     
     // Navigation
     nav: [
-      { text: 'Home', link: '/' },
-      { text: 'Quick Start', link: '/guide/quick-start' },
-      { text: 'API', link: '/api/' },
+      { text: 'Guide', link: '/guide/' },
       { text: 'Providers', link: '/providers/' },
-      { text: 'Blog', link: '/blog/' }
+      { text: 'Kimi K2', link: '/kimi-k2' },
+      { text: 'Blog', link: '/blog/' },
+      { text: 'API', link: '/api/' },
+      {
+        text: 'Community',
+        items: [
+          { text: 'GitHub', link: 'https://github.com/orchestre-dev/ccproxy' },
+          { text: 'Discussions', link: 'https://github.com/orchestre-dev/ccproxy/discussions' },
+          { text: 'Issues & Bug Reports', link: 'https://github.com/orchestre-dev/ccproxy/issues' },
+          { text: 'Feature Requests', link: 'https://github.com/orchestre-dev/ccproxy/issues/new?template=feature_request.md' }
+        ]
+      },
+      { text: 'Orchestre', link: 'https://orchestre.dev' }
     ],
 
     // Sidebar
@@ -59,6 +69,7 @@ export default withMermaid(defineConfig({
           text: 'Advanced Topics',
           items: [
             { text: 'Advanced Workflows', link: '/guide/advanced-workflows' },
+            { text: 'Intelligent Routing', link: '/guide/routing' },
             { text: 'Security', link: '/guide/security' },
             { text: 'Performance', link: '/guide/performance' },
             { text: 'Monitoring', link: '/guide/monitoring' },
@@ -128,8 +139,8 @@ export default withMermaid(defineConfig({
 
     // Footer
     footer: {
-      message: 'CCProxy - The AI Request Proxy for Claude Code',
-      copyright: 'Copyright © 2025 CCProxy Team'
+      message: 'Released under the MIT License. ⭐ <a href="https://github.com/orchestre-dev/ccproxy">GitHub</a> • 💬 <a href="https://github.com/orchestre-dev/ccproxy/discussions">Join Discussions</a> • 🐛 <a href="https://github.com/orchestre-dev/ccproxy/issues">Report Issues</a>',
+      copyright: 'Copyright © 2025, Made with ❤️ by <a href="https://orchestre.dev">Orchestre</a> for the Claude Code community'
     },
 
     // Search
