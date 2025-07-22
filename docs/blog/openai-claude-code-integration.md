@@ -611,6 +611,14 @@ export ANTHROPIC_API_KEY=NOT_NEEDED
 
 ---
 
+### Stay Updated
+
+Join our newsletter to get the latest updates on new models, features, and best practices. We promise to only send you the good stuff – no spam, just pure AI development insights.
+
+<NewsletterForm />
+
+---
+
 *Want to try different AI providers with Claude Code? Join our [community discussions](https://github.com/orchestre-dev/ccproxy/discussions) where the Orchestre community shares experiences integrating different AI models into their workflows.*
 
 *CCProxy is developed by [Orchestre](https://orchestre.dev), building tools that make AI more accessible and flexible for everyone.*

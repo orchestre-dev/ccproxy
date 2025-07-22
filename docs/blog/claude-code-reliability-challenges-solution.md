@@ -378,6 +378,14 @@ We built CCProxy to solve our own productivity challenges, and we're sharing it 
 
 ---
 
+### Stay Updated
+
+Join our newsletter to get the latest updates on new models, features, and best practices. We promise to only send you the good stuff – no spam, just pure AI development insights.
+
+<NewsletterForm />
+
+---
+
 *Experiencing Claude Code reliability issues? Join our [community discussions](https://github.com/orchestre-dev/ccproxy/discussions) where developers share backup strategies and coordinate during service outages.*
 
 *CCProxy is developed by [Orchestre](https://orchestre.dev), building tools that enhance developer productivity and business continuity.*
