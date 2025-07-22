@@ -136,3 +136,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - installation script cleanup trap causing file not found error
 
+## [1.3.0] - 2025-07-22
+
+### ✨ Features
+
+- improve installation UX with automatic config setup
+- add Windows support and platform-specific clarity
+- enhance installer safety and validation
+
