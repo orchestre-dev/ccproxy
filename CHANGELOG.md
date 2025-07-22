@@ -112,3 +112,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - ensure docs workflow runs build instead of dev server
 
+## [1.2.4] - 2025-07-22
+
+### 🐛 Bug Fixes
+
+- force vitepress build mode with CI=true environment variable
+
