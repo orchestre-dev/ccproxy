@@ -6,22 +6,9 @@ keywords: Ollama, Claude Code, CCProxy, local AI, privacy AI, offline AI, zero c
 
 # Ollama Provider
 
-<div class="social-share">
-  <button class="share-twitter" onclick="shareToTwitter()">
-    🐦 Share on Twitter
-  </button>
-  <button class="share-linkedin" onclick="shareToLinkedIn()">
-    💼 Share on LinkedIn
-  </button>
-  <button class="share-reddit" onclick="shareToReddit()">
-    🔗 Share on Reddit
-  </button>
-  <button class="share-copy" onclick="copyToClipboard()">
-    📋 Copy Link
-  </button>
-</div>
-
 **Ollama revolutionizes AI development** by enabling you to run large language models locally on your machine. Through **CCProxy integration with Claude Code**, you gain complete privacy, offline capabilities, and zero ongoing costs while maintaining the familiar Claude Code experience.
+
+<SocialShare />
 
 ## 🔒 Why Choose Ollama for Claude Code?
 
@@ -537,33 +524,3 @@ curl http://localhost:3456/health
 - Learn about local privacy benefits for sensitive code and data
 - Set up hardware optimization for best performance
 - Explore custom model creation and local fine-tuning
-
-<script>
-function shareToTwitter() {
-  const url = encodeURIComponent(window.location.href);
-  const text = encodeURIComponent('🔒 Ollama + Claude Code + CCProxy = Privacy-first local AI development! Zero costs, complete privacy, offline capabilities');
-  window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`, '_blank');
-}
-
-function shareToLinkedIn() {
-  const url = encodeURIComponent(window.location.href);
-  window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank');
-}
-
-function shareToReddit() {
-  const url = encodeURIComponent(window.location.href);
-  const title = encodeURIComponent('Ollama with Claude Code - Local Privacy-First AI via CCProxy');
-  window.open(`https://reddit.com/submit?url=${url}&title=${title}`, '_blank');
-}
-
-function copyToClipboard() {
-  navigator.clipboard.writeText(window.location.href).then(() => {
-    const button = event.target;
-    const originalText = button.textContent;
-    button.textContent = '✅ Copied!';
-    setTimeout(() => {
-      button.textContent = originalText;
-    }, 2000);
-  });
-}
-</script>

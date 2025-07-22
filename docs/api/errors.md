@@ -6,9 +6,9 @@ keywords: CCProxy errors, API error handling, troubleshooting, status codes
 
 # Error Handling
 
-<SocialShare />
-
 Understand CCProxy error responses and handle them gracefully.
+
+<SocialShare />
 
 ## Error Response Format
 

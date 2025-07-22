@@ -6,22 +6,9 @@ keywords: OpenRouter, Claude Code, CCProxy, Kimi K2, 100+ AI models, model fallb
 
 # OpenRouter Provider
 
-<div class="social-share">
-  <button class="share-twitter" onclick="shareToTwitter()">
-    🐦 Share on Twitter
-  </button>
-  <button class="share-linkedin" onclick="shareToLinkedIn()">
-    💼 Share on LinkedIn
-  </button>
-  <button class="share-reddit" onclick="shareToReddit()">
-    🔗 Share on Reddit
-  </button>
-  <button class="share-copy" onclick="copyToClipboard()">
-    📋 Copy Link
-  </button>
-</div>
-
 **OpenRouter unlocks the full AI ecosystem** by providing access to 100+ different AI models through a single API. As a **major supporter of Kimi K2**, OpenRouter offers reliable access to Moonshot AI's breakthrough model alongside Claude, GPT-4, and many others. When combined with **Claude Code and CCProxy**, OpenRouter becomes the ultimate platform for AI experimentation, allowing you to find the perfect model for each development task.
+
+<SocialShare />
 
 ## 🎯 Why Choose OpenRouter for Claude Code?
 
@@ -343,33 +330,3 @@ curl http://localhost:3456/status
 - Learn about model fallbacks for production reliability
 - Set up [usage monitoring](/guide/monitoring) to optimize model selection and costs
 - Try [Groq with Kimi K2](/providers/groq) for ultra-fast inference alongside OpenRouter
-
-<script>
-function shareToTwitter() {
-  const url = encodeURIComponent(window.location.href);
-  const text = encodeURIComponent('🎯 OpenRouter + Claude Code + CCProxy = Access to 100+ AI models! Claude 3.5, GPT-4, Llama, Mistral, and more through unified API');
-  window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`, '_blank');
-}
-
-function shareToLinkedIn() {
-  const url = encodeURIComponent(window.location.href);
-  window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank');
-}
-
-function shareToReddit() {
-  const url = encodeURIComponent(window.location.href);
-  const title = encodeURIComponent('OpenRouter with Claude Code - 100+ AI Models via CCProxy');
-  window.open(`https://reddit.com/submit?url=${url}&title=${title}`, '_blank');
-}
-
-function copyToClipboard() {
-  navigator.clipboard.writeText(window.location.href).then(() => {
-    const button = event.target;
-    const originalText = button.textContent;
-    button.textContent = '✅ Copied!';
-    setTimeout(() => {
-      button.textContent = originalText;
-    }, 2000);
-  });
-}
-</script>

@@ -2,6 +2,8 @@
 
 CCProxy is a high-performance, multi-provider AI proxy specifically designed to work seamlessly with Claude Code. It enables you to use any supported AI provider while maintaining perfect compatibility with Claude Code's Anthropic API interface.
 
+<SocialShare />
+
 ## What is CCProxy?
 
 CCProxy acts as a translation layer between Claude Code and various AI providers. When Claude Code makes requests to what it thinks is the Anthropic API, CCProxy intercepts these requests, converts them to the appropriate format for your chosen provider, and then converts the responses back to Anthropic's format.

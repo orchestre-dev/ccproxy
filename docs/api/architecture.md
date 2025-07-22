@@ -2,6 +2,8 @@
 
 CCProxy provides a unified interface for multiple AI providers through a carefully designed architecture with comprehensive security, performance monitoring, and testing capabilities.
 
+<SocialShare />
+
 ## System Architecture
 
 ```mermaid

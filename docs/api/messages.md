@@ -2,6 +2,8 @@
 
 The `/v1/messages` endpoint is the main proxy endpoint that converts Anthropic Messages API requests to the configured provider's format.
 
+<SocialShare />
+
 ## Endpoint
 
 ```

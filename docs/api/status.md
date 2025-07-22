@@ -6,9 +6,9 @@ keywords: CCProxy status, API health check, proxy monitoring, provider status
 
 # Status Endpoint
 
-<SocialShare />
-
 Get detailed information about CCProxy service status and configuration.
+
+<SocialShare />
 
 ## GET /status
 

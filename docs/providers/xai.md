@@ -6,22 +6,9 @@ keywords: XAI Grok, Claude Code, CCProxy, real-time AI, X Twitter integration, E
 
 # XAI (Grok) Provider
 
-<div class="social-share">
-  <button class="share-twitter" onclick="shareToTwitter()">
-    🐦 Share on Twitter
-  </button>
-  <button class="share-linkedin" onclick="shareToLinkedIn()">
-    💼 Share on LinkedIn
-  </button>
-  <button class="share-reddit" onclick="shareToReddit()">
-    🔗 Share on Reddit
-  </button>
-  <button class="share-copy" onclick="copyToClipboard()">
-    📋 Copy Link
-  </button>
-</div>
-
 **XAI's Grok models** revolutionize AI development with real-time information access and cutting-edge capabilities. Through **CCProxy integration with Claude Code**, you gain unique access to X (formerly Twitter) data, current events, and web search - bringing real-time intelligence to your development workflow.
+
+<SocialShare />
 
 ## 📰 Why Choose XAI (Grok) for Claude Code?
 
@@ -481,33 +468,3 @@ Stay updated at [x.ai](https://x.ai) and [console.x.ai](https://console.x.ai).
 - Explore real-time use cases specific to Grok's capabilities
 - Compare costs with [other providers](/providers/) including [Groq for speed](/providers/groq)
 - Set up [usage monitoring](/guide/monitoring) for cost control and optimization
-
-<script>
-function shareToTwitter() {
-  const url = encodeURIComponent(window.location.href);
-  const text = encodeURIComponent('📰 XAI Grok + Claude Code + CCProxy = Real-time AI development! Access live data, X integration, and cutting-edge AI from Elon Musk\'s team');
-  window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`, '_blank');
-}
-
-function shareToLinkedIn() {
-  const url = encodeURIComponent(window.location.href);
-  window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank');
-}
-
-function shareToReddit() {
-  const url = encodeURIComponent(window.location.href);
-  const title = encodeURIComponent('XAI Grok with Claude Code - Real-Time AI with X Integration via CCProxy');
-  window.open(`https://reddit.com/submit?url=${url}&title=${title}`, '_blank');
-}
-
-function copyToClipboard() {
-  navigator.clipboard.writeText(window.location.href).then(() => {
-    const button = event.target;
-    const originalText = button.textContent;
-    button.textContent = '✅ Copied!';
-    setTimeout(() => {
-      button.textContent = originalText;
-    }, 2000);
-  });
-}
-</script>

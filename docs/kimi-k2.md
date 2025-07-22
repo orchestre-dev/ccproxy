@@ -6,9 +6,9 @@ keywords: Kimi K2, Claude Code, Moonshot AI, Groq, OpenRouter, AI development, f
 
 # Kimi K2 with Claude Code
 
-<SocialShare />
-
 Experience the **cutting-edge Kimi K2 model** from Moonshot AI through CCProxy! This powerful combination delivers ultra-fast inference, intelligent code completion, and seamless integration with Claude Code.
+
+<SocialShare />
 
 ## 🚀 Why Kimi K2 is Taking the World by Storm
 

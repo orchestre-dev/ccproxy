@@ -12,11 +12,11 @@ tags: ["Google Gemini", "Claude Code", "Multimodal", "Visual AI", "Productivity"
 
 *Published on July 13, 2025*
 
-<SocialShare />
-
 Picture this: you're staring at a complex diagram, trying to explain it to someone over email. Or you're a marketer analyzing competitor screenshots. Maybe you're a researcher working through visual data. What if you could just show your AI assistant what you're looking at instead of struggling to describe it?
 
 That's exactly what happens when you combine Google Gemini's visual intelligence with Claude Code through CCProxy. This isn't just about developers anymore – it's about transforming how anyone who works with visual content can be more productive.
+
+<SocialShare />
 
 ## 💡 **Claude Code Pro Tip #1**: Start with screenshots to save time explaining context. Instead of typing "there's a button in the top right that looks like...", just capture and upload the image.
 

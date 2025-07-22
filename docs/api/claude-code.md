@@ -2,6 +2,8 @@
 
 CCProxy is specifically designed to work seamlessly with [Claude Code](https://claude.ai/code), Anthropic's official CLI tool. This integration allows you to use multiple AI providers while maintaining the familiar Claude Code interface.
 
+<SocialShare />
+
 ## Quick Setup with Auto-Configuration
 
 ### One-Command Setup

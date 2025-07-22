@@ -6,6 +6,8 @@ keywords: CCProxy installation, AI proxy for Claude Code, Windows, macOS, Linux,
 
 # Installation Guide
 
+<SocialShare />
+
 Install CCProxy on your system using the method that works best for you. CCProxy supports all major operating systems with pre-built binaries.
 
 ## Quick Install (All Platforms)

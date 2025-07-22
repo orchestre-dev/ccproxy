@@ -6,22 +6,9 @@ keywords: Google Gemini, Claude Code, CCProxy, Gemini 1.5 Pro, multimodal AI, lo
 
 # Google Gemini Provider
 
-<div class="social-share">
-  <button class="share-twitter" onclick="shareToTwitter()">
-    🐦 Share on Twitter
-  </button>
-  <button class="share-linkedin" onclick="shareToLinkedIn()">
-    💼 Share on LinkedIn
-  </button>
-  <button class="share-reddit" onclick="shareToReddit()">
-    🔗 Share on Reddit
-  </button>
-  <button class="share-copy" onclick="copyToClipboard()">
-    📋 Copy Link
-  </button>
-</div>
-
 **Google's Gemini models** represent the cutting edge of multimodal AI, offering advanced capabilities across text, code, and vision tasks. When integrated with **Claude Code through CCProxy**, Gemini provides unparalleled **long-context understanding** with up to 2M tokens and sophisticated multimodal processing.
+
+<SocialShare />
 
 ## 🎥 Why Choose Google Gemini for Claude Code?
 
@@ -517,33 +504,3 @@ Stay updated at [ai.google.dev](https://ai.google.dev) and [aistudio.google.com]
 - Learn about multimodal capabilities for vision and document analysis
 - Set up [usage monitoring](/guide/monitoring) to optimize your Gemini usage
 - Compare with [other providers](/providers/) including [Groq for speed](/providers/groq) and [OpenAI for reliability](/providers/openai)
-
-<script>
-function shareToTwitter() {
-  const url = encodeURIComponent(window.location.href);
-  const text = encodeURIComponent('🎥 Google Gemini + Claude Code + CCProxy = Advanced multimodal AI development! Experience 2M context windows and vision capabilities');
-  window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`, '_blank');
-}
-
-function shareToLinkedIn() {
-  const url = encodeURIComponent(window.location.href);
-  window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank');
-}
-
-function shareToReddit() {
-  const url = encodeURIComponent(window.location.href);
-  const title = encodeURIComponent('Google Gemini with Claude Code - Advanced Multimodal AI via CCProxy');
-  window.open(`https://reddit.com/submit?url=${url}&title=${title}`, '_blank');
-}
-
-function copyToClipboard() {
-  navigator.clipboard.writeText(window.location.href).then(() => {
-    const button = event.target;
-    const originalText = button.textContent;
-    button.textContent = '✅ Copied!';
-    setTimeout(() => {
-      button.textContent = originalText;
-    }, 2000);
-  });
-}
-</script>

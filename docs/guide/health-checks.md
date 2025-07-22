@@ -2,6 +2,8 @@
 
 CCProxy provides comprehensive health check endpoints for monitoring and deployment orchestration.
 
+<SocialShare />
+
 ## Health Check Endpoints
 
 ### Basic Health Check

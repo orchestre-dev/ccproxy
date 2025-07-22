@@ -12,9 +12,9 @@ tags: ["Kimi K2", "Claude Code", "Performance", "AI Providers", "Groq", "OpenRou
 
 *Published on July 16, 2025*
 
-<SocialShare />
-
 If you're using Claude Code and feeling frustrated by slow responses or high costs, you're not alone. Whether you're a developer debugging complex applications, a marketer analyzing campaign data, or an academic researcher processing literature, Claude Code's capabilities are impressive - but the wait times and costs can be frustrating. That's where CCProxy comes in, and specifically, its support for Kimi K2 - a model that's changing how people think about AI assistance.
+
+<SocialShare />
 
 ## What Makes Kimi K2 Special for Claude Code?
 

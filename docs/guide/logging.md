@@ -2,6 +2,8 @@
 
 CCProxy provides comprehensive logging for monitoring, debugging, and auditing purposes.
 
+<SocialShare />
+
 ## Log Configuration
 
 ### Environment Variables

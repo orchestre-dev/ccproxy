@@ -2,6 +2,8 @@
 
 CCProxy provides a RESTful API that's fully compatible with Anthropic's Messages API, plus additional endpoints for health monitoring and status checking.
 
+<SocialShare />
+
 ## Base URL
 
 ```

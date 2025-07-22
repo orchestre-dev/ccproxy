@@ -12,9 +12,9 @@ tags: ["XAI", "Grok", "Claude Code", "Real-Time", "Current Events", "Journalism"
 
 *Published on July 11, 2025*
 
-<SocialShare />
-
 In today's fast-moving world, access to current information can make the difference between staying ahead of trends and falling behind. XAI's Grok model offers something unique in the AI landscape: real-time information access combined with the powerful capabilities of Claude Code. This comprehensive guide explores how professionals across industries—from journalists and marketers to researchers and content creators—can leverage this powerful combination through CCProxy to enhance their work with up-to-date information.
+
+<SocialShare />
 
 ## Understanding Real-Time AI: What Makes Grok Different
 

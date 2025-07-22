@@ -6,9 +6,9 @@ keywords: "CCProxy blog, Claude Code tutorials, AI development, Kimi K2, Groq, O
 
 # CCProxy Blog
 
-<SocialShare />
-
 Welcome to the CCProxy blog! Here you'll find expert guides, tutorials, and insights about maximizing your Claude Code experience with different AI providers for optimal performance and flexibility.
+
+<SocialShare />
 
 ## Latest Posts
 
