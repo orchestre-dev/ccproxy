@@ -26,3 +26,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Address all medium and high severity GoSec issues
 
+## [1.0.4] - 2025-07-22
+
+### 🐛 Bug Fixes
+
+- Address all low severity GoSec G104 unhandled error issues
+- Correct spelling of 'canceled' in comments
+
