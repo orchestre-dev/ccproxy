@@ -131,16 +131,31 @@ After installation, create a configuration file:
 mkdir -p ~/.ccproxy
 cat > ~/.ccproxy/config.json << 'EOF'
 {
-  "providers": [{
-    "name": "openai",
-    "api_base_url": "https://api.openai.com/v1",
-    "api_key": "your-api-key",
-    "models": ["gpt-4", "gpt-3.5-turbo"],
-    "enabled": true
-  }]
+  "providers": [
+    {
+      "name": "anthropic",
+      "api_key": "your-anthropic-key",
+      "models": ["claude-opus-4-20250720", "claude-sonnet-4-20250720", "claude-3-5-haiku-20241022"],
+      "enabled": true
+    }
+  ],
+  "routes": {
+    "default": {
+      "provider": "anthropic",
+      "model": "claude-sonnet-4-20250720"
+    },
+    "longContext": {
+      "provider": "anthropic", 
+      "model": "claude-opus-4-20250720"
+    }
+  }
 }
 EOF
 ```
+
+**Note**: The `models` array validates available models, while the `routes` section defines which models are actually used for requests.
+
+⚠️ **Model names change frequently. Check provider documentation for latest models.**
 
 ## Next Steps
 

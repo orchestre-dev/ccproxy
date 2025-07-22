@@ -32,12 +32,20 @@ cat > ~/.ccproxy/config.json << 'EOF'
     "name": "openai",
     "api_base_url": "https://api.openai.com/v1",
     "api_key": "your-openai-api-key",
-    "models": ["gpt-4", "gpt-3.5-turbo"],
+    "models": ["gpt-4o", "gpt-4o-mini"],
     "enabled": true
-  }]
+  }],
+  "routes": {
+    "default": {
+      "provider": "openai",
+      "model": "gpt-4o"
+    }
+  }
 }
 EOF
 ```
+
+**Important**: The `models` array lists available models for validation. The `routes` section defines which provider and model handle your requests.
 
 Start CCProxy:
 ```bash
@@ -78,21 +86,56 @@ Add more providers to your config.json:
     {
       "name": "anthropic",
       "api_key": "sk-ant-...",
+      "models": ["claude-3-5-sonnet-20241022", "claude-3-5-haiku-20241022"],
       "enabled": true
     },
     {
       "name": "openai",
       "api_key": "sk-...",
+      "models": ["gpt-4o", "gpt-4o-mini"],
       "enabled": true
     },
     {
       "name": "gemini",
       "api_key": "AI...",
+      "models": ["gemini-2.0-flash-exp", "gemini-1.5-pro"],
+      "enabled": true
+    },
+    {
+      "name": "deepseek",
+      "api_key": "sk-...",
+      "models": ["deepseek-chat", "deepseek-coder"],
       "enabled": true
     }
-  ]
+  ],
+  "routes": {
+    "default": {
+      "provider": "openai",
+      "model": "gpt-4o"
+    },
+    "longContext": {
+      "provider": "anthropic",
+      "model": "claude-3-5-sonnet-20241022"
+    }
+  }
 }
 ```
+
+The `routes` section controls which provider handles different types of requests. Requests with >60K tokens automatically use the `longContext` route.
+
+**Note:** For Claude Code integration, ensure your selected models support function calling. Most modern models from major providers (Anthropic Claude, OpenAI GPT-4, Google Gemini, DeepSeek) include this capability.
+
+## Understanding Model Selection
+
+CCProxy uses intelligent routing to select the appropriate model based on your request:
+
+1. **Explicit model routes** - If you define a route with the exact model name, it uses that
+2. **Long context routing** - Requests exceeding 60,000 tokens automatically use the `longContext` route
+3. **Background routing** - Claude Haiku models (claude-3-5-haiku-*) use the `background` route if defined
+4. **Thinking mode** - Requests with `thinking: true` parameter use the `think` route if defined
+5. **Default routing** - All other requests use the `default` route
+
+💡 **Tip:** For latest model information, check [models.dev](https://models.dev)
 
 ## Next Steps
 
