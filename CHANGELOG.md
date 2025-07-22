@@ -72,3 +72,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update Claude PR Assistant workflow
 - Update Claude Code Review workflow
 
+## [1.2.0] - 2025-07-22
+
+### ✨ Features
+
+- add CCProxy v1+ release announcement
+- feature Kimi K2 and update setup messaging
+- add newsletter component to all blog posts
+- move Kimi K2 guide to 2nd position in blog sidebar
+
+### 🐛 Bug Fixes
+
+- update v1.0 release post with accurate claims and Kimi K2
+- update Kimi K2 guide with correct configuration
+- correct route configuration documentation and examples
+- resolve YAML syntax error in docs workflow
+- ensure docs workflow runs build instead of dev server
+
+### 🔧 Other Changes
+
+- refactor(blog): optimize release post for Claude Code users
+- docs: add detailed routing reference and fix route examples
+
