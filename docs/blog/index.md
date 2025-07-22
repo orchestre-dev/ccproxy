@@ -12,6 +12,11 @@ Welcome to the CCProxy blog! Here you'll find expert guides, tutorials, and insi
 
 ## Latest Posts
 
+### [CCProxy v1+ Release: Your Gateway to the Multi-Model AI Revolution](/blog/ccproxy-release-multi-model-revolution)
+*July 22, 2025*
+
+CCProxy Version 1 Plus is here! Our first major public release brings secure installation, 100+ AI models via OpenRouter, Qwen3 235B integration, and enterprise-ready features. Transform Claude Code into a universal AI development platform.
+
 ### [Qwen3 235B: The New King of AI Models via CCProxy](/blog/qwen3-235b-top-model)
 *July 22, 2025*
 
