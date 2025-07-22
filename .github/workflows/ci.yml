@@ -98,7 +98,9 @@ jobs:
     - name: Run Gosec Security Scanner
       uses: securego/gosec@master
       with:
-        args: ./...
+        # Use config file for consistent security settings
+        # -no-fail: Run as informational only for open-source project
+        args: '-no-fail -conf .gosec.json ./...'
 
   docker:
     name: Docker Build

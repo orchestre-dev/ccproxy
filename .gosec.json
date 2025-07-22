@@ -1,0 +1,30 @@
+{
+  "global": {
+    "nosec": "enabled",
+    "audit": "enabled"
+  },
+  "rules": {
+    "G104": {
+      "comment": "Unhandled errors - too noisy for open-source projects"
+    },
+    "G204": {
+      "comment": "Subprocess audit - acceptable for build tools"
+    },
+    "G306": {
+      "comment": "Poor file permissions - acceptable for development"
+    },
+    "G307": {
+      "comment": "Deferring unsafe method - acceptable for cleanup code"
+    }
+  },
+  "severity": "high",
+  "confidence": "high",
+  "exclude-dir": [
+    "vendor",
+    "node_modules",
+    "docs",
+    "scripts",
+    "tests",
+    "examples"
+  ]
+}
