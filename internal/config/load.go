@@ -9,7 +9,7 @@ import (
 // LoadFromFile loads configuration from a specific file
 func LoadFromFile(path string) (*Config, error) {
 	// Read the file
-	data, err := os.ReadFile(path)
+	data, err := os.ReadFile(path) // #nosec G304 -- Path is provided by the user via CLI flag and is expected to be a trusted configuration file
 	if err != nil {
 		return nil, fmt.Errorf("failed to read config file: %w", err)
 	}

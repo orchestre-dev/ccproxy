@@ -42,7 +42,7 @@ func CreateTempFile(t *testing.T, dir, name, content string) string {
 	t.Helper()
 
 	filePath := filepath.Join(dir, name)
-	err := os.WriteFile(filePath, []byte(content), 0644)
+	err := os.WriteFile(filePath, []byte(content), 0600)
 	if err != nil {
 		t.Fatalf("Failed to create temp file %s: %v", filePath, err)
 	}

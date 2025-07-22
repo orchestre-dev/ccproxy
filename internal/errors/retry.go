@@ -4,10 +4,22 @@ import (
 	"context"
 	"math"
 	"math/rand"
+	"sync"
 	"time"
 
 	"github.com/orchestre-dev/ccproxy/internal/utils"
 )
+
+var (
+	// randSource is a properly seeded random source for jitter
+	randSource *rand.Rand
+	randMutex  sync.Mutex
+)
+
+func init() {
+	// Initialize random source with current time
+	randSource = rand.New(rand.NewSource(time.Now().UnixNano())) // #nosec G404 - Used for non-cryptographic jitter only
+}
 
 // RetryConfig defines retry behavior
 type RetryConfig struct {
@@ -157,7 +169,9 @@ func calculateDelay(baseDelay time.Duration, config *RetryConfig, err error) tim
 	// Apply jitter if configured
 	if config.Jitter {
 		// Add ±25% jitter
-		jitter := rand.Float64()*0.5 - 0.25
+		randMutex.Lock()
+		jitter := randSource.Float64()*0.5 - 0.25 // #nosec G404 - Used for non-cryptographic jitter only
+		randMutex.Unlock()
 		delay = time.Duration(float64(delay) * (1 + jitter))
 	}
 

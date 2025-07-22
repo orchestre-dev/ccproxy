@@ -194,7 +194,7 @@ func (s *Service) Save() error {
 	}
 
 	configDir := filepath.Join(home, ".ccproxy")
-	if err := os.MkdirAll(configDir, 0755); err != nil {
+	if err := os.MkdirAll(configDir, 0750); err != nil {
 		return fmt.Errorf("cannot create config directory: %w", err)
 	}
 
@@ -206,7 +206,7 @@ func (s *Service) Save() error {
 
 	// Write to file
 	configPath := filepath.Join(configDir, "config.json")
-	if err := os.WriteFile(configPath, data, 0644); err != nil {
+	if err := os.WriteFile(configPath, data, 0600); err != nil {
 		return fmt.Errorf("cannot write config file: %w", err)
 	}
 
@@ -311,7 +311,7 @@ func (s *Service) loadEnvFile() error {
 	}
 
 	for _, loc := range locations {
-		data, err := os.ReadFile(loc)
+		data, err := os.ReadFile(loc) // #nosec G304 -- Reading from known safe .env file locations (current dir, .ccproxy dir, and user home)
 		if err == nil {
 			// Parse .env file
 			lines := strings.Split(string(data), "\n")

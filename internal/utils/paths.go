@@ -55,7 +55,7 @@ func InitializeHomeDir() (*HomeDir, error) {
 	}
 
 	for _, dir := range directories {
-		if err := os.MkdirAll(dir, 0755); err != nil {
+		if err := os.MkdirAll(dir, 0750); err != nil {
 			return nil, fmt.Errorf("failed to create directory %s: %w", dir, err)
 		}
 	}
@@ -122,7 +122,7 @@ func EnsureDir(path string) error {
 	if DirExists(path) {
 		return nil
 	}
-	return os.MkdirAll(path, 0755)
+	return os.MkdirAll(path, 0750)
 }
 
 // GetTempFile returns a path for a temporary file in the CCProxy temp directory
