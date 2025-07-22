@@ -59,3 +59,13 @@ docker-compose.local.yml
 # Kubernetes secrets
 k8s/secrets.yaml
 helm/ccproxy/values.local.yaml
+
+.temp/
+.tmp/
+temp/
+tmp/
+build/
+builds/
+builds/
+builds/
+
