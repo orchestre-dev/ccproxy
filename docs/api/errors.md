@@ -231,4 +231,3 @@ lsof -i :3456
 
 - [Status Endpoint](/api/status) - Monitor proxy health
 - [Health Endpoints](/api/health) - Simple health checks
-- [Rate Limiting](/api/rate-limits) - Rate limit details

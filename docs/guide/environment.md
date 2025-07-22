@@ -212,4 +212,4 @@ Ensure your config.json uses the correct syntax:
 
 - [Configuration Guide](/guide/configuration) - Full configuration reference
 - [Security Guide](/guide/security) - Security best practices
-- [Docker Guide](/guide/docker) - Using CCProxy with Docker
+- [Docker Guide](/docker) - Using CCProxy with Docker

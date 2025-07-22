@@ -259,7 +259,7 @@ docker run -it --rm \
 
 ### Kubernetes
 
-See [kubernetes.md](./kubernetes.md) for Kubernetes deployment.
+Kubernetes deployment documentation coming soon.
 
 ### CI/CD
 
