@@ -5,8 +5,11 @@
 [![Release](https://github.com/orchestre-dev/ccproxy/actions/workflows/release.yml/badge.svg)](https://github.com/orchestre-dev/ccproxy/actions/workflows/release.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/orchestre-dev/ccproxy)](https://goreportcard.com/report/github.com/orchestre-dev/ccproxy)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Documentation](https://img.shields.io/badge/docs-ccproxy.dev-blue)](https://ccproxy.pages.dev)
 
 CCProxy is a high-performance Go proxy server that enables Claude Code to work with multiple AI providers through intelligent routing and API translation.
+
+📚 **[Full Documentation](https://ccproxy.pages.dev)** | 🐛 **[Report Issues](https://github.com/orchestre-dev/ccproxy/issues)** | 💬 **[Discussions](https://github.com/orchestre-dev/ccproxy/discussions)**
 
 ## 🌟 Features
 
@@ -70,27 +73,73 @@ docker run -d -p 3456:3456 -v $(pwd)/config.json:/home/ccproxy/.ccproxy/config.j
 
 ## 🔧 Configuration
 
-CCProxy uses a JSON configuration file. Create `config.json` based on `example.config.json`:
+CCProxy uses a layered configuration system with the following priority (highest to lowest):
+1. **Command-line flags** (e.g., `--config /path/to/config.json`)
+2. **Environment variables** (e.g., `CCPROXY_PORT=3456`)
+3. **Configuration file** (`config.json`)
+4. **Default values**
+
+### Configuration File Locations
+
+CCProxy searches for `config.json` in these locations (in order):
+1. Current directory: `./config.json`
+2. User home directory: `~/.ccproxy/config.json` 
+3. System directory: `/etc/ccproxy/config.json`
+
+The first found file is used. You can also specify a custom path:
+```bash
+ccproxy start --config /path/to/my/config.json
+```
+
+### Understanding API Keys
+
+CCProxy uses API keys at two different levels, which can be confusing at first:
+
+#### 1. **CCProxy API Key** (Root Level)
+- **Purpose**: Authenticates requests TO CCProxy itself
+- **Used by**: Claude Code or other clients connecting to CCProxy
+- **Configuration**: `"apikey": "your-ccproxy-api-key"`
+- **Security**: 
+  - If not set, CCProxy only accepts requests from localhost (127.0.0.1)
+  - If set, required for all requests (via `Authorization: Bearer` or `x-api-key` header)
+- **Example**: When Claude Code connects to CCProxy, it uses this key
+
+#### 2. **Provider API Keys** (Per Provider)
+- **Purpose**: Authenticates CCProxy's requests TO each AI provider (Anthropic, OpenAI, etc.)
+- **Used by**: CCProxy when forwarding requests to providers
+- **Configuration**: Each provider has its own `"api_key"` field
+- **Required**: Each enabled provider must have a valid API key from that provider
+- **Example**: When CCProxy forwards a request to OpenAI, it uses the OpenAI API key
+
+### Complete Configuration Example
 
 ```json
 {
   "host": "127.0.0.1",
   "port": 3456,
   "log": true,
-  "apikey": "your-api-key-here",
+  "log_file": "~/.ccproxy/ccproxy.log",
+  "apikey": "my-secret-ccproxy-key",  // Optional: for CCProxy authentication
   "providers": [
     {
       "name": "anthropic",
       "api_base_url": "https://api.anthropic.com",
-      "api_key": "your-anthropic-api-key",
+      "api_key": "sk-ant-...",  // Required: your Anthropic API key
       "models": ["claude-3-opus-20240229", "claude-3-sonnet-20240229"],
       "enabled": true
     },
     {
       "name": "openai",
       "api_base_url": "https://api.openai.com/v1",
-      "api_key": "your-openai-api-key",
+      "api_key": "sk-...",  // Required: your OpenAI API key
       "models": ["gpt-4", "gpt-4-turbo", "gpt-3.5-turbo"],
+      "enabled": true
+    },
+    {
+      "name": "gemini",
+      "api_base_url": "https://generativelanguage.googleapis.com/v1",
+      "api_key": "AIza...",  // Required: your Google AI API key
+      "models": ["gemini-pro", "gemini-pro-vision"],
       "enabled": false
     }
   ],
@@ -98,7 +147,23 @@ CCProxy uses a JSON configuration file. Create `config.json` based on `example.c
     "default": {
       "provider": "anthropic",
       "model": "claude-3-sonnet-20240229"
+    },
+    "longContext": {
+      "provider": "anthropic",
+      "model": "claude-3-opus-20240229",
+      "conditions": [{
+        "type": "tokenCount",
+        "operator": ">",
+        "value": 60000
+      }]
     }
+  },
+  "performance": {
+    "request_timeout": "30s",
+    "max_request_body_size": 10485760,
+    "metrics_enabled": true,
+    "rate_limit_enabled": false,
+    "circuit_breaker_enabled": true
   }
 }
 ```
@@ -107,11 +172,25 @@ CCProxy uses a JSON configuration file. Create `config.json` based on `example.c
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `CCPROXY_PORT` | `3456` | Override default port |
-| `CCPROXY_HOST` | `127.0.0.1` | Override default host |
-| `CCPROXY_API_KEY` | | Set API key for authentication |
+| `CCPROXY_PORT` | `3456` | Port for CCProxy to listen on |
+| `CCPROXY_HOST` | `127.0.0.1` | Host/IP for CCProxy to bind to |
+| `CCPROXY_API_KEY` | | API key for CCProxy authentication |
 | `CCPROXY_CONFIG` | | Path to configuration file |
-| `LOG` | `false` | Enable file logging |
+| `CCPROXY_LOG` | `false` | Enable file logging |
+| `CCPROXY_LOG_FILE` | `~/.ccproxy/ccproxy.log` | Log file path |
+| `CCPROXY_PROVIDERS_0_API_KEY` | | Override first provider's API key |
+| `CCPROXY_PROVIDERS_1_API_KEY` | | Override second provider's API key |
+| `LOG` | `false` | Alternative way to enable logging |
+
+### Configuration Priority Example
+
+```bash
+# 1. Default: port 3456
+# 2. Config file sets: port 8080
+# 3. Environment variable: CCPROXY_PORT=9090
+# 4. Command flag: ccproxy start --port 7070
+# Result: CCProxy uses port 7070 (command flag wins)
+```
 
 ## 🎯 Using with Claude Code
 
