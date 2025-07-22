@@ -39,8 +39,9 @@ func TestService_Get(t *testing.T) {
 	if config1 == nil {
 		t.Fatal("Config should not be nil")
 	}
-	if config1 != config2 {
-		t.Error("Should return same config instance")
+	// Now we return copies for thread safety, so check value equality
+	if config1.Host != config2.Host || config1.Port != config2.Port {
+		t.Error("Should return config with same values")
 	}
 }
 
@@ -56,9 +57,7 @@ func TestService_SetConfig(t *testing.T) {
 	service.SetConfig(newConfig)
 	retrievedConfig := service.Get()
 
-	if retrievedConfig != newConfig {
-		t.Error("Should return the set config")
-	}
+	// Now we return copies for thread safety, so check values not pointer
 	if retrievedConfig.Host != "0.0.0.0" {
 		t.Errorf("Expected host '0.0.0.0', got '%s'", retrievedConfig.Host)
 	}

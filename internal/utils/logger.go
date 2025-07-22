@@ -88,15 +88,18 @@ func InitLogger(config *LogConfig) error {
 
 // GetLogger returns the global logger instance
 func GetLogger() *logrus.Logger {
-	if logger == nil {
-		// Initialize with defaults if not initialized
-		// Safe to ignore error here as we're using default safe configuration
-		_ = InitLogger(&LogConfig{
-			Enabled: false,
-			Level:   "info",
-			Format:  "text",
-		})
-	}
+	// Ensure logger is initialized with defaults if not already done
+	loggerOnce.Do(func() {
+		if logger == nil {
+			logger = logrus.New()
+			logger.SetLevel(logrus.InfoLevel)
+			logger.SetFormatter(&logrus.TextFormatter{
+				TimestampFormat: "2006-01-02 15:04:05",
+				FullTimestamp:   true,
+			})
+			logger.SetOutput(os.Stdout)
+		}
+	})
 	return logger
 }
 

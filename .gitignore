@@ -27,8 +27,8 @@ logs/
 
 .temp/x
 
-# Go binaries
-ccproxy
+# Go binaries (exclude from root only, not source directories)
+/ccproxy
 *.exe
 *.exe~
 *.dll

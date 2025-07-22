@@ -99,7 +99,7 @@ func TestHandleGetProvider(t *testing.T) {
 		router.ServeHTTP(w, req)
 
 		if w.Code != http.StatusOK {
-			t.Errorf("Expected status 200, got %d", w.Code)
+			t.Errorf("Expected status 200, got %d. Body: %s", w.Code, w.Body.String())
 		}
 
 		var response config.Provider
@@ -227,7 +227,7 @@ func TestHandleUpdateProvider(t *testing.T) {
 		router.ServeHTTP(w, req)
 
 		if w.Code != http.StatusOK {
-			t.Errorf("Expected status 200, got %d", w.Code)
+			t.Errorf("Expected status 200, got %d. Body: %s", w.Code, w.Body.String())
 		}
 	})
 
@@ -289,7 +289,7 @@ func TestHandleDeleteProvider(t *testing.T) {
 		router.ServeHTTP(w, req)
 
 		if w.Code != http.StatusOK {
-			t.Errorf("Expected status 200, got %d", w.Code)
+			t.Errorf("Expected status 200, got %d. Body: %s", w.Code, w.Body.String())
 		}
 	})
 
@@ -316,7 +316,7 @@ func TestHandleToggleProvider(t *testing.T) {
 		router.ServeHTTP(w, req)
 
 		if w.Code != http.StatusOK {
-			t.Errorf("Expected status 200, got %d", w.Code)
+			t.Errorf("Expected status 200, got %d. Body: %s", w.Code, w.Body.String())
 		}
 	})
 
