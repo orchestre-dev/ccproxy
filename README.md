@@ -94,21 +94,39 @@ This is the **recommended method for Claude Code users** as it automatically:
 
 ### Quick Start Configuration for Claude Code
 
-The easiest way to configure CCProxy as an AI proxy for Claude Code is to create a `config.json` file with your AI provider API keys:
+The easiest way to configure CCProxy as an AI proxy for Claude Code is to create a configuration file with your AI provider API keys:
 
-```json
-{
-  "providers": [
-    {
-      "name": "openai",
-      "api_key": "your-openai-api-key",
-      "enabled": true
-    }
-  ]
-}
-```
+1. **Create configuration directory** (if it doesn't exist):
+   ```bash
+   mkdir -p ~/.ccproxy
+   ```
 
-Then run: `./ccproxy code`
+2. **Create config file** with your provider API keys:
+   ```bash
+   cat > ~/.ccproxy/config.json << 'EOF'
+   {
+     "providers": [
+       {
+         "name": "openai",
+         "api_base_url": "https://api.openai.com/v1",
+         "api_key": "your-openai-api-key",
+         "models": ["gpt-4", "gpt-3.5-turbo"],
+         "enabled": true
+       }
+     ]
+   }
+   EOF
+   ```
+
+3. **Start CCProxy and configure Claude Code**:
+   ```bash
+   ./ccproxy code
+   ```
+
+This single command will:
+- Start the CCProxy service
+- Set up environment variables for Claude Code
+- Enable Claude Code to use your configured AI providers
 
 ### Configuration Priority System
 
