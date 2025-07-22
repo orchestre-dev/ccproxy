@@ -126,12 +126,7 @@ jobs:
               comment.body.includes('📚 Documentation Preview')
             );
             
-            const body = `📚 **Documentation Preview**
-            
-Your documentation changes are available for preview:
-🔗 ${deploymentUrl}
-
-This preview will be updated automatically with new commits.`;
+            const body = `📚 **Documentation Preview**\n\nYour documentation changes are available for preview:\n🔗 ${deploymentUrl}\n\nThis preview will be updated automatically with new commits.`;
             
             if (botComment) {
               // Update existing comment
