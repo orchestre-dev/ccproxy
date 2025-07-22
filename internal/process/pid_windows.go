@@ -58,3 +58,4 @@ func (pm *PIDManager) forceStopProcessByPID(pid int) error {
 	// On Windows, regular stop is already forceful
 	return pm.stopProcessByPID(pid)
 }
+
