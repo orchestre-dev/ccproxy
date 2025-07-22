@@ -1,55 +1,108 @@
 ---
 title: Quick Start - Get CCProxy Running in 2 Minutes
-description: Get CCProxy running with Kimi K2 and Claude Code in under 2 minutes. Fast setup guide for immediate AI development productivity.
-keywords: CCProxy quick start, Kimi K2 setup, Claude Code integration, AI proxy setup
+description: Get CCProxy running with Claude Code in under 2 minutes. Fast setup guide for immediate AI development productivity.
+keywords: CCProxy quick start, Claude Code integration, AI proxy setup
 ---
 
 # Quick Start
 
 <SocialShare />
 
-Get CCProxy running with Kimi K2 in under 2 minutes.
+Get CCProxy running with Claude Code in under 2 minutes.
 
-## 1. Install CCProxy
+## 1. Download CCProxy
+
+Download the latest binary for your platform from the [releases page](https://github.com/orchestre-dev/ccproxy/releases).
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/orchestre-dev/ccproxy/main/install.sh | bash
+# Example for macOS/Linux
+chmod +x ccproxy
 ```
 
-## 2. Start with Kimi K2
+## 2. Configure and Start
 
+Create a `config.json` file:
+
+```json
+{
+  "host": "127.0.0.1",
+  "port": 3456,
+  "providers": [{
+    "name": "anthropic",
+    "api_key": "your-anthropic-api-key",
+    "enabled": true
+  }]
+}
+```
+
+Start CCProxy:
 ```bash
-export PROVIDER=groq GROQ_API_KEY=your_groq_api_key
-ccproxy &
+./ccproxy start
 ```
 
 ## 3. Connect Claude Code
 
+Use the auto-configuration:
+```bash
+./ccproxy code
+```
+
+Or configure manually:
 ```bash
 export ANTHROPIC_BASE_URL=http://localhost:3456
-claude-code "Write a Python function to reverse a string"
+export ANTHROPIC_AUTH_TOKEN=test
+claude "Write a Python function to reverse a string"
 ```
 
 ## 🎉 Done!
 
-Claude Code now uses your chosen AI provider. Try:
+Claude Code now uses your configured AI provider. Try:
 
 ```bash
-claude-code "Explain this code and suggest improvements" < your-file.py
-claude-code "Create a REST API for user management"
-claude-code "Debug this error: TypeError: 'int' object is not subscriptable"
+claude "Explain this code and suggest improvements" < your-file.py
+claude "Create a REST API for user management"
+claude "Debug this error: TypeError: 'int' object is not subscriptable"
+```
+
+## Multiple Providers
+
+Add more providers to your config.json:
+
+```json
+{
+  "providers": [
+    {
+      "name": "anthropic",
+      "api_key": "sk-ant-...",
+      "enabled": true
+    },
+    {
+      "name": "openai",
+      "api_key": "sk-...",
+      "enabled": true
+    },
+    {
+      "name": "gemini",
+      "api_key": "AI...",
+      "enabled": true
+    }
+  ]
+}
 ```
 
 ## Next Steps
 
 - **[Full Installation Guide](/guide/installation)** - Multiple installation methods
 - **[Configuration Guide](/guide/configuration)** - Advanced provider setup
-- **[Kimi K2 Guide](/kimi-k2)** - Optimize for ultra-fast development
+- **[Provider Guide](/providers/)** - Supported AI providers
 
 ## Troubleshooting
 
-**Connection refused?** Check if CCProxy is running on port 3456.
+**Connection refused?** Check if CCProxy is running:
+```bash
+./ccproxy status
+```
 
-**API key error?** Verify your provider API key is correct.
+**API key error?** Verify your provider API key in config.json.
 
 **Need help?** [💬 GitHub Discussions](https://github.com/orchestre-dev/ccproxy/discussions) • [🐛 Report Issues](https://github.com/orchestre-dev/ccproxy/issues)

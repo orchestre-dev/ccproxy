@@ -161,9 +161,7 @@ chmod +x ccproxy.AppImage
 ```bash
 # Run CCProxy in Docker
 docker run -p 3456:3456 \
-  -e PROVIDER=groq \
-  -e GROQ_API_KEY=your_api_key \
-  -e GROQ_MODEL=moonshotai/kimi-k2-instruct \
+  -v $(pwd)/config.json:/home/ccproxy/.ccproxy/config.json \
   orchestre-dev/ccproxy:latest
 ```
 
@@ -176,10 +174,8 @@ services:
     image: orchestre-dev/ccproxy:latest
     ports:
       - "3456:3456"
-    environment:
-      - PROVIDER=groq
-      - GROQ_API_KEY=${GROQ_API_KEY}
-      - GROQ_MODEL=moonshotai/kimi-k2-instruct
+    volumes:
+      - ./config.json:/home/ccproxy/.ccproxy/config.json
     restart: unless-stopped
 ```
 
@@ -210,14 +206,14 @@ spec:
         image: orchestre-dev/ccproxy:latest
         ports:
         - containerPort: 3456
-        env:
-        - name: PROVIDER
-          value: "groq"
-        - name: GROQ_API_KEY
-          valueFrom:
-            secretKeyRef:
-              name: ccproxy-secrets
-              key: groq-api-key
+        volumeMounts:
+        - name: config
+          mountPath: /home/ccproxy/.ccproxy/config.json
+          subPath: config.json
+      volumes:
+      - name: config
+        configMap:
+          name: ccproxy-config
 ```
 
 </div>
@@ -232,7 +228,7 @@ git clone https://github.com/orchestre-dev/ccproxy.git
 cd ccproxy
 
 # Build for your platform
-go build -o ccproxy cmd/proxy/main.go
+go build -o ccproxy ./cmd/ccproxy
 
 # Or build for all platforms
 ./scripts/build.sh
@@ -251,14 +247,14 @@ curl http://localhost:3456/health
 
 # Configure for Claude Code
 export ANTHROPIC_BASE_URL=http://localhost:3456
-export ANTHROPIC_API_KEY=NOT_NEEDED
+export ANTHROPIC_AUTH_TOKEN=test
 ```
 
 ## Next Steps
 
-1. **[Configuration](/guide/configuration)** - Set up your AI provider
+1. **[Configuration](/guide/configuration)** - Set up your AI providers
 2. **[Quick Start](/guide/quick-start)** - Get up and running in 2 minutes
-3. **[Kimi K2 Setup](/kimi-k2)** - Experience ultra-fast AI development
+3. **[Provider Guide](/providers/)** - Supported AI providers
 
 ## Troubleshooting
 
@@ -274,8 +270,10 @@ Right-click the executable and select "Run anyway" or add an exception to Window
 
 **Port Already in Use:**
 ```bash
-# Use a different port
-ccproxy --port 8187
+# Edit config.json to use a different port
+{
+  "port": 8187
+}
 ```
 
 **Firewall Issues:**

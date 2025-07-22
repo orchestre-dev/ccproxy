@@ -1,202 +1,201 @@
 # CCProxy
 
-CCProxy is a Go-based proxy server that acts as an intelligent intermediary between Claude Code and various Large Language Model (LLM) providers.
+CCProxy is a high-performance Go proxy server that enables Claude Code to work with multiple AI providers through intelligent routing and API translation.
 
 ## 🌟 Features
 
-- **Multi-Provider Support**: Switch between Groq, OpenRouter, OpenAI, and other providers
-- **API Translation**: Seamless conversion between Anthropic and OpenAI-compatible API formats
-- **Tool Support**: Full support for Anthropic tool calling and tool results
-- **Production Ready**: Built for high performance and reliability
+- **Multi-Provider Support**: Anthropic, OpenAI, Google Gemini, DeepSeek, OpenRouter
+- **Intelligent Routing**: Automatic model selection based on token count and parameters
+- **API Translation**: Seamless conversion between Anthropic and provider-specific formats
+- **Tool Support**: Full support for function calling across all compatible providers
+- **Streaming Support**: Server-Sent Events (SSE) for real-time responses
 - **Cross Platform**: Binaries available for Linux, macOS, and Windows (AMD64/ARM64)
-- **Docker Support**: Container-ready with multi-stage builds
-- **Comprehensive Logging**: Structured logging with configurable levels
-- **Graceful Shutdown**: Proper signal handling and connection draining
-- **Health Checks**: Built-in health monitoring and provider status endpoints
+- **Process Management**: Background service with automatic startup and graceful shutdown
+- **Health Monitoring**: Built-in health checks and provider status tracking
+- **Security**: API key validation, IP-based access control, rate limiting
 
 ## 🚀 Quick Start
 
 ### Option 1: Download Pre-built Binary
 
-1. Download the latest binary for your platform from the [releases page](https://github.com/your-repo/ccproxy/releases)
-2. Set your provider and API key:
+1. Download the latest binary for your platform from the [releases page](https://github.com/orchestre-dev/ccproxy/releases)
+2. Create a configuration file:
    ```bash
-   # For Groq
-   export PROVIDER=groq
-   export GROQ_API_KEY=your_groq_api_key_here
-   
-   # Or for OpenRouter
-   export PROVIDER=openrouter
-   export OPENROUTER_API_KEY=your_openrouter_api_key_here
+   cp example.config.json config.json
+   # Edit config.json to add your provider API keys
    ```
-3. Run the proxy:
+3. Start CCProxy:
    ```bash
-   ./ccproxy-<platform>
+   ./ccproxy start
    ```
 
 ### Option 2: Build from Source
 
-1. **Prerequisites**: Go 1.21 or later
+1. **Prerequisites**: Go 1.23 or later
 2. **Clone and build**:
    ```bash
-   git clone https://github.com/your-repo/ccproxy.git
+   git clone https://github.com/orchestre-dev/ccproxy.git
    cd ccproxy
-   go build ./cmd/proxy
+   go build ./cmd/ccproxy
    ```
-3. **Set up environment**:
+3. **Configure**:
    ```bash
-   cp .env.example .env
-   # Edit .env and set your PROVIDER and API key
+   cp example.config.json config.json
+   # Edit config.json to add your provider API keys
    ```
-4. **Run the proxy**:
+4. **Start the service**:
    ```bash
-   ./proxy
+   ./ccproxy start
    ```
 
 ### Option 3: Docker
 
-1. **Using Docker Compose** (recommended):
-   ```bash
-   # Set your provider and API key
-   echo "PROVIDER=groq" > .env
-   echo "GROQ_API_KEY=your_groq_api_key_here" >> .env
-   
-   # Start the service
-   docker-compose up -d
-   ```
+```bash
+docker build -t ccproxy .
+docker run -d -p 3456:3456 -v $(pwd)/config.json:/home/ccproxy/.ccproxy/config.json ccproxy
+```
 
-2. **Using Docker directly**:
-   ```bash
-   docker build -f docker/Dockerfile -t ccproxy .
-   docker run -p 7187:7187 -e PROVIDER=groq -e GROQ_API_KEY=your_api_key ccproxy
-   ```
+### Option 4: One-Command Setup with Claude Code
+
+```bash
+# CCProxy will auto-start and configure Claude Code
+./ccproxy code
+```
 
 ## 🔧 Configuration
 
-### Core Environment Variables
+CCProxy uses a JSON configuration file. Create `config.json` based on `example.config.json`:
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `PROVIDER` | *(required)* | Provider to use: `groq`, `openrouter` |
-| `SERVER_HOST` | `0.0.0.0` | Server bind address |
-| `SERVER_PORT` | `7187` | Server port |
-| `SERVER_ENVIRONMENT` | `development` | Environment mode |
-| `LOG_LEVEL` | `info` | Log level (debug, info, warn, error) |
-| `LOG_FORMAT` | `json` | Log format (json, text) |
-
-### Provider-Specific Variables
-
-#### Groq Provider
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `GROQ_API_KEY` | *(required)* | Your Groq API key |
-| `GROQ_BASE_URL` | `https://api.groq.com/openai/v1` | Groq API base URL |
-| `GROQ_MODEL` | `moonshotai/kimi-k2-instruct` | Model to use |
-| `GROQ_MAX_TOKENS` | `16384` | Maximum tokens per request |
-
-#### OpenRouter Provider
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `OPENROUTER_API_KEY` | *(required)* | Your OpenRouter API key |
-| `OPENROUTER_BASE_URL` | `https://openrouter.ai/api/v1` | OpenRouter API base URL |
-| `OPENROUTER_MODEL` | `openai/gpt-4o` | Model to use |
-| `OPENROUTER_MAX_TOKENS` | `4096` | Maximum tokens per request |
-| `OPENROUTER_SITE_URL` | | Your site URL (for analytics) |
-| `OPENROUTER_SITE_NAME` | | Your site name (for analytics) |
-
-### Configuration File
-
-You can also use a YAML configuration file:
-
-```yaml
-# config.yaml
-provider: "groq"  # or "openrouter"
-
-server:
-  host: "0.0.0.0"
-  port: "7187"
-  environment: "production"
-
-groq:
-  api_key: "your_groq_api_key_here"
-  model: "moonshotai/kimi-k2-instruct"
-  max_tokens: 16384
-
-openrouter:
-  api_key: "your_openrouter_api_key_here"
-  model: "openai/gpt-4o"
-  max_tokens: 4096
-  site_url: "https://your-site.com"
-  site_name: "Your App Name"
-
-logging:
-  level: "info"
-  format: "json"
+```json
+{
+  "host": "127.0.0.1",
+  "port": 3456,
+  "log": true,
+  "apikey": "your-api-key-here",
+  "providers": [
+    {
+      "name": "anthropic",
+      "api_base_url": "https://api.anthropic.com",
+      "api_key": "your-anthropic-api-key",
+      "models": ["claude-3-opus-20240229", "claude-3-sonnet-20240229"],
+      "enabled": true
+    },
+    {
+      "name": "openai",
+      "api_base_url": "https://api.openai.com/v1",
+      "api_key": "your-openai-api-key",
+      "models": ["gpt-4", "gpt-4-turbo", "gpt-3.5-turbo"],
+      "enabled": false
+    }
+  ],
+  "routes": {
+    "default": {
+      "provider": "anthropic",
+      "model": "claude-3-sonnet-20240229"
+    }
+  }
+}
 ```
+
+### Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `CCPROXY_PORT` | `3456` | Override default port |
+| `CCPROXY_HOST` | `127.0.0.1` | Override default host |
+| `CCPROXY_API_KEY` | | Set API key for authentication |
+| `CCPROXY_CONFIG` | | Path to configuration file |
+| `LOG` | `false` | Enable file logging |
 
 ## 🎯 Using with Claude Code
 
-1. **Start the proxy server**:
+### Automatic Setup (Recommended)
+
+```bash
+# CCProxy will auto-start and configure Claude Code environment
+./ccproxy code
+```
+
+### Manual Setup
+
+1. **Start CCProxy**:
    ```bash
-   # For Groq
-   PROVIDER=groq GROQ_API_KEY=your_key ./ccproxy-<platform>
-   
-   # For OpenRouter  
-   PROVIDER=openrouter OPENROUTER_API_KEY=your_key ./ccproxy-<platform>
-   
-   # Or: docker-compose up -d
+   ./ccproxy start
    ```
 
-2. **Configure Claude Code** to use the proxy:
+2. **Configure Claude Code**:
    ```bash
-   export ANTHROPIC_BASE_URL=http://localhost:7187
-   export ANTHROPIC_API_KEY=NOT_NEEDED
+   export ANTHROPIC_BASE_URL=http://localhost:3456
+   export ANTHROPIC_AUTH_TOKEN=test
    ```
 
-3. **Run Claude Code**:
+3. **Use Claude Code**:
    ```bash
-   claude
+   claude "Help me with my code"
    ```
 
-Claude Code will now use your selected AI provider through the proxy!
+## 🏆 Supported Providers
 
-## 🏆 Provider Comparison
+CCProxy supports multiple AI providers with full API translation:
 
-| Provider | Strengths | Best For | Popular Models |
-|----------|-----------|----------|----------------|
-| **Groq** | Ultra-fast inference, cost-effective | Real-time applications, development | `moonshotai/kimi-k2-instruct`, `llama-3.1-405b-reasoning` |
-| **OpenRouter** | Huge model selection, competitive pricing | Access to latest models, experimentation | `openai/gpt-4o`, `anthropic/claude-3-sonnet`, `google/gemini-2.5-pro-preview` |
+- **Anthropic** - Claude models with native support
+- **OpenAI** - GPT-4, GPT-3.5 models
+- **Google Gemini** - Advanced multimodal models
+- **DeepSeek** - Cost-effective coding models
+- **OpenRouter** - Access to 100+ models from various providers
 
-### Important: Tool Calling Requirement
+### Provider Support Levels
 
-**⚠️ Critical for Claude Code Users**: You must select models that support **tool calling** or **function calling** capabilities, as Claude Code requires these features to operate correctly.
+CCProxy offers different levels of support for various providers:
 
-### Model Selection Guidelines
+#### Full Support (with dedicated transformers)
+These providers have complete API translation and all features work seamlessly:
+- **Anthropic** - Native Claude API support
+- **OpenAI** - Complete GPT model compatibility
+- **Google Gemini** - Full multimodal support
+- **DeepSeek** - Optimized for coding tasks
+- **OpenRouter** - Unified access to multiple providers
 
-When choosing models from any provider:
+#### Basic Routing Support
+These providers have basic routing capabilities but may have limited functionality:
+- Groq, Mistral, XAI, Ollama - Basic message routing only
 
-1. **Verify Tool Support**: Ensure the model supports function calling/tool use
-2. **Check Current Availability**: Model availability changes frequently
-3. **Review Capabilities**: Different models excel at different tasks
-4. **Consider Performance**: Balance speed, quality, and cost for your needs
+For production use, we recommend using providers with full support.
 
-For current model lists and capabilities, visit each provider's official documentation.
+### Configuration Example
+
+Add providers to your `config.json`:
+
+```json
+{
+  "providers": [
+    {
+      "name": "openai",
+      "api_base_url": "https://api.openai.com/v1",
+      "api_key": "your-api-key",
+      "models": ["gpt-4", "gpt-3.5-turbo"],
+      "enabled": true
+    }
+  ]
+}
+```
 
 ## 📊 API Endpoints
 
-### Main Endpoint
 - `POST /v1/messages` - Anthropic-compatible messages endpoint
-
-### Health & Monitoring
-- `GET /` - Basic health check with current provider info
-- `GET /health` - Detailed health information
-- `GET /status` - Current provider status and configuration
+- `GET /health` - Health check endpoint
+- `GET /status` - Service status information
+- `GET /providers` - List configured providers
+- `POST /providers` - Add new provider
+- `PUT /providers/:name` - Update provider
+- `DELETE /providers/:name` - Remove provider
 
 ### Example Request
 
 ```bash
-curl -X POST http://localhost:7187/v1/messages \
+curl -X POST http://localhost:3456/v1/messages \
   -H "Content-Type: application/json" \
+  -H "x-api-key: your-api-key" \
   -d '{
     "model": "claude-3-sonnet-20240229",
     "max_tokens": 1000,
@@ -215,270 +214,71 @@ curl -X POST http://localhost:7187/v1/messages \
 
 ```bash
 # Build for current platform
-go build ./cmd/proxy
-
-# Cross-platform builds
-./scripts/build.sh
-
-# Windows builds
-./scripts/build.bat
-```
-
-### Testing
-
-**🚧 Test Suite Status**: The test suite has been temporarily removed due to system stability issues. A new test framework is being developed.
-
-**Current Testing Approach**:
-
-```bash
-# Build and verify compilation
 make build
 
-# Run basic functionality test
-./build/ccproxy version
-
-# Cross-platform builds (all except Windows)
+# Cross-platform builds
 make build-all
 
-# Code formatting and basic linting
-make fmt
-make lint
-```
-
-**Quality Assurance**:
-- ✅ **Compilation**: All packages compile successfully
-- ✅ **Cross-platform**: Builds for Linux, macOS (Intel/Apple Silicon)
-- ✅ **Version Management**: Semantic versioning system functional
-- ✅ **Release Automation**: CI/CD pipeline operational
-- 🔄 **Test Coverage**: New test suite under development
-
-### Hot Reload Development
-
-Install Air for hot reloading:
-```bash
-go install github.com/cosmtrek/air@latest
-air
-```
-
-## 🐛 Troubleshooting
-
-### Common Issues
-
-1. **"PROVIDER environment variable is required"**
-   - Ensure you've set the PROVIDER variable to `groq` or `openrouter`
-   - Set the corresponding API key for your chosen provider
-
-2. **"API_KEY environment variable is required"**
-   - For Groq: Set `GROQ_API_KEY` - Get your key from [Groq Console](https://console.groq.com/)
-   - For OpenRouter: Set `OPENROUTER_API_KEY` - Get your key from [OpenRouter](https://openrouter.ai/)
-
-3. **Connection refused on localhost:7187**
-   - Check if the proxy is running: `curl http://localhost:7187/`
-   - Verify the port isn't in use: `lsof -i :7187`
-
-4. **"Failed to call provider API"**
-   - Verify your API key is valid for the selected provider
-   - Check internet connectivity
-   - Review proxy logs for detailed error messages
-   - Ensure the model name is supported by your provider
-
-### Debug Mode
-
-Enable debug logging for troubleshooting:
-```bash
-export LOG_LEVEL=debug
-./ccproxy-<platform>
-```
-
-### Health Check
-
-Check if the service is healthy:
-```bash
-curl http://localhost:7187/health
-```
-
-## 📈 Performance
-
-### Benchmarks
-
-The Golang implementation provides significant performance improvements over the Python version:
-
-- **Memory Usage**: ~10-20MB (vs ~50-100MB Python)
-- **Startup Time**: <100ms (vs ~2-3s Python)
-- **Request Latency**: <10ms conversion overhead
-- **Throughput**: >1000 requests/second
-
-### Optimization
-
-For production deployments:
-
-1. Use the `production` environment
-2. Set appropriate resource limits
-3. Enable horizontal scaling with load balancers
-4. Monitor memory and CPU usage
-
-## 🔒 Security
-
-### Best Practices
-
-- Keep your API keys secure and rotate regularly
-- Use HTTPS in production environments
-- Set up proper firewall rules
-- Monitor for unusual API usage patterns
-- Use environment variables for sensitive configuration
-- Choose the right provider for your use case (cost, speed, model availability)
-
-### Production Deployment
-
-For production use:
-
-```bash
-# Use production environment
-export SERVER_ENVIRONMENT=production
-
-# Bind to specific interface
-export SERVER_HOST=127.0.0.1
-
-# Use structured JSON logging
-export LOG_FORMAT=json
-export LOG_LEVEL=warn
-```
-
-## 🚀 Deployment
-
-### Systemd Service
-
-Create `/etc/systemd/system/ccproxy.service`:
-
-```ini
-[Unit]
-Description=CCProxy Multi-Provider AI Proxy Server
-After=network.target
-
-[Service]
-Type=simple
-User=ccproxy
-Group=ccproxy
-ExecStart=/usr/local/bin/ccproxy
-Restart=always
-RestartSec=5
-Environment=PROVIDER=groq
-Environment=GROQ_API_KEY=your_api_key_here
-Environment=LOG_LEVEL=info
-Environment=SERVER_ENVIRONMENT=production
-
-[Install]
-WantedBy=multi-user.target
-```
-
-### Kubernetes
-
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: ccproxy
-spec:
-  replicas: 3
-  selector:
-    matchLabels:
-      app: ccproxy
-  template:
-    metadata:
-      labels:
-        app: ccproxy
-    spec:
-      containers:
-      - name: ccproxy
-        image: ccproxy:latest
-        ports:
-        - containerPort: 7187
-        env:
-        - name: PROVIDER
-          value: "groq"
-        - name: GROQ_API_KEY
-          valueFrom:
-            secretKeyRef:
-              name: ccproxy-secrets
-              key: groq-api-key
-        - name: SERVER_ENVIRONMENT
-          value: "production"
-```
-
-## 🔄 Migration from Python Version
-
-The Golang version is a drop-in replacement for the Python version:
-
-1. **Same API**: Identical endpoints and request/response formats
-2. **Same Configuration**: Uses the same environment variables
-3. **Same Port**: Default port 7187
-4. **Better Performance**: Significantly faster and uses less memory
-
-### Side-by-Side Testing
-
-You can run both versions simultaneously for testing:
-
-```bash
-# Python version on port 7187
-python proxy.py
-
-# Golang version on port 7188
-SERVER_PORT=7188 ./ccproxy
-```
-
-## 📋 Comparison with Original
-
-| Feature | Python Version | Golang Version |
-|---------|---------------|----------------|
-| **Startup Time** | ~2-3 seconds | <100ms |
-| **Memory Usage** | ~50-100MB | ~10-20MB |
-| **CPU Usage** | Higher | Lower |
-| **Dependencies** | Many (FastAPI, etc.) | Minimal |
-| **Binary Size** | N/A | ~9MB |
-| **Cross-compilation** | No | Yes |
-| **Static Binary** | No | Yes |
-| **Deployment** | Complex | Simple |
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Commit your changes: `git commit -m 'Add amazing feature'`
-4. Push to the branch: `git push origin feature/amazing-feature`
-5. Open a Pull Request
-
-### Development Setup
-
-```bash
-# Clone the repo
-git clone https://github.com/your-repo/ccproxy.git
-cd ccproxy
-
-# Install dependencies
-go mod download
-
 # Run tests
-go test ./...
+make test
 
-# Build
-go build ./cmd/proxy
+# Run tests with race detection
+make test-race
 ```
+
+### Commands
+
+- `ccproxy start` - Start the service
+- `ccproxy stop` - Stop the service
+- `ccproxy status` - Check service status
+- `ccproxy code` - Configure Claude Code
+- `ccproxy version` - Show version
+- `ccproxy env` - Show environment variables
 
 ## 📄 License
 
 MIT License - see [LICENSE](LICENSE) file for details.
 
+## 🤝 Contributing
+
+Contributions are welcome! Please read our [Contributing Guidelines](docs/guide/contributing.md) first.
+
 ## 🙏 Acknowledgments
 
-- Inspired by [claude-code-proxy](https://github.com/1rgs/claude-code-proxy)
-- Built with [Gin Web Framework](https://github.com/gin-gonic/gin)
-- Supports multiple providers: [Groq](https://groq.com/), [OpenRouter](https://openrouter.ai/), and more
+Built with ❤️ for the Claude Code community.
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+1. **Service won't start**
+   - Check if port 3456 is available: `lsof -i :3456`
+   - Verify configuration file syntax
+   - Check logs: `tail -f ~/.ccproxy/ccproxy.log`
+
+2. **Authentication errors**
+   - Verify API keys in config.json
+   - Check provider is enabled in configuration
+   - Ensure API key has correct permissions
+
+3. **Connection refused**
+   - Check service status: `./ccproxy status`
+   - Verify firewall settings
+   - Ensure service is bound to correct interface
+
+### Debug Mode
+
+Enable debug logging:
+```bash
+LOG=true ./ccproxy start
+# Check logs at ~/.ccproxy/ccproxy.log
+```
 
 ## 📞 Support
 
-- 📖 [Documentation](./docs/)
-- 🐛 [Issue Tracker](https://github.com/your-repo/ccproxy/issues)
-- 💬 [Discussions](https://github.com/your-repo/ccproxy/discussions)
+- 📖 [Documentation](https://ccproxy.orchestre.dev)
+- 🐛 [Issue Tracker](https://github.com/orchestre-dev/ccproxy/issues)
+- 💬 [Discussions](https://github.com/orchestre-dev/ccproxy/discussions)
 
 ---
 

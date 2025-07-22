@@ -1,53 +1,80 @@
 # Claude Code Integration
 
-CCProxy is specifically designed to work seamlessly with [Claude Code](https://claude.ai/code), Anthropic's official CLI tool. This integration allows you to use any of the 7 supported providers while maintaining the familiar Claude Code interface.
+CCProxy is specifically designed to work seamlessly with [Claude Code](https://claude.ai/code), Anthropic's official CLI tool. This integration allows you to use multiple AI providers while maintaining the familiar Claude Code interface.
 
-## Quick Setup
+## Quick Setup with Auto-Configuration
 
-### 1. Start CCProxy
+### One-Command Setup
 
 ```bash
-# Configure your preferred provider
-export PROVIDER=groq
-export GROQ_API_KEY=your_api_key_here
-
-# Start CCProxy
-./ccproxy
+# CCProxy will auto-start and configure Claude Code
+./ccproxy code
 ```
 
-### 2. Configure Claude Code
+This command:
+- Starts CCProxy if not already running
+- Sets environment variables for Claude Code
+- Manages reference counting for auto-shutdown
+- Returns Claude Code configuration
+
+## Manual Setup
+
+### 1. Configure Providers
+
+Create or edit `config.json`:
+
+```json
+{
+  "host": "127.0.0.1",
+  "port": 3456,
+  "providers": [
+    {
+      "name": "anthropic",
+      "api_key": "your-anthropic-key",
+      "enabled": true
+    },
+    {
+      "name": "openai",
+      "api_key": "your-openai-key",
+      "enabled": true
+    }
+  ]
+}
+```
+
+### 2. Start CCProxy
+
+```bash
+./ccproxy start
+```
+
+### 3. Configure Claude Code
 
 ```bash
 # Point Claude Code to CCProxy
 export ANTHROPIC_BASE_URL=http://localhost:3456
-export ANTHROPIC_API_KEY=NOT_NEEDED
+export ANTHROPIC_AUTH_TOKEN=test
 
 # Use Claude Code normally
 claude "Help me optimize this Python function"
 ```
 
-That's it! Claude Code will now use your configured provider through CCProxy.
-
 ## Environment Configuration
 
-### Method 1: Environment Variables
+### Method 1: Auto-Configuration (Recommended)
+
+```bash
+# Let CCProxy configure everything
+./ccproxy code
+```
+
+### Method 2: Manual Environment Variables
 
 ```bash
 # Set CCProxy endpoint
 export ANTHROPIC_BASE_URL=http://localhost:3456
-export ANTHROPIC_API_KEY=NOT_NEEDED
-
-# Provider configuration
-export PROVIDER=groq
-export GROQ_API_KEY=your_groq_key_here
-```
-
-### Method 2: Claude Code Configuration
-
-```bash
-# Configure Claude Code directly
-claude config set anthropic.base_url http://localhost:3456
-claude config set anthropic.api_key NOT_NEEDED
+export ANTHROPIC_AUTH_TOKEN=test
+export API_TIMEOUT_MS=600000
 ```
 
 ### Method 3: Shell Profile
@@ -57,55 +84,102 @@ Add to your `~/.bashrc`, `~/.zshrc`, or `~/.profile`:
 ```bash
 # CCProxy + Claude Code Integration
 export ANTHROPIC_BASE_URL=http://localhost:3456
-export ANTHROPIC_API_KEY=NOT_NEEDED
+export ANTHROPIC_AUTH_TOKEN=test
+export API_TIMEOUT_MS=600000
 
-# Default provider (change as needed)
-export PROVIDER=groq
-export GROQ_API_KEY=your_groq_key_here
+# Optional: Auto-start CCProxy
+alias claude-start="ccproxy code"
 ```
 
-## Provider Switching
+### Method 4: Claude Configuration File
 
-One of the key benefits of CCProxy is the ability to switch providers without changing Claude Code configuration:
+Edit `~/.claude.json`:
 
-### Switch to Different Providers
+```json
+{
+  "providers": {
+    "anthropic": {
+      "baseUrl": "http://localhost:3456",
+      "authToken": "test"
+    }
+  },
+  "timeout": 600000
+}
+```
+
+## Provider Management
+
+CCProxy uses a configuration-based approach for provider management:
+
+### Configuring Multiple Providers
+
+```json
+{
+  "providers": [
+    {
+      "name": "anthropic",
+      "api_key": "sk-ant-...",
+      "models": ["claude-3-opus-20240229", "claude-3-sonnet-20240229"],
+      "enabled": true
+    },
+    {
+      "name": "openai",
+      "api_key": "sk-...",
+      "models": ["gpt-4", "gpt-3.5-turbo"],
+      "enabled": true
+    },
+    {
+      "name": "gemini",
+      "api_key": "AI...",
+      "models": ["gemini-1.5-flash", "gemini-1.5-pro"],
+      "enabled": true
+    }
+  ],
+  "routes": {
+    "default": {
+      "provider": "anthropic",
+      "model": "claude-3-sonnet-20240229"
+    },
+    "longContext": {
+      "provider": "anthropic",
+      "model": "claude-3-opus-20240229"
+    }
+  }
+}
+```
+
+### Dynamic Provider Management
 
 ```bash
-# Switch to OpenAI
-export PROVIDER=openai
-export OPENAI_API_KEY=your_openai_key
-./ccproxy  # Restart CCProxy
+# Add a new provider
+curl -X POST http://localhost:3456/providers \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: your-ccproxy-api-key" \
+  -d '{
+    "name": "openai",
+    "api_key": "sk-...",
+    "enabled": true
+  }'
 
-# Switch to Ollama (local)
-export PROVIDER=ollama
-export OLLAMA_MODEL=llama3.2
-./ccproxy  # Restart CCProxy
-
-# Switch to XAI for real-time data
-export PROVIDER=xai
-export XAI_API_KEY=your_xai_key
-./ccproxy  # Restart CCProxy
+# Update provider configuration
+curl -X PUT http://localhost:3456/providers/openai \
+  -H "x-api-key: your-ccproxy-api-key" \
+  -d '{"enabled": false}'
 ```
-
-Claude Code commands remain the same - only the underlying provider changes!
 
 ## Common Usage Patterns
 
 ### Development Workflow
 
 ```bash
-# Fast iteration with Groq
-export PROVIDER=groq
+# Use default provider (configured in config.json)
 claude "Explain this error message"
 
-# Switch to OpenAI for complex reasoning
-export PROVIDER=openai
-claude "Design the architecture for this system"
+# For long contexts (>60K tokens), CCProxy automatically routes to longContext model
+claude "Analyze this large codebase" < large_file.js
 
-# Use Ollama for private/sensitive code
-export PROVIDER=ollama
-claude "Review this proprietary algorithm"
-```
+# Use with different models via config.json routes
+claude "Design the architecture for this system"
 
 ### Code Analysis
 
@@ -152,14 +226,14 @@ done
 
 ### Feature Availability by Provider
 
-| Feature | Groq | OpenRouter | OpenAI | XAI | Gemini | Mistral | Ollama |
-|---------|------|------------|--------|-----|--------|---------|--------|
-| **Code Analysis** | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **Code Generation** | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **Documentation** | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **Image Analysis** | ❌ | ✅* | ✅ | ✅ | ✅ | ❌ | ✅* |
-| **Real-time Data** | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ |
-| **Function Calling** | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Feature | Anthropic | OpenAI | Gemini | DeepSeek | OpenRouter |
+|---------|-----------|--------|--------|----------|------------|
+| **Code Analysis** | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Code Generation** | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Documentation** | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Image Analysis** | ✅ | ✅ | ✅ | ❌ | ✅* |
+| **Function Calling** | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Streaming** | ✅ | ✅ | ✅ | ✅ | ✅ |
 
 *Depends on specific model
 
@@ -167,132 +241,199 @@ done
 
 ### Development Setup
 
-```bash
-# .env for development
-PROVIDER=groq
-GROQ_API_KEY=your_groq_key
-GROQ_MODEL=llama-3.1-8b-instant  # Fast model for development
-
-# Claude Code config
-export ANTHROPIC_BASE_URL=http://localhost:3456
-export ANTHROPIC_API_KEY=NOT_NEEDED
+```json
+{
+  "host": "127.0.0.1",
+  "port": 3456,
+  "providers": [
+    {
+      "name": "anthropic",
+      "api_key": "${ANTHROPIC_API_KEY}",
+      "enabled": true
+    },
+    {
+      "name": "deepseek",
+      "api_key": "${DEEPSEEK_API_KEY}",
+      "models": ["deepseek-coder"],
+      "enabled": true
+    }
+  ],
+  "routes": {
+    "default": {
+      "provider": "deepseek",
+      "model": "deepseek-coder"
+    }
+  }
+}
 ```
 
 ### Production Setup
 
-```bash
-# .env for production
-PROVIDER=openai
-OPENAI_API_KEY=your_openai_key
-OPENAI_MODEL=gpt-4o  # High-quality model for production
-
-# Claude Code config
-export ANTHROPIC_BASE_URL=http://localhost:3456
-export ANTHROPIC_API_KEY=NOT_NEEDED
+```json
+{
+  "host": "0.0.0.0",
+  "port": 3456,
+  "apikey": "${CCPROXY_API_KEY}",
+  "performance": {
+    "rate_limit_enabled": true,
+    "circuit_breaker_enabled": true
+  },
+  "providers": [
+    {
+      "name": "openai",
+      "api_key": "${OPENAI_API_KEY}",
+      "models": ["gpt-4", "gpt-3.5-turbo"],
+      "enabled": true
+    }
+  ]
+}
 ```
 
-### Privacy-Focused Setup
+### Multi-Model Setup
 
-```bash
-# .env for sensitive work
-PROVIDER=ollama
-OLLAMA_MODEL=codellama:13b  # Local model for privacy
-OLLAMA_BASE_URL=http://localhost:11434
-
-# Claude Code config
-export ANTHROPIC_BASE_URL=http://localhost:3456
-export ANTHROPIC_API_KEY=NOT_NEEDED
+```json
+{
+  "routes": {
+    "default": {
+      "provider": "anthropic",
+      "model": "claude-3-sonnet-20240229"
+    },
+    "longContext": {
+      "provider": "anthropic",
+      "model": "claude-3-opus-20240229"
+    },
+    "vision": {
+      "provider": "gemini",
+      "model": "gemini-1.5-pro"
+    }
+  }
+}
 ```
 
-### Multi-Provider Setup
+### Configuration Management
 
-Create different configurations for different use cases:
+Use different configuration files for different use cases:
 
 ```bash
-# groq-config.sh
-export PROVIDER=groq
-export GROQ_API_KEY=your_groq_key
-export ANTHROPIC_BASE_URL=http://localhost:3456
-export ANTHROPIC_API_KEY=NOT_NEEDED
+# Development configuration
+cp config.dev.json config.json
+./ccproxy start
 
-# openai-config.sh  
-export PROVIDER=openai
-export OPENAI_API_KEY=your_openai_key
-export ANTHROPIC_BASE_URL=http://localhost:3456
-export ANTHROPIC_API_KEY=NOT_NEEDED
+# Production configuration  
+cp config.prod.json config.json
+./ccproxy start
 
-# Usage:
-# source groq-config.sh && claude "fast iteration task"
-# source openai-config.sh && claude "complex reasoning task"
+# Test configuration
+cp config.test.json config.json
+./ccproxy start
+```
+
+#### Example config.dev.json:
+```json
+{
+  "log": true,
+  "providers": [
+    {
+      "name": "anthropic",
+      "api_key": "${ANTHROPIC_API_KEY}",
+      "enabled": true
+    }
+  ]
+}
+```
+
+#### Example config.prod.json:
+```json
+{
+  "host": "0.0.0.0",
+  "port": 443,
+  "apikey": "${CCPROXY_API_KEY}",
+  "log": false,
+  "performance": {
+    "rate_limit_enabled": true,
+    "metrics_enabled": true
+  }
+}
 ```
 
 ## Automation Scripts
 
-### Provider Switcher
+### CCProxy Service Manager
 
 ```bash
 #!/bin/bash
-# switch-provider.sh
+# ccproxy-manager.sh
 
-PROVIDER=$1
-
-case $PROVIDER in
-    groq)
-        export PROVIDER=groq
-        export GROQ_API_KEY=$GROQ_API_KEY
+case $1 in
+    start)
+        ./ccproxy start
+        echo "✅ CCProxy started"
         ;;
-    openai)
-        export PROVIDER=openai
-        export OPENAI_API_KEY=$OPENAI_API_KEY
+    stop)
+        ./ccproxy stop
+        echo "❌ CCProxy stopped"
         ;;
-    ollama)
-        export PROVIDER=ollama
-        export OLLAMA_MODEL=llama3.2
+    restart)
+        ./ccproxy stop
+        sleep 1
+        ./ccproxy start
+        echo "🔄 CCProxy restarted"
+        ;;
+    status)
+        ./ccproxy status
+        ;;
+    claude)
+        ./ccproxy code
         ;;
     *)
-        echo "Usage: $0 {groq|openai|ollama}"
+        echo "Usage: $0 {start|stop|restart|status|claude}"
         exit 1
         ;;
 esac
-
-# Restart CCProxy with new provider
-pkill ccproxy
-./ccproxy &
-
-echo "Switched to $PROVIDER provider"
 ```
 
-### Claude Code Wrapper
+### Health Check Script
 
 ```bash
 #!/bin/bash
-# claude-with-provider.sh
+# health-check.sh
 
-PROVIDER=$1
-shift  # Remove provider from arguments
+# Check CCProxy health
+HEALTH=$(curl -s http://localhost:3456/health | jq -r '.status')
 
-# Set provider configuration
-case $PROVIDER in
-    groq)
-        export PROVIDER=groq
-        ;;
-    openai)
-        export PROVIDER=openai
-        ;;
-    # ... other providers
-esac
-
-# Ensure CCProxy is running with correct provider
-./switch-provider.sh $PROVIDER
-
-# Run Claude Code with remaining arguments
-claude "$@"
+if [ "$HEALTH" = "healthy" ]; then
+    echo "✅ CCProxy is healthy"
+    
+    # Get detailed status if authenticated
+    if [ -n "$CCPROXY_API_KEY" ]; then
+        curl -s -H "x-api-key: $CCPROXY_API_KEY" http://localhost:3456/status | jq
+    fi
+else
+    echo "❌ CCProxy is unhealthy"
+    exit 1
+fi
 ```
 
-Usage:
+### Claude Code Session Manager
+
 ```bash
-./claude-with-provider.sh groq "Explain this code"
-./claude-with-provider.sh openai "Design this architecture"
+#!/bin/bash
+# claude-session.sh
+
+# Start CCProxy and configure Claude Code
+eval $(./ccproxy code)
+
+# Verify configuration
+if [ "$ANTHROPIC_BASE_URL" = "http://127.0.0.1:3456" ]; then
+    echo "✅ Claude Code configured for CCProxy"
+    
+    # Run Claude Code with auto-cleanup
+    trap "./ccproxy stop" EXIT
+    claude "$@"
+else
+    echo "❌ Configuration failed"
+    exit 1
+fi
 ```
 
 ## Troubleshooting
@@ -301,97 +442,134 @@ Usage:
 
 ```bash
 # Check if CCProxy is running
-curl http://localhost:3456/health
+./ccproxy status
 
 # If not running, start it
-./ccproxy
+./ccproxy start
 
-# Check logs for errors
-tail -f ccproxy.log
+# Check logs for errors (if logging enabled)
+tail -f ~/.ccproxy/ccproxy.log
+
+# Verify process
+ps aux | grep ccproxy
 ```
 
 ### Claude Code Connection Issues
 
 ```bash
 # Verify environment variables
-echo $ANTHROPIC_BASE_URL  # Should be http://localhost:3456
-echo $ANTHROPIC_API_KEY   # Should be NOT_NEEDED
+echo $ANTHROPIC_BASE_URL    # Should be http://127.0.0.1:3456
+echo $ANTHROPIC_AUTH_TOKEN  # Should be test
+echo $API_TIMEOUT_MS        # Should be 600000
+
+# Use ccproxy code to auto-configure
+./ccproxy code
 
 # Test direct API call
 curl -X POST http://localhost:3456/v1/messages \
   -H "Content-Type: application/json" \
-  -d '{"model":"claude-3-sonnet","messages":[{"role":"user","content":"test"}],"max_tokens":10}'
+  -d '{"model":"claude-3-sonnet-20240229","messages":[{"role":"user","content":"test"}],"max_tokens":10}'
 ```
 
 ### Provider Configuration Issues
 
 ```bash
-# Check provider status
+# Check provider status (requires auth or localhost)
 curl http://localhost:3456/status
 
-# Verify API keys are set
-env | grep API_KEY
+# Verify configuration file
+cat config.json | jq '.providers'
 
-# Check provider-specific configuration
-env | grep GROQ     # For Groq
-env | grep OPENAI   # For OpenAI
-env | grep OLLAMA   # For Ollama
+# Check enabled providers
+cat config.json | jq '.providers[] | select(.enabled==true) | .name'
+
+# List available providers (requires auth)
+curl -H "x-api-key: $CCPROXY_API_KEY" http://localhost:3456/providers
 ```
 
 ### Performance Issues
 
 ```bash
-# Check CCProxy performance
-curl http://localhost:3456/health
+# Check CCProxy performance (authenticated)
+curl -H "x-api-key: $CCPROXY_API_KEY" http://localhost:3456/health | jq '.performance'
 
 # Monitor response times
 time claude "simple test"
 
-# Switch to faster provider if needed
-export PROVIDER=groq  # Groq is fastest
+# Check latency metrics
+curl -H "x-api-key: $CCPROXY_API_KEY" http://localhost:3456/health | \
+  jq '.performance.latency'
+
+# Review configuration for performance settings
+cat config.json | jq '.performance'
 ```
 
 ## Best Practices
 
 ### 1. Provider Selection by Use Case
 
-```bash
-# Development/iteration: Use Groq (fastest)
-export PROVIDER=groq
-
-# Production/quality: Use OpenAI or Claude via OpenRouter
-export PROVIDER=openrouter
-
-# Privacy/sensitive: Use Ollama (local)
-export PROVIDER=ollama
-
-# Real-time data: Use XAI
-export PROVIDER=xai
+```json
+// config.json - Route by use case
+{
+  "routes": {
+    "default": {
+      "provider": "deepseek",      // Fast, cost-effective for development
+      "model": "deepseek-coder"
+    },
+    "production": {
+      "provider": "openai",         // High quality for production
+      "model": "gpt-4"
+    },
+    "longContext": {
+      "provider": "anthropic",      // Best for large context windows
+      "model": "claude-3-opus-20240229"
+    }
+  }
+}
 ```
 
 ### 2. Configuration Management
 
 ```bash
-# Keep provider configs in separate files
-# Use environment-specific configurations
-# Version control your .env.example files
+# Use separate config files for different environments
+config.json          # Active configuration
+config.dev.json      # Development settings
+config.prod.json     # Production settings
+config.test.json     # Test settings
+
+# Use environment variables for sensitive data
+export ANTHROPIC_API_KEY="sk-ant-..."
+export OPENAI_API_KEY="sk-..."
+
+# Reference in config.json
+"api_key": "${ANTHROPIC_API_KEY}"
 ```
 
 ### 3. Error Handling
 
 ```bash
-# Always check CCProxy health before long tasks
-curl -s http://localhost:3456/health | jq '.status'
+# Check CCProxy health before long tasks
+HEALTH=$(curl -s http://localhost:3456/health | jq -r '.status')
+if [ "$HEALTH" != "healthy" ]; then
+    echo "CCProxy not healthy, restarting..."
+    ./ccproxy stop && ./ccproxy start
+fi
 
-# Implement fallback providers for critical workflows
+# Configure multiple providers for fallback
+# CCProxy will handle provider failures gracefully
 ```
 
-### 4. Cost Optimization
+### 4. Security Best Practices
 
 ```bash
-# Use free tiers for development (Groq, Gemini)
-# Switch to paid providers only for production
-# Monitor usage with provider dashboards
+# Use API key for production
+cat config.json | jq '.apikey = "${CCPROXY_API_KEY}"' > config.prod.json
+
+# Restrict to localhost for development
+cat config.json | jq '.host = "127.0.0.1"' > config.dev.json
+
+# Enable security features
+cat config.json | jq '.security.audit_enabled = true' > config.secure.json
 ```
 
 ## Advanced Integration
@@ -448,18 +626,23 @@ jobs:
 
 ```dockerfile
 # Dockerfile for development environment
-FROM anthropic/claude-code:latest
+FROM golang:1.23-alpine AS builder
+WORKDIR /app
+COPY . .
+RUN go build -o ccproxy ./cmd/ccproxy
 
-# Install CCProxy
-COPY ccproxy /usr/local/bin/
-COPY .env /app/.env
+FROM alpine:latest
+RUN apk --no-cache add ca-certificates
+COPY --from=builder /app/ccproxy /usr/local/bin/
+COPY config.json /home/ccproxy/.ccproxy/config.json
 
-# Configure Claude Code
+# Configure Claude Code environment
 ENV ANTHROPIC_BASE_URL=http://localhost:3456
-ENV ANTHROPIC_API_KEY=NOT_NEEDED
+ENV ANTHROPIC_AUTH_TOKEN=test
+ENV API_TIMEOUT_MS=600000
 
-# Start CCProxy and keep container running
-CMD ["sh", "-c", "ccproxy & && tail -f /dev/null"]
+EXPOSE 3456
+CMD ["ccproxy", "start", "--foreground"]
 ```
 
 ## Monitoring and Logging

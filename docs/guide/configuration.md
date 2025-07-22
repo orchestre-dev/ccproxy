@@ -1,300 +1,477 @@
 ---
 title: Configuration Guide - CCProxy Provider Setup
-description: Complete configuration guide for CCProxy. Set up Groq Kimi K2, OpenAI, Gemini, Mistral, XAI Grok, OpenRouter, and Ollama providers with Claude Code.
-keywords: CCProxy configuration, Groq setup, OpenAI config, Gemini setup, Mistral config, XAI Grok, OpenRouter, Ollama, Claude Code integration
+description: Complete configuration guide for CCProxy. Set up Anthropic, OpenAI, Gemini, DeepSeek, and OpenRouter providers with Claude Code.
+keywords: CCProxy configuration, Anthropic setup, OpenAI config, Gemini setup, DeepSeek config, OpenRouter, Claude Code integration
 ---
 
 # Configuration Guide
 
 <SocialShare />
 
-Configure CCProxy to work with your preferred AI provider. CCProxy supports 7+ major providers, each with their own configuration options and capabilities.
+Configure CCProxy to work with your preferred AI providers. CCProxy uses a JSON configuration file to manage providers, routing, and server settings.
 
-## Quick Setup
+## Configuration File
 
-The fastest way to get started is using our installation script:
+CCProxy uses a `config.json` file for all configuration. The file is typically located at:
+- Linux/macOS: `~/.ccproxy/config.json`
+- Windows: `%USERPROFILE%\.ccproxy\config.json`
+- Or specify a custom location with `--config` flag
 
-```bash
-# Install CCProxy with auto-detection
-curl -sSL https://raw.githubusercontent.com/orchestre-dev/ccproxy/main/install.sh | bash
+## Basic Configuration
 
-# Then configure your provider (see examples below)
-export PROVIDER=groq
-export GROQ_API_KEY=your_api_key
-ccproxy
+### Minimal Configuration
+
+```json
+{
+  "host": "127.0.0.1",
+  "port": 3456,
+  "providers": [
+    {
+      "name": "anthropic",
+      "api_key": "sk-ant-...",
+      "enabled": true
+    }
+  ]
+}
 ```
 
-## Environment Variables
+### Full Configuration Example
 
-CCProxy uses environment variables for configuration. Create a `.env` file or export variables directly:
-
-### Core Configuration
-
-```bash
-# Required: Choose your provider
-PROVIDER=groq
-
-# Optional: Server configuration
-PORT=3456                    # Default: 3456
-LOG_LEVEL=info              # Options: debug, info, warn, error
-LOG_FORMAT=json             # Options: json, text
+```json
+{
+  "host": "127.0.0.1",
+  "port": 3456,
+  "log": true,
+  "apikey": "your-ccproxy-api-key",
+  "performance": {
+    "request_timeout": "30s",
+    "max_request_body_size": 10485760,
+    "metrics_enabled": true,
+    "rate_limit_enabled": false,
+    "circuit_breaker_enabled": true
+  },
+  "security": {
+    "audit_enabled": false,
+    "ip_whitelist": ["127.0.0.1"],
+    "allowed_headers": ["Content-Type", "Accept", "Authorization"]
+  },
+  "providers": [
+    {
+      "name": "anthropic",
+      "api_key": "${ANTHROPIC_API_KEY}",
+      "api_base_url": "https://api.anthropic.com",
+      "models": ["claude-3-opus-20240229", "claude-3-sonnet-20240229"],
+      "enabled": true
+    }
+  ],
+  "routes": {
+    "default": {
+      "provider": "anthropic",
+      "model": "claude-3-sonnet-20240229"
+    },
+    "longContext": {
+      "provider": "anthropic",
+      "model": "claude-3-opus-20240229"
+    }
+  }
+}
 ```
 
-## Provider-Specific Configuration
+## Provider Configuration
 
-### 🚀 Groq (Recommended for Kimi K2)
+### 🎯 Anthropic (Claude)
 
-**Ultra-fast inference with Kimi K2 support**
+**Native support for all Claude models**
 
-```bash
-# Required
-PROVIDER=groq
-GROQ_API_KEY=gsk_your_groq_api_key_here
-
-# Optional
-GROQ_MODEL=moonshotai/kimi-k2-instruct    # Default model
-GROQ_MAX_TOKENS=8192                      # Default: 16384
-GROQ_BASE_URL=https://api.groq.com/openai/v1  # Default URL
+```json
+{
+  "providers": [
+    {
+      "name": "anthropic",
+      "api_key": "sk-ant-...",
+      "api_base_url": "https://api.anthropic.com",
+      "models": [
+        "claude-3-opus-20240229",
+        "claude-3-sonnet-20240229",
+        "claude-3-haiku-20240307"
+      ],
+      "enabled": true
+    }
+  ]
+}
 ```
 
-**Get your API key:** [console.groq.com](https://console.groq.com/)
-
-**Available Models:** [View current models and pricing →](https://console.groq.com/docs/models)
-
-### 🌐 OpenRouter
-
-**Access to 100+ models including Kimi K2**
-
-```bash
-# Required
-PROVIDER=openrouter
-OPENROUTER_API_KEY=sk-or-v1-your_openrouter_key_here
-
-# Optional
-OPENROUTER_MODEL=moonshotai/kimi-k2-instruct  # Default model
-OPENROUTER_MAX_TOKENS=8192                    # Default: 16384
-OPENROUTER_SITE_URL=https://yoursite.com      # For tracking
-OPENROUTER_SITE_NAME=YourApp                  # For tracking
-```
-
-**Get your API key:** [openrouter.ai](https://openrouter.ai/)
-
-**Available Models:** [Browse 100+ models and pricing →](https://openrouter.ai/models)
+**Get your API key:** [console.anthropic.com](https://console.anthropic.com/)
 
 ### 🤖 OpenAI
 
-**Industry-standard GPT models**
+**GPT-4 and GPT-3.5 models with full compatibility**
 
-```bash
-# Required
-PROVIDER=openai
-OPENAI_API_KEY=sk-your_openai_api_key_here
-
-# Optional
-OPENAI_MODEL=gpt-4.1                         # Default model (2025)
-OPENAI_MAX_TOKENS=16384                      # Default: 16384
-OPENAI_ORGANIZATION=org-your_org_id          # Optional
-OPENAI_BASE_URL=https://api.openai.com/v1    # Default URL
+```json
+{
+  "providers": [
+    {
+      "name": "openai",
+      "api_key": "sk-...",
+      "api_base_url": "https://api.openai.com/v1",
+      "models": [
+        "gpt-4",
+        "gpt-4-turbo-preview",
+        "gpt-3.5-turbo"
+      ],
+      "enabled": true
+    }
+  ]
+}
 ```
 
 **Get your API key:** [platform.openai.com](https://platform.openai.com/)
 
-**Available Models:** [View current models and pricing →](https://platform.openai.com/docs/models)
+### 🌟 Google Gemini
 
-### 🧠 Google Gemini
+**Advanced multimodal models**
 
-**Advanced multimodal AI**
-
-```bash
-# Required
-PROVIDER=gemini
-GEMINI_API_KEY=your_gemini_api_key_here
-
-# Optional
-GEMINI_MODEL=gemini-2.0-flash                # Default model (2025)
-GEMINI_MAX_TOKENS=32768                      # Default: 16384
-GEMINI_BASE_URL=https://generativelanguage.googleapis.com  # Default
+```json
+{
+  "providers": [
+    {
+      "name": "gemini",
+      "api_key": "AI...",
+      "api_base_url": "https://generativelanguage.googleapis.com",
+      "models": [
+        "gemini-1.5-flash",
+        "gemini-1.5-pro"
+      ],
+      "enabled": true
+    }
+  ]
+}
 ```
 
-**Get your API key:** [aistudio.google.com](https://aistudio.google.com/)
+**Get your API key:** [makersuite.google.com](https://makersuite.google.com/app/apikey)
 
-**Available Models:** [View current models and pricing →](https://ai.google.dev/gemini-api/docs/models)
+### 💻 DeepSeek
 
-### 🇪🇺 Mistral AI
+**Specialized coding models**
 
-**European privacy-focused AI**
-
-```bash
-# Required
-PROVIDER=mistral
-MISTRAL_API_KEY=your_mistral_api_key_here
-
-# Optional
-MISTRAL_MODEL=mistral-large-latest           # Default model
-MISTRAL_MAX_TOKENS=32768                     # Default: 16384
-MISTRAL_BASE_URL=https://api.mistral.ai/v1   # Default URL
+```json
+{
+  "providers": [
+    {
+      "name": "deepseek",
+      "api_key": "sk-...",
+      "api_base_url": "https://api.deepseek.com",
+      "models": [
+        "deepseek-coder",
+        "deepseek-chat"
+      ],
+      "enabled": true
+    }
+  ]
+}
 ```
 
-**Get your API key:** [console.mistral.ai](https://console.mistral.ai/)
+**Get your API key:** [platform.deepseek.com](https://platform.deepseek.com/)
 
-**Available Models:** [View current models and pricing →](https://docs.mistral.ai/getting-started/models/models_overview/)
+### 🌐 OpenRouter
 
-### 🔥 XAI (Grok)
+**Access to 100+ models through unified API**
 
-**Real-time data access with X integration**
-
-```bash
-# Required
-PROVIDER=xai
-XAI_API_KEY=xai-your_xai_api_key_here
-
-# Optional
-XAI_MODEL=grok-4                            # Default model (2025)
-XAI_MAX_TOKENS=16384                        # Default: 16384
-XAI_BASE_URL=https://api.x.ai/v1            # Default URL
+```json
+{
+  "providers": [
+    {
+      "name": "openrouter",
+      "api_key": "sk-or-v1-...",
+      "api_base_url": "https://openrouter.ai/api/v1",
+      "models": [
+        "anthropic/claude-3.5-sonnet",
+        "google/gemini-pro-1.5",
+        "meta-llama/llama-3.1-405b-instruct"
+      ],
+      "enabled": true
+    }
+  ]
+}
 ```
 
-**Get your API key:** [console.x.ai](https://console.x.ai/) ($25 free credits/month)
+**Get your API key:** [openrouter.ai](https://openrouter.ai/)
 
-**Available Models:** [View current models and pricing →](https://docs.x.ai/docs/models)
+## Environment Variables
 
-### 🏠 Ollama
+CCProxy supports environment variable substitution in configuration files:
 
-**Local models for complete privacy**
-
-```bash
-# Required
-PROVIDER=ollama
-OLLAMA_MODEL=llama3.3                       # Must be downloaded locally
-
-# Optional
-OLLAMA_BASE_URL=http://localhost:11434      # Default Ollama URL
-OLLAMA_MAX_TOKENS=16384                     # Default: 16384
+```json
+{
+  "providers": [
+    {
+      "name": "anthropic",
+      "api_key": "${ANTHROPIC_API_KEY}",
+      "enabled": true
+    }
+  ]
+}
 ```
 
-**Setup Requirements:**
-1. Install Ollama: [ollama.ai](https://ollama.ai/)
-2. Download a model: `ollama pull llama3.3`
-3. Start Ollama: `ollama serve`
+Then set the environment variable:
+```bash
+export ANTHROPIC_API_KEY="sk-ant-..."
+./ccproxy start
+```
 
-**Available Models:** [Browse all local models →](https://ollama.com/library)
+## Routing Configuration
+
+CCProxy can route requests based on various criteria:
+
+### Default Routing
+```json
+{
+  "routes": {
+    "default": {
+      "provider": "anthropic",
+      "model": "claude-3-sonnet-20240229"
+    }
+  }
+}
+```
+
+### Context-Based Routing
+Requests with >60K tokens automatically route to long-context models:
+```json
+{
+  "routes": {
+    "default": {
+      "provider": "anthropic",
+      "model": "claude-3-sonnet-20240229"
+    },
+    "longContext": {
+      "provider": "anthropic",
+      "model": "claude-3-opus-20240229"
+    }
+  }
+}
+```
+
+### Model-Specific Routing
+```json
+{
+  "routes": {
+    "claude-3-opus": {
+      "provider": "anthropic",
+      "model": "claude-3-opus-20240229"
+    },
+    "gpt-4": {
+      "provider": "openai",
+      "model": "gpt-4"
+    }
+  }
+}
+```
+
+## Performance Configuration
+
+Optimize CCProxy performance:
+
+```json
+{
+  "performance": {
+    "request_timeout": "30s",
+    "max_request_body_size": 10485760,
+    "metrics_enabled": true,
+    "rate_limit_enabled": false,
+    "circuit_breaker_enabled": true,
+    "circuit_breaker_threshold": 5,
+    "circuit_breaker_timeout": "60s"
+  }
+}
+```
+
+## Security Configuration
+
+Configure security settings:
+
+```json
+{
+  "apikey": "your-secure-api-key",
+  "security": {
+    "audit_enabled": true,
+    "ip_whitelist": ["127.0.0.1", "192.168.1.0/24"],
+    "ip_blacklist": ["10.0.0.0/8"],
+    "allowed_headers": ["Content-Type", "Accept", "Authorization"],
+    "cors_enabled": true,
+    "cors_origins": ["http://localhost:3000"]
+  }
+}
+```
+
+## Multiple Configurations
+
+Manage different environments with separate configuration files:
+
+### Development Configuration
+```json
+{
+  "host": "127.0.0.1",
+  "port": 3456,
+  "log": true,
+  "providers": [{
+    "name": "anthropic",
+    "api_key": "${ANTHROPIC_API_KEY}",
+    "enabled": true
+  }]
+}
+```
+
+### Production Configuration
+```json
+{
+  "host": "0.0.0.0",
+  "port": 443,
+  "apikey": "${CCPROXY_API_KEY}",
+  "log": false,
+  "performance": {
+    "rate_limit_enabled": true,
+    "circuit_breaker_enabled": true
+  },
+  "security": {
+    "audit_enabled": true,
+    "ip_whitelist": ["10.0.0.0/8"]
+  }
+}
+```
+
+Use different configs:
+```bash
+./ccproxy start --config config.dev.json
+./ccproxy start --config config.prod.json
+```
 
 ## Claude Code Integration
 
 Once CCProxy is configured and running, integrate with Claude Code:
 
+### Automatic Setup
+```bash
+./ccproxy code
+```
+
+### Manual Setup
 ```bash
 # Set Claude Code to use CCProxy
 export ANTHROPIC_BASE_URL=http://localhost:3456
-export ANTHROPIC_API_KEY=NOT_NEEDED
+export ANTHROPIC_AUTH_TOKEN=test
+export API_TIMEOUT_MS=600000
 
 # Verify it's working
-claude-code "Hello, can you help me with coding?"
+claude "Hello, can you help me with coding?"
 ```
 
 ## Advanced Configuration
 
-### Custom Configuration File
+### Complete Configuration Reference
 
-Create a `config.yaml` file for advanced settings:
-
-```yaml
-# config.yaml
-server:
-  port: 3456
-  host: "0.0.0.0"
-  read_timeout: "30s"
-  write_timeout: "30s"
-
-logging:
-  level: "info"
-  format: "json"
-  file: "ccproxy.log"
-
-provider:
-  name: "groq"
-  timeout: "30s"
-  max_retries: 3
-  retry_delay: "1s"
-
-# Provider-specific settings
-groq:
-  api_key: "${GROQ_API_KEY}"
-  model: "moonshotai/kimi-k2-instruct"
-  max_tokens: 8192
-  base_url: "https://api.groq.com/openai/v1"
-```
-
-Run with config file:
-```bash
-ccproxy --config config.yaml
-```
-
-### Multiple Provider Setup
-
-For switching between providers easily:
-
-```bash
-# Create multiple .env files
-cp .env .env.groq
-cp .env .env.openai
-cp .env .env.gemini
-
-# Switch providers
-source .env.groq && ccproxy    # Use Groq
-source .env.openai && ccproxy  # Use OpenAI
-source .env.gemini && ccproxy  # Use Gemini
-```
-
-### Load Balancing (Coming Soon)
-
-Configure multiple providers for failover:
-
-```yaml
-providers:
-  - name: "groq"
-    weight: 70
-    config:
-      api_key: "${GROQ_API_KEY}"
-      model: "moonshotai/kimi-k2-instruct"
+```json
+{
+  "host": "127.0.0.1",
+  "port": 3456,
+  "log": true,
+  "apikey": "your-ccproxy-api-key",
   
-  - name: "openrouter"
-    weight: 30
-    config:
-      api_key: "${OPENROUTER_API_KEY}"
-      model: "moonshotai/kimi-k2-instruct"
+  "performance": {
+    "request_timeout": "30s",
+    "max_request_body_size": 10485760,
+    "metrics_enabled": true,
+    "rate_limit_enabled": false,
+    "rate_limit_requests_per_minute": 60,
+    "circuit_breaker_enabled": true,
+    "circuit_breaker_threshold": 5,
+    "circuit_breaker_timeout": "60s",
+    "cache_enabled": true,
+    "cache_ttl": "5m"
+  },
+  
+  "security": {
+    "audit_enabled": false,
+    "audit_log_path": "~/.ccproxy/audit.log",
+    "ip_whitelist": [],
+    "ip_blacklist": [],
+    "allowed_headers": ["Content-Type", "Accept", "Authorization"],
+    "cors_enabled": true,
+    "cors_origins": ["*"],
+    "cors_credentials": false
+  },
+  
+  "providers": [
+    {
+      "name": "anthropic",
+      "api_key": "${ANTHROPIC_API_KEY}",
+      "api_base_url": "https://api.anthropic.com",
+      "models": ["claude-3-opus-20240229", "claude-3-sonnet-20240229"],
+      "enabled": true,
+      "priority": 1,
+      "timeout": "30s",
+      "max_retries": 3
+    }
+  ],
+  
+  "routes": {
+    "default": {
+      "provider": "anthropic",
+      "model": "claude-3-sonnet-20240229"
+    },
+    "longContext": {
+      "provider": "anthropic",
+      "model": "claude-3-opus-20240229"
+    }
+  },
+  
+  "middleware": {
+    "request_id": true,
+    "logging": true,
+    "recovery": true,
+    "timeout": true,
+    "cors": true,
+    "security": true,
+    "performance": true
+  }
+}
 ```
 
-## Environment Files
+### Configuration Directory Structure
 
-Create provider-specific `.env` files:
-
-### .env.kimi-groq
-```bash
-# Ultra-fast Kimi K2 via Groq
-PROVIDER=groq
-GROQ_API_KEY=gsk_your_key_here
-GROQ_MODEL=moonshotai/kimi-k2-instruct
-LOG_LEVEL=info
+```
+~/.ccproxy/
+├── config.json          # Main configuration
+├── config.dev.json      # Development config
+├── config.prod.json     # Production config
+├── ccproxy.log         # Log file (when enabled)
+├── audit.log           # Audit log (when enabled)
+└── .ccproxy.pid        # Process ID file
 ```
 
-### .env.kimi-openrouter
-```bash
-# Kimi K2 via OpenRouter with fallbacks
-PROVIDER=openrouter
-OPENROUTER_API_KEY=sk-or-v1-your_key_here
-OPENROUTER_MODEL=moonshotai/kimi-k2-instruct
-OPENROUTER_SITE_NAME=YourApp
-LOG_LEVEL=info
-```
+### Dynamic Configuration Updates
 
-### .env.local-privacy
+Update provider configuration without restarting:
+
 ```bash
-# Complete privacy with Ollama
-PROVIDER=ollama
-OLLAMA_MODEL=llama3.2
-OLLAMA_BASE_URL=http://localhost:11434
-LOG_LEVEL=debug
+# Add a new provider
+curl -X POST http://localhost:3456/providers \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: your-ccproxy-api-key" \
+  -d '{
+    "name": "openai",
+    "api_key": "sk-...",
+    "enabled": true
+  }'
+
+# Disable a provider
+curl -X PUT http://localhost:3456/providers/openai \
+  -H "x-api-key: your-ccproxy-api-key" \
+  -d '{"enabled": false}'
+
+# Remove a provider
+curl -X DELETE http://localhost:3456/providers/openai \
+  -H "x-api-key: your-ccproxy-api-key"
 ```
 
 ## Validation
@@ -346,6 +523,6 @@ curl -X POST http://localhost:3456/v1/messages \
 
 - 📖 [Installation Guide](/guide/installation)
 - 🚀 [Quick Start](/guide/quick-start)  
-- ⭐ [Kimi K2 Setup](/kimi-k2)
+- 🔧 [Provider Guide](/providers/)
 - 💬 [Ask Questions](https://github.com/orchestre-dev/ccproxy/discussions) - Community support
 - 🐛 [Report Issues](https://github.com/orchestre-dev/ccproxy/issues) - Bug reports and feature requests
