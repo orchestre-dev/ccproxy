@@ -41,7 +41,13 @@ cat > ~/.ccproxy/config.json << 'EOF'
       "models": ["llama3-8b-8192", "mixtral-8x7b-32768"],
       "enabled": true
     }
-  ]
+  ],
+  "routes": {
+    "default": {
+      "provider": "groq",
+      "model": "llama3-8b-8192"
+    }
+  }
 }
 EOF
 ```

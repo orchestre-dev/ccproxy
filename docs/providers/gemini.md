@@ -1,23 +1,24 @@
 ---
 title: Google Gemini with Claude Code - Advanced Multimodal AI via CCProxy
-description: Access Google's Gemini 1.5 Pro, Flash, and experimental models with Claude Code through CCProxy. Experience advanced multimodal AI with 2M context windows and vision capabilities.
-keywords: Google Gemini, Claude Code, CCProxy, Gemini 1.5 Pro, multimodal AI, long context, vision AI, Google DeepMind, AI proxy, 2M context window
+description: Access Google's Gemini Pro, Flash, and Lite models with Claude Code through CCProxy. Experience multimodal AI with 2M context windows and excellent vision capabilities.
+keywords: Google Gemini, Claude Code, CCProxy, Gemini 2.5 Pro, multimodal AI, long context, vision AI, Google DeepMind, AI proxy, 2M context window
 ---
 
 # Google Gemini Provider
 
-**Google's Gemini models** represent the cutting edge of multimodal AI, offering advanced capabilities across text, code, and vision tasks. When integrated with **Claude Code through CCProxy**, Gemini provides unparalleled **long-context understanding** with up to 2M tokens and sophisticated multimodal processing.
+**Google's Gemini models** provide cutting-edge multimodal AI capabilities. When integrated with **Claude Code through CCProxy**, Gemini offers **long-context understanding** with up to 2M tokens and sophisticated multimodal processing for vision and text tasks.
 
 <SocialShare />
 
 ## 🎥 Why Choose Google Gemini for Claude Code?
 
-- 🧠 **Advanced multimodal**: Excellent vision and text understanding with Claude Code integration
+- 🎯 **Multimodal excellence**: Superior vision and text understanding with Claude Code integration
 - 🏗️ **Google's latest tech**: Cutting-edge AI from Google DeepMind accessible via CCProxy
 - 📊 **Massive context windows**: Up to 2M tokens for comprehensive code and document analysis
-- 💰 **Competitive pricing**: Excellent value for multimodal capabilities and long context
+- 💰 **Flexible pricing tiers**: From ultra-fast lite to pro models
 - 🔍 **Superior analytics**: Outstanding at data analysis and complex reasoning tasks
-- ⚡ **Claude Code optimized**: Seamless integration with your development workflow
+- ⚡ **Claude Code optimized**: Seamless integration with intelligent routing
+- 🛠️ **Function calling support**: Full compatibility with Claude Code's tool use requirements
 
 ## Setup
 
@@ -46,8 +47,8 @@ export GOOGLE_API_KEY=your_gemini_api_key_here
 ### 3. Optional Configuration
 
 ```bash
-# Custom model (default: gemini-1.5-flash)
-export GEMINI_MODEL=gemini-1.5-pro
+# Custom model (default: gemini-2.5-flash)
+export GEMINI_MODEL=gemini-2.5-pro
 
 # Custom max tokens (default: 16384)
 export GEMINI_MAX_TOKENS=8192
@@ -58,14 +59,41 @@ export GEMINI_BASE_URL=https://generativelanguage.googleapis.com
 
 ## Available Models
 
-Google provides access to various Gemini model families:
+### Latest Models (July 2025)
 
-- **Gemini 1.5 Series** - Latest production models with long context windows
-- **Gemini 2.0 Series** - Cutting-edge experimental models
+Google's newest Gemini models offer state-of-the-art performance:
+
+- **gemini-2.5-pro** - Top-tier model
+  - Excels at complex reasoning and analysis
+  - Best for tasks requiring deep understanding
+  
+- **gemini-2.5-flash** - Balanced performance model
+  - Optimal balance of speed and quality
+  - Ideal default model for most tasks
+  
+- **gemini-2.5-flash-lite** - Preview model, lowest latency/cost
+  - Maximum speed for simple tasks
+  - Extremely cost-effective
+  
+- **gemini-2.0-flash** - Generally available with 1M token context
+  - Stable, production-ready model
+  - Excellent for long-context tasks
+
+### Legacy Models
+
+- **Gemini 1.5 Series** - Previous generation with long context windows
 - **Gemini 1.0 Series** - Stable models for general use
-- **Experimental Models** - Preview versions with latest features
 
 **🔧 Critical for Claude Code**: You must select models that support **tool calling** or **function calling** capabilities, as Claude Code requires these features to operate correctly.
+
+### Supported Parameters
+
+CCProxy supports the following standard parameters for Gemini models:
+
+- **temperature**: Controls randomness (0.0 to 1.0)
+- **top_p**: Nucleus sampling parameter (0.0 to 1.0)
+- **top_k**: Top-k sampling parameter (integer)
+- **max_tokens**: Maximum response length
 
 ### Model Selection Guidelines
 
@@ -78,6 +106,26 @@ When choosing Gemini models:
 5. **Test Performance**: Different models balance speed vs quality differently
 
 For current model availability, capabilities, and pricing, visit [Google AI Studio](https://aistudio.google.com).
+
+### Routing Recommendations
+
+CCProxy can automatically route to the optimal Gemini model based on your usage pattern:
+
+- **"default" route**: `gemini-2.5-flash` - Balanced performance
+- **"longContext" route**: `gemini-2.5-pro` - Best for complex analysis
+- **"background" route**: `gemini-2.5-flash-lite` - Fastest, cheapest for simple tasks
+
+Configure routing in your CCProxy config:
+
+```json
+{
+  "routing": {
+    "default": "gemini-2.5-flash",
+    "longContext": "gemini-2.5-pro",
+    "background": "gemini-2.5-flash-lite"
+  }
+}
+```
 
 ## Pricing
 
@@ -110,7 +158,7 @@ GEMINI_API_KEY=your_api_key_here
 # For maximum speed
 PROVIDER=gemini
 GEMINI_API_KEY=your_api_key_here
-GEMINI_MODEL=gemini-1.5-flash
+GEMINI_MODEL=gemini-2.5-flash-lite
 GEMINI_MAX_TOKENS=4096
 ```
 
@@ -120,18 +168,8 @@ GEMINI_MAX_TOKENS=4096
 # For best quality and long context
 PROVIDER=gemini
 GEMINI_API_KEY=your_api_key_here
-GEMINI_MODEL=gemini-1.5-pro
+GEMINI_MODEL=gemini-2.5-pro
 GEMINI_MAX_TOKENS=16384
-```
-
-### Experimental Setup
-
-```bash
-# For latest features
-PROVIDER=gemini
-GEMINI_API_KEY=your_api_key_here
-GEMINI_MODEL=gemini-2.0-flash-exp
-GEMINI_MAX_TOKENS=8192
 ```
 
 ## Usage with Claude Code
@@ -207,13 +245,16 @@ claude "Analyze this entire codebase and suggest improvements"
 
 ```bash
 # For speed and cost efficiency
-export GEMINI_MODEL=gemini-1.5-flash
+export GEMINI_MODEL=gemini-2.5-flash-lite
 
-# For complex reasoning and long context
-export GEMINI_MODEL=gemini-1.5-pro
+# For balanced performance
+export GEMINI_MODEL=gemini-2.5-flash
 
-# For latest experimental features
-export GEMINI_MODEL=gemini-2.0-flash-exp
+# For complex reasoning and analysis
+export GEMINI_MODEL=gemini-2.5-pro
+
+# For stable long-context tasks
+export GEMINI_MODEL=gemini-2.0-flash
 ```
 
 ### 2. Optimize Token Usage
@@ -387,9 +428,10 @@ claude "Write a blog post about this infographic"
 ### 1. Model Selection
 
 ```bash
-# Use gemini-1.5-flash for most tasks (speed + cost)
-# Use gemini-1.5-pro for complex analysis
-# Try experimental models for cutting-edge features
+# Use gemini-2.5-flash for most tasks (balanced)
+# Use gemini-2.5-flash-lite for high-volume, simple tasks
+# Use gemini-2.5-pro for complex analysis and reasoning
+# Use gemini-2.0-flash for stable long-context needs
 ```
 
 ### 2. Context Management
@@ -413,7 +455,8 @@ claude "Write a blog post about this infographic"
 ```bash
 # Start with the generous free tier
 # Monitor usage in Google AI Studio
-# Use gemini-1.5-flash for cost efficiency
+# Use gemini-2.5-flash-lite for maximum cost efficiency
+# Use routing to automatically select cost-effective models
 ```
 
 ## Integration Examples
@@ -479,8 +522,10 @@ curl http://localhost:3456/health
 ### Strengths
 - 🎯 Excellent multimodal capabilities
 - 💰 Generous free tier
-- 📏 Very long context windows
+- 📏 Very long context windows (up to 2M tokens)
 - 🔍 Strong at analysis tasks
+- ⚡ Flexible performance options (lite to pro)
+- 🛠️ Robust function calling support
 
 ### Considerations
 - 🛡️ Strong safety filters (may block some content)

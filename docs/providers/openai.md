@@ -1,21 +1,21 @@
 ---
 title: OpenAI with Claude Code - Industry-Leading AI Models via CCProxy
-description: Access GPT-4, GPT-4o, and o1 reasoning models with Claude Code through CCProxy. Experience enterprise-grade AI with vision capabilities, function calling, and production reliability.
-keywords: OpenAI, Claude Code, CCProxy, GPT-4, GPT-4o, o1 reasoning, AI proxy, enterprise AI, vision AI, function calling
+description: Access GPT-4o, GPT-4.1, and o3/o4 reasoning models with Claude Code through CCProxy. Experience enterprise-grade AI with vision capabilities, function calling, and production reliability.
+keywords: OpenAI, Claude Code, CCProxy, GPT-4o, GPT-4.1, o3, o4-mini, AI proxy, enterprise AI, vision AI, function calling
 ---
 
 # OpenAI Provider
 
-**OpenAI sets the industry standard** for AI models, offering the most mature ecosystem and reliable performance for production applications. Through **CCProxy integration with Claude Code**, you can harness the full power of GPT-4, GPT-4o, and advanced reasoning models while maintaining your familiar development workflow.
+**OpenAI sets the industry standard** for AI models, offering the most mature ecosystem and reliable performance for production applications. Through **CCProxy integration with Claude Code**, you can access GPT-4o, GPT-4.1, and the latest o3/o4 reasoning models while maintaining your familiar development workflow.
 
 ## 🏭 Why Choose OpenAI for Claude Code?
 
 - 🥇 **Industry standard**: Most mature and reliable AI models with proven enterprise adoption
-- 🛠️ **Rich ecosystem**: Extensive tooling and integrations that work seamlessly with Claude Code
-- 👁️ **Advanced vision**: Best-in-class image understanding and multimodal capabilities
-- 🎯 **Proven reliability**: Battle-tested in production environments worldwide
-- 🧠 **Advanced reasoning**: Access to o1 models for complex problem-solving
-- 🔧 **Perfect Claude Code integration**: Zero configuration changes required with CCProxy
+- 🛠️ **Complete parameter support**: Temperature, top_p, presence_penalty, frequency_penalty all work perfectly
+- 👁️ **Advanced vision**: Best-in-class image understanding with GPT-4o and GPT-4.1
+- 🎯 **Function calling**: Full support for Claude Code's tool use capabilities
+- 🧠 **Reasoning models**: Access to o3 and o4-mini for complex problem-solving (text-only)
+- 🔧 **Zero-config integration**: Works immediately with CCProxy, no modifications needed
 
 ## Setup
 
@@ -39,10 +39,16 @@ cat > ~/.ccproxy/config.json << 'EOF'
       "name": "openai",
       "api_base_url": "https://api.openai.com/v1",
       "api_key": "sk-your_openai_api_key_here",
-      "models": ["gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "gpt-3.5-turbo"],
+      "models": ["gpt-4o", "gpt-4o-mini", "gpt-4.1", "gpt-4.1-mini", "gpt-4.1-nano", "o3", "o3-pro", "o4-mini"],
       "enabled": true
     }
-  ]
+  ],
+  "routes": {
+    "default": {
+      "provider": "openai",
+      "model": "gpt-4o"
+    }
+  }
 }
 EOF
 ```
@@ -61,19 +67,30 @@ ccproxy code
 
 OpenAI provides various model families optimized for different use cases:
 
+### Latest Models (July 2025)
+
 | Model | Context Length | Best For | Function Calling |
 |-------|----------------|----------|------------------|
-| `gpt-4o` | 128,000 tokens | Most capable, multimodal | ✅ Yes |
-| `gpt-4o-mini` | 128,000 tokens | Cost-effective, fast | ✅ Yes |
-| `gpt-4-turbo` | 128,000 tokens | High quality, vision support | ✅ Yes |
-| `gpt-4` | 8,192 tokens | Classic GPT-4 | ✅ Yes |
-| `gpt-3.5-turbo` | 16,385 tokens | Fast, affordable | ✅ Yes |
-| `o1-preview` | 128,000 tokens | Complex reasoning | ❌ No* |
-| `o1-mini` | 128,000 tokens | Fast reasoning | ❌ No* |
+| `gpt-4o` | 128K tokens | Flagship model with vision, most versatile | ✅ Yes |
+| `gpt-4o-mini` | 128K tokens | Smaller, cost-efficient version of GPT-4o | ✅ Yes |
+| `gpt-4.1` | 128K tokens | Specialized for coding tasks, precise instruction following | ✅ Yes |
+| `gpt-4.1-mini` | 128K tokens | Smaller variant of GPT-4.1 | ✅ Yes |
+| `gpt-4.1-nano` | 128K tokens | Smallest, most efficient GPT-4.1 variant | ✅ Yes |
+| `o3` | 128K tokens | Most powerful reasoning model, excels at complex problems | ❌ No* |
+| `o3-pro` | 128K tokens | Extended thinking version of o3 | ❌ No* |
+| `o4-mini` | 128K tokens | Fast, cost-efficient reasoning model | ❌ No* |
+
+### Legacy Models
+
+| Model | Status | Notes |
+|-------|---------|-------|
+| `gpt-4-turbo` | Available | Previous generation, consider GPT-4o |
+| `gpt-4` | Available | Original GPT-4 |
+| `gpt-3.5-turbo` | Available | Budget option, fastest response times |
 
 **⚠️ Important**: Claude Code requires models with function calling support. Models marked with ✅ work perfectly with Claude Code.
 
-*Note: o1 models don't support function calling but can be used for pure text generation tasks.
+*Note: o3/o4 reasoning models don't support function calling but can be used for pure text generation tasks when tool use is not required.
 
 ## Configuration Options
 
@@ -86,7 +103,7 @@ OpenAI provides various model families optimized for different use cases:
       "name": "openai",
       "api_base_url": "https://api.openai.com/v1",
       "api_key": "sk-your_api_key",
-      "models": ["gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "gpt-3.5-turbo"],
+      "models": ["gpt-4o", "gpt-4o-mini", "gpt-4.1", "gpt-4.1-mini", "gpt-4.1-nano", "o3", "o3-pro", "o4-mini"],
       "enabled": true,
       "timeout": "60s",
       "max_retries": 3,
@@ -99,16 +116,24 @@ OpenAI provides various model families optimized for different use cases:
   "routes": {
     "default": {
       "provider": "openai",
-      "model": "gpt-4o-mini"
+      "model": "gpt-4o"
     },
-    "complex": {
+    "longContext": {
       "provider": "openai",
       "model": "gpt-4o",
       "conditions": [{
         "type": "tokenCount",
         "operator": ">",
-        "value": 8000
+        "value": 60000
       }]
+    },
+    "background": {
+      "provider": "openai",
+      "model": "gpt-4.1-nano"
+    },
+    "think": {
+      "provider": "openai",
+      "model": "o3"
     }
   }
 }
@@ -134,9 +159,29 @@ export OPENAI_API_KEY="sk-your_api_key"
 
 ## Advanced Features
 
+### Supported Parameters
+
+OpenAI has the most complete parameter support in CCProxy:
+
+```json
+{
+  "model": "gpt-4o",
+  "messages": [...],
+  "temperature": 0.7,          // 0.0 to 2.0
+  "top_p": 0.9,               // 0.0 to 1.0
+  "presence_penalty": 0.0,     // -2.0 to 2.0
+  "frequency_penalty": 0.0,    // -2.0 to 2.0
+  "max_tokens": 4096,          // Maximum tokens to generate
+  "stream": true,              // Enable streaming responses
+  "n": 1,                      // Number of completions
+  "stop": ["\\n", "END"],      // Stop sequences
+  "logprobs": true             // Include log probabilities
+}
+```
+
 ### Vision Capabilities
 
-GPT-4o and GPT-4-turbo support image inputs:
+GPT-4o and GPT-4.1 series models support image inputs:
 
 ```json
 {
@@ -154,7 +199,7 @@ GPT-4o and GPT-4-turbo support image inputs:
 
 ### Function Calling
 
-All OpenAI models (except o1 series) support function calling, making them perfect for Claude Code:
+All GPT models support function calling, making them perfect for Claude Code:
 
 ```json
 {
@@ -194,8 +239,11 @@ If using an organization:
 ## Best Practices
 
 1. **Model Selection**: 
-   - Use `gpt-4o-mini` for most tasks (best price/performance)
-   - Use `gpt-4o` for complex or multimodal tasks
+   - Use `gpt-4o` for most tasks (flagship model with vision support)
+   - Use `gpt-4.1` for coding-specific tasks (best instruction following)
+   - Use `gpt-4o-mini` or `gpt-4.1-nano` for cost-efficient tasks
+   - Use `o3` or `o3-pro` for complex reasoning (no function calling)
+   - Use `o4-mini` for fast reasoning tasks
    - Use `gpt-3.5-turbo` for simple, high-volume tasks
 
 2. **Cost Management**:
@@ -210,12 +258,16 @@ If using an organization:
 
 ## Pricing
 
-Current pricing (subject to change):
-- **GPT-4o**: $5.00 / 1M input tokens, $15.00 / 1M output tokens
-- **GPT-4o-mini**: $0.15 / 1M input tokens, $0.60 / 1M output tokens
-- **GPT-3.5-turbo**: $0.50 / 1M input tokens, $1.50 / 1M output tokens
+Check [openai.com/pricing](https://openai.com/pricing) for current pricing. As of July 2025:
 
-Check [openai.com/pricing](https://openai.com/pricing) for current rates.
+- **GPT-4o**: Flagship model with best capabilities
+- **GPT-4o-mini**: Cost-efficient version of GPT-4o
+- **GPT-4.1 family**: Specialized coding models at various price points
+- **o3/o3-pro**: Premium reasoning models (higher cost)
+- **o4-mini**: Cost-efficient reasoning model
+- **GPT-3.5-turbo**: Most affordable option for simple tasks
+
+Pricing varies by model and usage tier. Enterprise customers should contact OpenAI for volume pricing.
 
 ## Next Steps
 
