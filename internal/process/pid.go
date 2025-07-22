@@ -152,7 +152,6 @@ func (pm *PIDManager) readPIDWithoutLock() (int, error) {
 	return pid, nil
 }
 
-
 // GetRunningPID returns the PID if the service is running, 0 otherwise
 func (pm *PIDManager) GetRunningPID() (int, error) {
 	pid, err := pm.ReadPID()
@@ -284,7 +283,6 @@ func (pm *PIDManager) ReleaseLock() error {
 
 	return nil
 }
-
 
 // StopProcess stops the running process with graceful shutdown
 func (pm *PIDManager) StopProcess() error {
