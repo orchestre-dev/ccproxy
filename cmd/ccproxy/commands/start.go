@@ -231,7 +231,7 @@ func startInBackground(cfg *config.Config) error {
 	}
 
 	// Prepare the background process command
-	cmd := exec.Command(execPath, "start", "--foreground")
+	cmd := exec.Command(execPath, "start", "--foreground") // #nosec G204 - execPath comes from utils.GetExecutablePath() which is trusted
 	cmd.Env = append(os.Environ(),
 		"CCPROXY_FOREGROUND=1",
 		fmt.Sprintf("CCPROXY_SPAWN_DEPTH=%d", spawnDepth+1),

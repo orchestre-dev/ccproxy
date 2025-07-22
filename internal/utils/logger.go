@@ -62,13 +62,13 @@ func InitLogger(config *LogConfig) error {
 
 			// Ensure log directory exists
 			logDir := filepath.Dir(logPath)
-			if mkdirErr := os.MkdirAll(logDir, 0755); mkdirErr != nil {
+			if mkdirErr := os.MkdirAll(logDir, 0750); mkdirErr != nil {
 				err = fmt.Errorf("failed to create log directory: %w", mkdirErr)
 				return
 			}
 
 			// Open log file
-			logFile, err = os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+			logFile, err = os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600) // #nosec G304 -- logPath is resolved from config.FilePath using ResolvePath() which expands home directory
 			if err != nil {
 				err = fmt.Errorf("failed to open log file: %w", err)
 				return
@@ -151,7 +151,7 @@ func RotateLogFile(maxSize int64) error {
 	}
 
 	// Open new file
-	logFile, err = os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+	logFile, err = os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600) // #nosec G304 -- logPath is from logFile.Name() which was already validated during initial file open
 	if err != nil {
 		return fmt.Errorf("failed to open new log file: %w", err)
 	}

@@ -103,7 +103,7 @@ This command will automatically start the proxy if not running.`,
 			}
 
 			// Prepare command
-			claudeCmd := exec.Command(claudePath, args...)
+			claudeCmd := exec.Command(claudePath, args...) // #nosec G204 - claudePath is validated and comes from env var or hardcoded default
 			claudeCmd.Env = env
 			claudeCmd.Stdin = os.Stdin
 			claudeCmd.Stdout = os.Stdout
@@ -132,7 +132,7 @@ func autoStartService(_ *config.Config) error {
 	}
 
 	// Start background process
-	cmd := exec.Command(execPath, "start", "--foreground")
+	cmd := exec.Command(execPath, "start", "--foreground") // #nosec G204 - execPath comes from os.Executable() which is trusted
 	cmd.Stdout = nil
 	cmd.Stderr = nil
 	cmd.Stdin = nil

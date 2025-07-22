@@ -141,7 +141,7 @@ func CORSMiddleware(allowedOrigins []string) gin.HandlerFunc {
 // CSRFMiddleware provides CSRF protection
 func CSRFMiddleware(tokenHeader string) gin.HandlerFunc {
 	if tokenHeader == "" {
-		tokenHeader = "X-CSRF-Token"
+		tokenHeader = "X-CSRF-Token" // #nosec G101 - This is a header name, not a credential
 	}
 
 	return func(c *gin.Context) {
