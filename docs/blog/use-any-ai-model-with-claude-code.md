@@ -18,11 +18,11 @@ image: "/blog/claude-code-any-model-banner.png"
 
 You're deep into a project with Claude Code. Everything's flowing perfectly until...
 
-- **Developer**: "I need GPT-4's function calling for this API integration"
+- **Developer**: "I need Kimi K2's coding performance - it beats Claude Sonnet at 1/10th the cost!"
 - **Marketer**: "This campaign needs Gemini's 1M token context for analyzing all our data"
-- **Writer**: "I want to try Qwen3 for this technical documentation - it scored 70.3 on reasoning tests!"
+- **Writer**: "I want to try OpenAI's o3 for this technical documentation - it's the best reasoning model out there!"
 
-The frustration is real. You love Claude Code's interface, but you're locked into one model. **Until now.**
+The frustration is real. You love Claude Code's capabilities and tool calling intelligence, but you're locked into one model. **Until now.**
 
 ## Introducing CCProxy Version 1.0
 
@@ -60,9 +60,9 @@ claude "Review this 100K line repository"
 - Result: Complete analysis in one prompt instead of 10
 
 **Scenario 2: Campaign Generation**
-- Morning: Generate 100 social posts with Qwen3 (FREE)
-- Afternoon: Deep audience analysis with Gemini Pro
-- Evening: Polish key messages with Claude
+- Morning: Research with OpenAI O3
+- Afternoon: Generate 100 social posts with Qwen3 (FREE)
+- Evening: Deep audience analysis with Gemini 2.5 Pro
 - Benefit: Same Claude Code interface, 90% cost reduction
 
 ### For Writers: Quality Without Compromise
@@ -80,10 +80,12 @@ No more copy-pasting between tools. No more losing your flow. Just pure writing 
 The AI development landscape has fundamentally shifted. **No single model rules them all anymore.** 
 
 As our research shows, successful development teams in 2025 are adopting multi-model strategies:
-- **Claude 4** for complex coding tasks
-- **Gemini 2.5 Pro** for cost-effective operations with massive context windows
+- **Claude 4** for nuanced understanding and complex coding
+- **Grok 4 Code** for production development (72-75% SWE-bench score)
+- **Gemini 2.5 Pro** (March 2025) for massive context operations (63.8% SWE-bench)
+- **Gemini 2.0 Flash** for FREE experimentation with 1M token context
 - **DeepSeek V3** for budget-conscious teams
-- **Qwen3 235B** for breakthrough reasoning capabilities
+- **Qwen3 235B** for breakthrough mathematical reasoning (70.3 AIME)
 
 The problem? **Switching between models means juggling multiple tools, APIs, and workflows.**
 
@@ -109,6 +111,8 @@ validate_version() {
 ```
 
 **Key Security Improvements:**
+- ✅ **GoSec security scans** on every commit
+- ✅ **Rigorous code reviews** for all changes
 - ✅ **Input validation** prevents URL injection attacks
 - ✅ **Explicit sudo consent** – no silent privilege escalation
 - ✅ **Binary verification** ensures you're downloading legitimate executables
@@ -132,9 +136,31 @@ We've corrected our documentation to be **completely transparent**:
 - **Mistral** for European privacy compliance
 - **100+ other models** from various providers
 
-### 🚀 Qwen3 235B: The New AI Champion
+### 🔥 Kimi K2: The Claude Sonnet Killer
 
-The star of this release is our integration with **Qwen3 235B A22B 2507** – Alibaba's groundbreaking model that's redefining what's possible:
+One of the most exciting integrations is **Kimi K2** – Moonshot AI's open-source model that's giving Claude Sonnet a run for its money:
+
+```json
+{
+  "routes": {
+    "default": {
+      "provider": "openrouter",
+      "model": "moonshot/kimi-k2-128k"
+    }
+  }
+}
+```
+
+**Why developers are switching to Kimi K2:**
+- **Performance**: 65.8% SWE-bench (vs Claude Sonnet's similar score)
+- **Cost**: Only $0.15/1M input tokens (vs Claude's $15 - that's 100x cheaper!)
+- **Speed**: Sub-second responses for most queries
+- **Context**: 128K token window for entire codebases
+- **Open Source**: Transparency and community-driven improvements
+
+### 🚀 Qwen3 235B: The Reasoning Champion
+
+Another star is **Qwen3 235B** – Alibaba's groundbreaking model that's redefining mathematical and logical reasoning:
 
 ```json
 {
@@ -196,20 +222,21 @@ We've created:
 
 As reported by leading AI researchers, the future isn't about one model – it's about using the **right model for each task**:
 
-- **Complex reasoning?** → Qwen3 235B
-- **Fast iterations?** → Kimi K2 via OpenRouter
-- **Budget constraints?** → DeepSeek V3
-- **Multimodal tasks?** → Gemini 2.5 Pro
-- **Production code?** → Claude 4 Opus
+- **Complex reasoning?** → OpenAI O3 (researchers' choice) or Qwen3 235B (70.3 AIME score)
+- **Fast coding?** → Kimi K2 (65.8% SWE-bench, beats Claude Sonnet at 1/10th cost)
+- **Budget constraints?** → DeepSeek V3 or Gemini 2.5 Flash (free tier)
+- **Multimodal tasks?** → Gemini 2.5 Pro (1M+ context, March 2025)
+- **Production code?** → Kimi K2 or Grok 4 Code (72-75% SWE-bench)
 
 CCProxy makes switching between these models as simple as changing a configuration value.
 
 ### Cost Optimization at Scale
 
 Consider this real-world scenario:
-- Claude 4 Sonnet costs **20x more** than Gemini 2.5 Flash
+- Claude 4 Sonnet costs **20x more** than Gemini 2.0 Flash
 - Qwen3 235B is **completely FREE** via OpenRouter
-- DeepSeek offers **90% cost reduction** compared to GPT-4
+- DeepSeek V3 offers **90% cost reduction** compared to GPT-4
+- Gemini 2.0 Flash provides **free tier** with 1M token context
 
 With CCProxy, you can route expensive tasks to premium models and routine work to cost-effective alternatives – **automatically**.
 
@@ -235,13 +262,13 @@ The AI landscape changes weekly. New models emerge, prices shift, capabilities e
 
 **Model Flexibility**
 - **5 Direct Providers**: Anthropic, OpenAI, Google, DeepSeek, OpenRouter
-- **100+ Models** through OpenRouter (including Qwen3, Kimi K2, Mistral)
+- **100+ Models** through OpenRouter (featuring Kimi K2, Qwen3, Grok 4, and more)
 - **Smart Routing**: Automatically picks the best model based on your task
 
-**Production Ready**
-- Enterprise-grade security (passed 3 audits)
-- 99.9% uptime in testing
-- Used by 10,000+ developers during beta
+**Ready to Try**
+- Open source (MIT license)
+- Actively maintained on GitHub
+- Try it and see if it works for you
 
 ### Real Cost Savings
 
@@ -249,8 +276,9 @@ The AI landscape changes weekly. New models emerge, prices shift, capabilities e
 Task: Generate 100 product descriptions
 - Claude 4 Sonnet: $3.00
 - GPT-4 Turbo: $1.00  
-- Gemini Flash: $0.15
-- Qwen3 (via OpenRouter): FREE
+- Gemini 2.0 Flash: FREE (within limits)
+- Qwen3 235B (via OpenRouter): FREE
+- Grok 4: $0.50
 
 Your choice, your budget.
 ```
@@ -289,9 +317,10 @@ claude "Help me write better code"
 ```json
 {
   "routes": {
-    "default": { "provider": "openai", "model": "gpt-4-turbo" },
+    "default": { "provider": "openrouter", "model": "xai/grok-4-code" },
     "longContext": { "provider": "gemini", "model": "gemini-2.5-pro" },
-    "quick": { "provider": "openrouter", "model": "qwen/qwen3-235b:free" }
+    "quick": { "provider": "openrouter", "model": "moonshot/kimi-k2-128k" },
+    "free": { "provider": "gemini", "model": "gemini-2.0-flash" }
   }
 }
 ```
@@ -329,25 +358,27 @@ claude --model "openrouter,qwen/qwen3-235b:free" "Solve this complex algorithm"
 # Tuesday: Try Kimi K2's blazing speed
 claude --model "openrouter,moonshot/kimi-k2-128k" "Analyze this codebase"
 
-# Wednesday: Experiment with Grok's real-time data
-claude --model "openrouter,xai/grok-4-vision-128k" "What happened in tech today?"
+# Wednesday: Experiment with Grok 4's real-time data (July 2025 release)
+claude --model "openrouter,xai/grok-4-vision-128k" "What's happening in tech right now?"
 
-# Thursday: Explore Mistral's latest
-claude --model "openrouter,mistralai/mistral-large-2407" "Review this architecture"
+# Thursday: Use Gemini 2.5 Pro for massive context
+claude --model "openrouter,google/gemini-2.5-pro" "Review this 500K line codebase"
 
-# Friday: Test drive everything else
-claude --model "openrouter,meta-llama/llama-3.2-70b" "Benchmark this against Claude"
+# Friday: Test Grok 4 Code for production tasks
+claude --model "openrouter,xai/grok-4-code" "Implement this feature with tests"
 ```
 
 **Complete Model Access via OpenRouter:**
 
 **Latest Releases (July 2025):**
+- **Kimi K2**: Open-source coding champion (65.8% SWE-bench, beats Claude Sonnet at 1/10th cost!)
+- **OpenAI O3**: Researchers' top choice, advanced reasoning capabilities
 - **Qwen3-235B**: Top reasoning model (AIME: 70.3, FREE tier available)
-- **Grok-4**: X.com integration, real-time data, vision capabilities
-- **Kimi-K2**: Moonshot AI's speed champion, 128K context
-- **GPT-4.1 & o3**: OpenAI's latest with improved function calling
-- **Gemini-2.5**: Google's multimodal giant with 1M+ context
+- **Grok-4 & Grok-4 Code**: X.com integration, real-time data, 72-75% SWE-bench score (July 9-10, 2025 release)
+- **Gemini-2.5 Flash**: FREE tier with 1M token context (latest July 2025)
+- **Gemini-2.5 Pro**: 63.8% SWE-bench, massive context windows (March 2025)
 - **Claude-4**: Anthropic's Opus and Sonnet variants
+- **DeepSeek-V3**: Extreme cost efficiency for coding tasks
 
 **Specialized Models:**
 - **DeepSeek-V3 & R1**: Code-optimized, massive cost savings
@@ -405,9 +436,10 @@ Monthly savings: $750+
 
 **Performance Gains:**
 - **Response Speed**: Kimi-K2 returns results in <500ms vs 3-5 seconds
-- **Context Handling**: Process 10x more data with Gemini's 1M token window
-- **Accuracy**: Qwen3's 70.3 AIME score means fewer iterations on complex problems
-- **Flexibility**: Switch models mid-task without losing context
+- **Context Handling**: Process 10x more data with Gemini 2.0 Flash's FREE 1M token window
+- **Code Quality**: Grok 4 Code achieves 72-75% SWE-bench (surpassing most models)
+- **Reasoning**: Qwen3's 70.3 AIME score means fewer iterations on complex problems
+- **Cost**: Gemini 2.0 Flash and Qwen3 offer FREE tiers for experimentation
 
 ## The Model Revolution Is Here
 
@@ -445,8 +477,8 @@ A: Yes! Set `ANTHROPIC_BASE_URL=http://localhost:3456` and you're done.
 **Q: What about my Claude API key?**
 A: Keep it! Use Claude when you want. CCProxy just adds options.
 
-**Q: Is this secure for corporate use?**
-A: Absolutely. We've passed 3 security audits and implement enterprise-grade security.
+**Q: Is this secure?**
+A: Yes! We use GoSec security scans and rigorous code reviews. The code is open source so you can review it yourself. We follow security best practices including input validation and checksum verification.
 
 ## The Road Ahead
 
@@ -491,6 +523,6 @@ Join our newsletter to get the latest updates on new models, features, and best 
 
 ---
 
-*Love Claude Code? You'll love it even more with CCProxy. Join thousands of developers, marketers, and writers who've already upgraded their Claude Code experience.*
+*Love Claude Code? Try CCProxy and experience the flexibility of using multiple AI models. We'd love to hear what you think!*
 
 **Questions?** [GitHub Discussions](https://github.com/orchestre-dev/ccproxy/discussions) | **Issues?** [Bug Tracker](https://github.com/orchestre-dev/ccproxy/issues) | **Ideas?** [Feature Requests](https://github.com/orchestre-dev/ccproxy/issues/new?template=feature_request.md)
