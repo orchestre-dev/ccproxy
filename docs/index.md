@@ -79,9 +79,21 @@ features:
 # Install CCProxy with one command
 curl -sSL https://raw.githubusercontent.com/orchestre-dev/ccproxy/main/install.sh | bash
 
-# Configure and start (example with Groq + Kimi K2)
-export PROVIDER=groq GROQ_API_KEY=your_key
-ccproxy &
+# Create a config file with your API keys
+cat > ~/.ccproxy/config.json << EOF
+{
+  "providers": [
+    {
+      "name": "groq",
+      "api_key": "your-groq-api-key",
+      "enabled": true
+    }
+  ]
+}
+EOF
+
+# Start CCProxy
+ccproxy start
 
 # Connect Claude Code
 export ANTHROPIC_BASE_URL=http://localhost:3456
