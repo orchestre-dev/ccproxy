@@ -20,3 +20,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Format version.go with proper tab indentation
 - Update version.sh to generate Go files with tab indentation
 
+## [1.0.3] - 2025-07-22
+
+### 🐛 Bug Fixes
+
+- Address all medium and high severity GoSec issues
+
