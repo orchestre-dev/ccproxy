@@ -61,22 +61,35 @@ jobs:
           fi
           
           # Clean any existing build
+          echo "Cleaning build directory..."
           rm -rf .vitepress/dist
           
+          # Show environment
+          echo "Current directory: $(pwd)"
+          echo "NODE_ENV: ${NODE_ENV}"
+          
           # Show VitePress version
+          echo "VitePress version:"
           npx vitepress --version || echo "VitePress version check failed"
           
-          # Build the documentation (not dev server!)
-          echo "Running: vitepress build"
-          npx vitepress build --base="$VITE_BASE" || (echo "Build failed" && exit 1)
+          # Build the documentation explicitly
+          echo "Starting build process..."
+          echo "Running command: npx vitepress build"
+          NODE_ENV=production npx vitepress build || (echo "Build failed with exit code $?" && exit 1)
           
           # Verify build output
+          echo "Checking build output..."
           if [ ! -d ".vitepress/dist" ]; then
-            echo "Error: Build output directory not found"
+            echo "Error: Build output directory .vitepress/dist not found"
+            echo "Contents of current directory:"
+            ls -la
+            echo "Contents of .vitepress directory:"
+            ls -la .vitepress/ || echo ".vitepress directory not found"
             exit 1
           fi
           
           echo "Build completed successfully"
+          echo "Build output contents:"
           ls -la .vitepress/dist
         env:
           GA_MEASUREMENT_ID: ${{ secrets.GA_MEASUREMENT_ID }}
