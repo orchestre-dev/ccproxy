@@ -9,7 +9,7 @@
 
 A high-performance proxy that enables Claude Code to work with multiple AI providers. Route requests to OpenAI, Google Gemini, DeepSeek, and more through a single interface.
 
-📚 **[Documentation](https://ccproxy.pages.dev)** | 🐛 **[Issues](https://github.com/orchestre-dev/ccproxy/issues)** | 💬 **[Discussions](https://github.com/orchestre-dev/ccproxy/discussions)**
+📚 **[Documentation](https://ccproxy.orchestre.dev)** | 🐛 **[Issues](https://github.com/orchestre-dev/ccproxy/issues)** | 💬 **[Discussions](https://github.com/orchestre-dev/ccproxy/discussions)**
 
 ## 🎯 Why CCProxy?
 
