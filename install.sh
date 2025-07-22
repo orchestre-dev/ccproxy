@@ -194,24 +194,24 @@ download_binary() {
     # Create secure temp directory
     local temp_dir=$(mktemp -d -t ccproxy-install-XXXXXX)
     chmod 700 "$temp_dir"
-    trap "rm -rf $temp_dir" EXIT
+    # Note: Cleanup is handled in main function after installation
     
     local temp_file="${temp_dir}/ccproxy-download"
     local checksum_file="${temp_dir}/checksums.txt"
     
-    echo -e "${BLUE}Downloading CCProxy v${VERSION} for ${PLATFORM}...${NC}"
+    echo -e "${BLUE}Downloading CCProxy v${VERSION} for ${PLATFORM}...${NC}" >&2
     
     # Download binary
     if command -v curl &> /dev/null; then
         if ! curl -fL -o "$temp_file" "$url"; then
-            echo -e "${RED}Download failed. The binary for ${PLATFORM} might not be available.${NC}"
-            echo -e "${YELLOW}Available binaries: linux-amd64, linux-arm64, darwin-amd64, darwin-arm64, windows-amd64${NC}"
+            echo -e "${RED}Download failed. The binary for ${PLATFORM} might not be available.${NC}" >&2
+            echo -e "${YELLOW}Available binaries: linux-amd64, linux-arm64, darwin-amd64, darwin-arm64, windows-amd64${NC}" >&2
             exit 1
         fi
     else
         if ! wget -O "$temp_file" "$url"; then
-            echo -e "${RED}Download failed. The binary for ${PLATFORM} might not be available.${NC}"
-            echo -e "${YELLOW}Available binaries: linux-amd64, linux-arm64, darwin-amd64, darwin-arm64, windows-amd64${NC}"
+            echo -e "${RED}Download failed. The binary for ${PLATFORM} might not be available.${NC}" >&2
+            echo -e "${YELLOW}Available binaries: linux-amd64, linux-arm64, darwin-amd64, darwin-arm64, windows-amd64${NC}" >&2
             exit 1
         fi
     fi
@@ -225,8 +225,8 @@ download_binary() {
                     # Valid binary file
                     ;;
                 *HTML*|*text*|*ASCII*)
-                    echo -e "${RED}Downloaded file appears to be HTML/text, not a binary${NC}"
-                    echo -e "${RED}This might indicate an error page was downloaded${NC}"
+                    echo -e "${RED}Downloaded file appears to be HTML/text, not a binary${NC}" >&2
+                    echo -e "${RED}This might indicate an error page was downloaded${NC}" >&2
                     exit 1
                     ;;
             esac
@@ -235,34 +235,34 @@ download_binary() {
         # Check file size (binaries should be at least 1MB)
         local file_size=$(stat -f%z "$temp_file" 2>/dev/null || stat -c%s "$temp_file" 2>/dev/null || echo 0)
         if [ "$file_size" -lt 1048576 ]; then
-            echo -e "${YELLOW}Warning: Downloaded file is unusually small (${file_size} bytes)${NC}"
+            echo -e "${YELLOW}Warning: Downloaded file is unusually small (${file_size} bytes)${NC}" >&2
         fi
     else
-        echo -e "${RED}Download failed - file not created${NC}"
+        echo -e "${RED}Download failed - file not created${NC}" >&2
         exit 1
     fi
     
-    echo -e "${BLUE}Downloading checksums...${NC}"
+    echo -e "${BLUE}Downloading checksums...${NC}" >&2
     
     # Download checksums
     if command -v curl &> /dev/null; then
         if ! curl -fL -o "$checksum_file" "$checksum_url" 2>/dev/null; then
-            echo -e "${YELLOW}Warning: Checksums not available for this release${NC}"
-            echo -e "${YELLOW}Proceeding without checksum verification${NC}"
+            echo -e "${YELLOW}Warning: Checksums not available for this release${NC}" >&2
+            echo -e "${YELLOW}Proceeding without checksum verification${NC}" >&2
         else
             verify_checksum "$temp_file" "$checksum_file"
         fi
     else
         if ! wget -O "$checksum_file" "$checksum_url" 2>/dev/null; then
-            echo -e "${YELLOW}Warning: Checksums not available for this release${NC}"
-            echo -e "${YELLOW}Proceeding without checksum verification${NC}"
+            echo -e "${YELLOW}Warning: Checksums not available for this release${NC}" >&2
+            echo -e "${YELLOW}Proceeding without checksum verification${NC}" >&2
         else
             verify_checksum "$temp_file" "$checksum_file"
         fi
     fi
     
-    echo -e "${GREEN}Download completed successfully${NC}"
-    echo "$temp_file"
+    echo -e "${GREEN}Download completed successfully${NC}" >&2
+    echo "$temp_file:$temp_dir"
 }
 
 # Verify checksum
@@ -295,18 +295,18 @@ verify_checksum() {
     local expected_checksum=$(grep "$filename" "$checksum_file" 2>/dev/null | awk '{print $1}')
     
     if [ -z "$expected_checksum" ]; then
-        echo -e "${YELLOW}Warning: Checksum not found for $filename${NC}"
+        echo -e "${YELLOW}Warning: Checksum not found for $filename${NC}" >&2
         return
     fi
     
     if [ "$actual_checksum" != "$expected_checksum" ]; then
-        echo -e "${RED}Checksum verification failed!${NC}"
-        echo -e "${RED}Expected: $expected_checksum${NC}"
-        echo -e "${RED}Actual:   $actual_checksum${NC}"
+        echo -e "${RED}Checksum verification failed!${NC}" >&2
+        echo -e "${RED}Expected: $expected_checksum${NC}" >&2
+        echo -e "${RED}Actual:   $actual_checksum${NC}" >&2
         exit 1
     fi
     
-    echo -e "${GREEN}Checksum verification passed${NC}"
+    echo -e "${GREEN}Checksum verification passed${NC}" >&2
 }
 
 # Install binary with proper permission checks
@@ -357,6 +357,13 @@ install_binary() {
     
     # Install binary
     echo -e "${BLUE}Installing to ${INSTALL_DIR}/${BINARY_NAME}...${NC}"
+    
+    # Debug: Check if temp file exists
+    if [ ! -f "$temp_file" ]; then
+        echo -e "${RED}Error: Downloaded file not found at: $temp_file${NC}"
+        exit 1
+    fi
+    
     if [ "$use_sudo" = true ]; then
         $sudo_cmd cp "$temp_file" "${INSTALL_DIR}/${BINARY_NAME}"
         $sudo_cmd chmod +x "${INSTALL_DIR}/${BINARY_NAME}"
@@ -417,7 +424,12 @@ main() {
     fi
     
     # Download binary with checksum verification
-    temp_file=$(download_binary)
+    download_result=$(download_binary)
+    temp_file="${download_result%%:*}"
+    temp_dir="${download_result##*:}"
+    
+    # Set trap to clean up temp directory
+    trap "rm -rf '$temp_dir'" EXIT
     
     # Install binary
     install_binary "$temp_file"
