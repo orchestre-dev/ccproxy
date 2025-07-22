@@ -472,4 +472,12 @@ Visual AI isn't just about seeing images - it's about removing the translation l
 
 ---
 
+### Stay Updated
+
+Join our newsletter to get the latest updates on new models, features, and best practices. We promise to only send you the good stuff – no spam, just pure AI development insights.
+
+<NewsletterForm />
+
+---
+
 *Questions about multimodal AI or want to share your experiences? Join our [community discussions](https://github.com/orchestre-dev/ccproxy/discussions) and learn from others using visual AI in their workflows.*

@@ -259,6 +259,14 @@ Whether you're debugging complex issues, learning new technologies, or working o
 
 ---
 
+### Stay Updated
+
+Join our newsletter to get the latest updates on new models, features, and best practices. We promise to only send you the good stuff – no spam, just pure AI development insights.
+
+<NewsletterForm />
+
+---
+
 *Questions about setup or want to share your experience? Join our [community discussions](https://github.com/orchestre-dev/ccproxy/discussions) - there are always experienced users from various fields ready to help.
 
 **🛠️ Power User Tips:**

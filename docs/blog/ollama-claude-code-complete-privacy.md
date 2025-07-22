@@ -941,4 +941,12 @@ Whether you're a healthcare worker protecting patient privacy, a legal professio
 
 ---
 
+### Stay Updated
+
+Join our newsletter to get the latest updates on new models, features, and best practices. We promise to only send you the good stuff – no spam, just pure AI development insights.
+
+<NewsletterForm />
+
+---
+
 *Questions about local AI for your profession? Join our [community discussions](https://github.com/orchestre-dev/ccproxy/discussions) and connect with other professionals who have made the switch to privacy-first AI assistance.*

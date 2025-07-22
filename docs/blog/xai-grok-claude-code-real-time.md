@@ -542,4 +542,12 @@ The future of professional work increasingly depends on staying current with rap
 
 ---
 
+### Stay Updated
+
+Join our newsletter to get the latest updates on new models, features, and best practices. We promise to only send you the good stuff – no spam, just pure AI development insights.
+
+<NewsletterForm />
+
+---
+
 *Have questions about using real-time AI in your work? Join our [community discussions](https://github.com/orchestre-dev/ccproxy/discussions) and connect with other professionals exploring these powerful tools.*

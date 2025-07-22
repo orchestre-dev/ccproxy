@@ -227,6 +227,14 @@ The question isn't whether you should try Qwen3 235B. The question is: what will
 
 ---
 
+### Stay Updated
+
+Join our newsletter to get the latest updates on new models, features, and best practices. We promise to only send you the good stuff – no spam, just pure AI development insights.
+
+<NewsletterForm />
+
+---
+
 **Ready to experience the future?** [Get started with CCProxy](../guide/quick-start.md) and unleash the power of Qwen3 235B today.
 
 **Join the revolution.** The best AI model in the world is now at your fingertips. For free.

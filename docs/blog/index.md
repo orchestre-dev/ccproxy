@@ -12,6 +12,11 @@ Welcome to the CCProxy blog! Here you'll find expert guides, tutorials, and insi
 
 ## Latest Posts
 
+### [Use Any AI Model with Claude Code - CCProxy v1.0 Release](/blog/use-any-ai-model-with-claude-code)
+*July 22, 2025*
+
+CCProxy Version 1.0 is here! Keep using Claude Code while accessing GPT-4, Gemini, Qwen3, and 100+ other models. Perfect for developers who want flexibility, marketers who need speed, and writers who demand quality.
+
 ### [Qwen3 235B: The New King of AI Models via CCProxy](/blog/qwen3-235b-top-model)
 *July 22, 2025*
 

@@ -230,45 +230,151 @@ export ANTHROPIC_API_KEY="sk-ant-..."
 
 ## Routing Configuration
 
-CCProxy uses routes to determine which provider and model handle your requests. This is separate from the `models` array in provider configuration, which is used for validation.
+CCProxy uses an intelligent routing system to determine which provider and model handle your requests. Since CCProxy acts as a proxy for Claude Code, all incoming requests use Anthropic model names, which are then routed to the appropriate provider based on your configuration.
 
 ### Understanding Routes vs Models
 
-1. **`models` array** (in providers): Lists available models for validation
+1. **`models` array** (in providers): Lists available models for validation only
 2. **`routes` section**: Defines which provider/model actually handles requests
 
-## Model Selection Explained
+### Routing Priority (Highest to Lowest)
 
-The `models` array in provider config lists available models for validation.
-The `routes` section defines which provider/model actually handles requests.
+1. **Explicit Provider Selection**: `"provider,model"` format (e.g., `"anthropic,claude-3-opus"`)
+2. **Direct Model Routes**: Exact Anthropic model name matches in routes config
+3. **Long Context Routing**: Token count > 60,000 triggers `longContext` route
+4. **Background Routing**: Models starting with `"claude-3-5-haiku"` use `background` route
+5. **Thinking Routing**: Boolean `thinking: true` parameter triggers `think` route
+6. **Default Route**: Fallback for all unmatched requests
 
-### Example: Multi-Provider Setup
+### Route Types
+
+#### Special Routes (Condition-Based)
+
+These routes are triggered by specific conditions:
+
+- **`default`**: Handles all requests that don't match other routes
+- **`longContext`**: Automatically used when token count exceeds 60,000
+- **`background`**: Automatically used for models starting with `"claude-3-5-haiku"`
+- **`think`**: Triggered when request includes `"thinking": true` parameter
+
+#### Direct Model Routes
+
+Map specific Anthropic model names to any provider/model combination:
+
+```json
+{
+  "routes": {
+    // Special routes
+    "default": {
+      "provider": "anthropic",
+      "model": "claude-sonnet-4-20250720"
+    },
+    "longContext": {
+      "provider": "anthropic", 
+      "model": "claude-opus-4-20250720"
+    },
+    "background": {
+      "provider": "openai",
+      "model": "gpt-4.1-mini"
+    },
+    "think": {
+      "provider": "deepseek",
+      "model": "deepseek-reasoner"
+    },
+    
+    // Direct model routes - Anthropic model names as keys
+    "claude-opus-4": {
+      "provider": "openai",
+      "model": "gpt-4.1-turbo"  // Route claude-opus-4 to GPT-4.1 Turbo
+    },
+    "claude-3-5-sonnet-20241022": {
+      "provider": "deepseek",
+      "model": "deepseek-chat"  // Route specific Sonnet version to DeepSeek
+    }
+  }
+}
+```
+
+### Complete Routing Example
+
 ```json
 {
   "providers": [
     {
       "name": "anthropic",
+      "api_key": "sk-ant-...",
       "models": ["claude-opus-4-20250720", "claude-sonnet-4-20250720"],
-      "api_key": "..."
+      "enabled": true
     },
     {
       "name": "openai", 
-      "models": ["gpt-4.1", "o3", "o4-mini"],
-      "api_key": "..."
+      "api_key": "sk-...",
+      "models": ["gpt-4.1", "gpt-4.1-turbo", "gpt-4.1-mini"],
+      "enabled": true
+    },
+    {
+      "name": "deepseek",
+      "api_key": "sk-...",
+      "models": ["deepseek-chat", "deepseek-reasoner"],
+      "enabled": true
+    },
+    {
+      "name": "gemini",
+      "api_key": "AI...",
+      "models": ["gemini-2.5-pro", "gemini-2.5-flash"],
+      "enabled": true
     }
   ],
   "routes": {
+    // Condition-based routing
     "default": {
       "provider": "anthropic",
       "model": "claude-sonnet-4-20250720"
     },
-    "gpt-4": {  // Direct route for compatibility
+    "longContext": {  // Triggers when tokens > 60,000
+      "provider": "gemini",
+      "model": "gemini-2.5-pro"
+    },
+    "background": {  // Triggers for claude-3-5-haiku models
       "provider": "openai",
-      "model": "gpt-4.1"
+      "model": "gpt-4.1-mini"
+    },
+    "think": {  // Triggers when thinking: true
+      "provider": "deepseek",
+      "model": "deepseek-reasoner"
+    },
+    
+    // Direct model mapping
+    "claude-opus-4": {
+      "provider": "openai",
+      "model": "gpt-4.1-turbo"
+    },
+    "claude-sonnet-4": {
+      "provider": "gemini",
+      "model": "gemini-2.5-flash"
     }
   }
 }
 ```
+
+### How Routing Works
+
+1. **Claude Code sends request** with Anthropic model name (e.g., `"claude-opus-4"`)
+2. **CCProxy router checks** in order:
+   - Is it `"provider,model"` format? → Use specified provider/model
+   - Is there a direct route for this model? → Use that route
+   - Are tokens > 60,000? → Use `longContext` route
+   - Does model start with `"claude-3-5-haiku"`? → Use `background` route
+   - Is `thinking: true`? → Use `think` route
+   - Otherwise → Use `default` route
+3. **Request is forwarded** to the selected provider with the mapped model
+
+### Important Notes
+
+- **Model names in routes must be Anthropic model names** that Claude Code sends
+- The `conditions` field exists in the Route struct but is not currently implemented
+- All routing decisions are based on the hardcoded logic in the router
+- You cannot create routes for non-Anthropic model names (e.g., `"gpt-4"`) as Claude Code will never send these
 
 ## Model Currency
 
@@ -290,7 +396,9 @@ Check [models.dev](https://models.dev) for the latest model information across a
 
 Update your CCProxy configuration regularly to ensure you're using the best available models for your use case.
 
-### Default Routing
+### Routing Examples
+
+#### Simple Single-Provider Setup
 ```json
 {
   "providers": [{
@@ -308,8 +416,7 @@ Update your CCProxy configuration regularly to ensure you're using the best avai
 }
 ```
 
-### Context-Based Routing
-Requests with >60K tokens automatically route to long-context models:
+#### Multi-Provider with Automatic Routing
 ```json
 {
   "routes": {
@@ -317,30 +424,35 @@ Requests with >60K tokens automatically route to long-context models:
       "provider": "anthropic",
       "model": "claude-3-sonnet-20240229"
     },
-    "longContext": {
+    "longContext": {  // Auto-triggers for >60K tokens
       "provider": "anthropic",
       "model": "claude-3-opus-20240229"
+    },
+    "background": {  // Auto-triggers for haiku models
+      "provider": "openai",
+      "model": "gpt-3.5-turbo"
     }
   }
 }
 ```
 
-### Model-Specific Routing
-When a request specifies a model name, CCProxy looks for a matching route:
+#### Advanced Model Remapping
 ```json
 {
   "routes": {
-    "claude-3-opus": {
-      "provider": "anthropic",
-      "model": "claude-3-opus-20240229"
-    },
-    "gpt-4": {
+    // When Claude Code requests claude-3-opus, use GPT-4 instead
+    "claude-3-opus-20240229": {
       "provider": "openai",
       "model": "gpt-4"
     },
+    // When Claude Code requests this specific model, use DeepSeek
+    "claude-3-5-sonnet-20241022": {
+      "provider": "deepseek",
+      "model": "deepseek-chat"
+    },
     "default": {
-      "provider": "openai",
-      "model": "gpt-3.5-turbo"
+      "provider": "anthropic",
+      "model": "claude-3-sonnet-20240229"
     }
   }
 }
