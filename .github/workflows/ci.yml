@@ -37,11 +37,12 @@ jobs:
         make fmt
         git diff --exit-code || (echo "Code not properly formatted. Run 'make fmt'" && exit 1)
 
+    - name: Install golangci-lint
+      run: |
+        curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.61.0
+
     - name: Lint
-      uses: golangci/golangci-lint-action@v6
-      with:
-        version: v1.61.0
-        args: --timeout=5m
+      run: make lint
 
     - name: Run tests
       run: make test
