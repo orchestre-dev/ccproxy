@@ -32,8 +32,11 @@ jobs:
       - name: Check for changes since last release
         id: check
         run: |
-          # Get the latest release tag
-          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          # Get the latest release tag (exclude pre-release tags)
+          LATEST_TAG=$(git tag -l 'v*.*.*' | grep -v '\-rc\.' | sort -V | tail -n1)
+          if [ -z "$LATEST_TAG" ]; then
+            LATEST_TAG=""
+          fi
           
           if [ -z "$LATEST_TAG" ]; then
             echo "No previous tags found, creating pre-release"
@@ -70,8 +73,12 @@ jobs:
       - name: Create pre-release tag
         id: create_tag
         run: |
-          # Get the latest release tag
-          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          # Get the latest release tag (exclude pre-release tags)
+          LATEST_TAG=$(git tag -l 'v*.*.*' | grep -v '\-rc\.' | sort -V | tail -n1)
+          if [ -z "$LATEST_TAG" ]; then
+            LATEST_TAG="v0.0.0"
+          fi
+          echo "Using latest release tag: $LATEST_TAG"
           
           # Extract version numbers
           if [[ $LATEST_TAG =~ v([0-9]+)\.([0-9]+)\.([0-9]+) ]]; then
@@ -97,8 +104,11 @@ jobs:
       - name: Generate changelog
         id: changelog
         run: |
-          # Get the previous tag
-          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          # Get the previous release tag (exclude pre-release tags)
+          PREV_TAG=$(git tag -l 'v*.*.*' | grep -v '\-rc\.' | sort -V | tail -n1)
+          if [ -z "$PREV_TAG" ]; then
+            PREV_TAG=""
+          fi
           
           echo "## 🚀 Pre-Release ${{ steps.create_tag.outputs.tag_name }}" > changelog.md
           echo "" >> changelog.md
