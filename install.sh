@@ -95,8 +95,18 @@ detect_platform() {
 validate_version() {
     local version="$1"
     # Version should be in format: digits.digits.digits (optionally with v prefix)
-    if [[ ! "$version" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    # Only allow numbers, dots, and optional v prefix
+    if [[ ! "$version" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9]+)?(\+[a-zA-Z0-9]+)?$ ]]; then
         echo -e "${RED}Invalid version format: $version${NC}"
+        echo -e "${RED}Expected format: v1.2.3 or 1.2.3${NC}"
+        exit 1
+    fi
+    
+    # Additional check for reasonable version numbers
+    local major minor patch
+    IFS='.' read -r major minor patch <<< "${version#v}"
+    if (( major > 999 )) || (( minor > 999 )) || (( ${patch%%[-+]*} > 999 )); then
+        echo -e "${RED}Version numbers seem unreasonably high${NC}"
         exit 1
     fi
 }
@@ -105,8 +115,9 @@ validate_version() {
 get_latest_version() {
     echo -e "${BLUE}Fetching latest release information...${NC}"
     
-    # Create temp file for API response
-    local temp_response=$(mktemp)
+    # Create temp file for API response with secure permissions
+    local temp_response=$(mktemp -t ccproxy-api-XXXXXX)
+    chmod 600 "$temp_response"
     trap "rm -f $temp_response" EXIT
     
     # Try to get latest release from GitHub API
@@ -130,8 +141,14 @@ get_latest_version() {
         exit 1
     fi
     
-    # Extract version safely
-    VERSION=$(grep '"tag_name"' "$temp_response" | sed -E 's/.*"tag_name"[[:space:]]*:[[:space:]]*"([^"]+)".*/\1/')
+    # Validate JSON response first
+    if ! grep -q '"tag_name"' "$temp_response"; then
+        echo -e "${RED}Invalid GitHub API response - no tag_name found${NC}"
+        exit 1
+    fi
+    
+    # Extract version safely using a more restrictive pattern
+    VERSION=$(grep '"tag_name"' "$temp_response" | head -1 | sed -E 's/.*"tag_name"[[:space:]]*:[[:space:]]*"(v?[0-9]+\.[0-9]+\.[0-9]+[^"]*)".*/\1/')
     
     if [ -z "$VERSION" ]; then
         echo -e "${RED}Failed to parse version from GitHub response${NC}"
@@ -146,15 +163,37 @@ get_latest_version() {
     echo -e "${GREEN}Latest version: v${VERSION}${NC}"
 }
 
+# Validate platform before using in URL
+validate_platform() {
+    # Ensure PLATFORM only contains expected values
+    case "$PLATFORM" in
+        linux-amd64|linux-arm64|darwin-amd64|darwin-arm64|windows-amd64)
+            # Valid platform
+            ;;
+        *)
+            echo -e "${RED}Invalid platform: $PLATFORM${NC}"
+            exit 1
+            ;;
+    esac
+}
+
 # Download binary with checksum verification
 download_binary() {
-    local url="${GITHUB_DOWNLOAD}/v${VERSION}/ccproxy-${PLATFORM}"
+    # Validate platform before constructing URL
+    validate_platform
+    
+    # URL encode the version (in case it contains special chars)
+    local encoded_version=$(printf '%s' "v${VERSION}" | sed 's/[^a-zA-Z0-9._-]/_/g')
+    
+    local url="${GITHUB_DOWNLOAD}/${encoded_version}/ccproxy-${PLATFORM}"
     if [ "$OS" = "windows" ]; then
         url="${url}.exe"
     fi
     
     local checksum_url="${GITHUB_DOWNLOAD}/v${VERSION}/checksums.txt"
-    local temp_dir=$(mktemp -d)
+    # Create secure temp directory
+    local temp_dir=$(mktemp -d -t ccproxy-install-XXXXXX)
+    chmod 700 "$temp_dir"
     trap "rm -rf $temp_dir" EXIT
     
     local temp_file="${temp_dir}/ccproxy-download"
@@ -175,6 +214,32 @@ download_binary() {
             echo -e "${YELLOW}Available binaries: linux-amd64, linux-arm64, darwin-amd64, darwin-arm64, windows-amd64${NC}"
             exit 1
         fi
+    fi
+    
+    # Verify the downloaded file is actually a binary
+    if [ -f "$temp_file" ]; then
+        if command -v file &> /dev/null; then
+            local file_type=$(file -b "$temp_file" 2>/dev/null || true)
+            case "$file_type" in
+                *executable*|*binary*|*Mach-O*|*PE32*|*ELF*)
+                    # Valid binary file
+                    ;;
+                *HTML*|*text*|*ASCII*)
+                    echo -e "${RED}Downloaded file appears to be HTML/text, not a binary${NC}"
+                    echo -e "${RED}This might indicate an error page was downloaded${NC}"
+                    exit 1
+                    ;;
+            esac
+        fi
+        
+        # Check file size (binaries should be at least 1MB)
+        local file_size=$(stat -f%z "$temp_file" 2>/dev/null || stat -c%s "$temp_file" 2>/dev/null || echo 0)
+        if [ "$file_size" -lt 1048576 ]; then
+            echo -e "${YELLOW}Warning: Downloaded file is unusually small (${file_size} bytes)${NC}"
+        fi
+    else
+        echo -e "${RED}Download failed - file not created${NC}"
+        exit 1
     fi
     
     echo -e "${BLUE}Downloading checksums...${NC}"
@@ -336,8 +401,16 @@ main() {
     
     # Get latest version (or use provided version)
     if [ -n "${1:-}" ]; then
-        VERSION="${1#v}"  # Remove 'v' prefix if present
-        validate_version "v${VERSION}"
+        # Validate user input more strictly
+        local user_version="$1"
+        
+        # Remove any potentially dangerous characters
+        user_version=$(printf '%s' "$user_version" | tr -cd 'a-zA-Z0-9._+-')
+        
+        # Validate format
+        validate_version "$user_version"
+        
+        VERSION="${user_version#v}"  # Remove 'v' prefix if present
         echo -e "${BLUE}Installing specific version: v${VERSION}${NC}"
     else
         get_latest_version
