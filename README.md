@@ -1,39 +1,47 @@
-# CCProxy - AI Request Proxy for Claude Code | Multi-Provider LLM Gateway
+# CCProxy
 
 [![CI](https://github.com/orchestre-dev/ccproxy/actions/workflows/ci.yml/badge.svg)](https://github.com/orchestre-dev/ccproxy/actions/workflows/ci.yml)
 [![Pre-Release](https://github.com/orchestre-dev/ccproxy/actions/workflows/pre-release.yml/badge.svg)](https://github.com/orchestre-dev/ccproxy/actions/workflows/pre-release.yml)
 [![Release](https://github.com/orchestre-dev/ccproxy/actions/workflows/release.yml/badge.svg)](https://github.com/orchestre-dev/ccproxy/actions/workflows/release.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/orchestre-dev/ccproxy)](https://goreportcard.com/report/github.com/orchestre-dev/ccproxy)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Documentation](https://img.shields.io/badge/docs-ccproxy.dev-blue)](https://ccproxy.pages.dev)
+[![Documentation](https://img.shields.io/badge/docs-ccproxy.orchestre.dev-blue)](https://ccproxy.orchestre.dev)
 
-**CCProxy is the premier AI request proxy for Claude Code**, providing seamless integration with multiple LLM providers including OpenAI, Google Gemini, DeepSeek, and more. This high-performance proxy server enables Claude Code to access various AI models through intelligent routing and automatic API translation, making it the essential tool for developers using Claude Code who need multi-provider flexibility.
+A high-performance proxy that enables Claude Code to work with multiple AI providers. Route requests to OpenAI, Google Gemini, DeepSeek, and more through a single interface.
 
-📚 **[Full Documentation](https://ccproxy.pages.dev)** | 🐛 **[Report Issues](https://github.com/orchestre-dev/ccproxy/issues)** | 💬 **[Discussions](https://github.com/orchestre-dev/ccproxy/discussions)**
+📚 **[Documentation](https://ccproxy.pages.dev)** | 🐛 **[Issues](https://github.com/orchestre-dev/ccproxy/issues)** | 💬 **[Discussions](https://github.com/orchestre-dev/ccproxy/discussions)**
 
-> **Keywords**: AI proxy for Claude Code, Claude Code proxy server, LLM gateway, AI model router, Anthropic Claude proxy, OpenAI GPT proxy, multi-provider AI gateway, Claude Code integration
+## 🎯 Why CCProxy?
 
-## 🎯 Why CCProxy for Claude Code?
+CCProxy enables Claude Code to work with multiple AI providers:
 
-CCProxy is specifically designed as an **AI request proxy for Claude Code**, solving key challenges:
+- **Multi-Provider Access**: Use OpenAI GPT-4, Google Gemini, DeepSeek, and more
+- **Cost Optimization**: Route requests to the most cost-effective provider
+- **Failover Protection**: Automatic fallback when providers are unavailable
+- **Token-Based Routing**: Intelligent routing based on context length And then double-check the configuration page in the documentation. I want to be 200% sure that everything in that documentation is correct and matches the implementation based on the codebase.
+- **Drop-in Replacement**: Works seamlessly without code changes
 
-- **Multi-Provider Access**: Use Claude Code with OpenAI GPT-4, Google Gemini, DeepSeek, and more
-- **Cost Optimization**: Route requests to the most cost-effective provider based on your needs
-- **Failover Protection**: Automatic fallback to alternative providers if one is unavailable
-- **Token-Based Routing**: Intelligently route long-context requests to appropriate models
-- **Drop-in Replacement**: Works seamlessly with Claude Code without any code changes
-
-## 🌟 Features for Claude Code Users
+## 🌟 Features
 
 - **Multi-Provider Support**: Anthropic, OpenAI, Google Gemini, DeepSeek, OpenRouter
-- **Intelligent Routing**: Automatic model selection based on token count and parameters
-- **API Translation**: Seamless conversion between Anthropic and provider-specific formats
-- **Tool Support**: Full support for function calling across all compatible providers
-- **Streaming Support**: Server-Sent Events (SSE) for real-time responses
-- **Cross Platform**: Binaries available for Linux, macOS, and Windows (AMD64/ARM64)
-- **Process Management**: Background service with automatic startup and graceful shutdown
-- **Health Monitoring**: Built-in health checks and provider status tracking
-- **Security**: API key validation, IP-based access control, rate limiting
+- **Intelligent Routing**: Automatic model selection based on context
+- **API Translation**: Seamless format conversion between providers
+- **Tool Support**: Function calling required for Claude Code compatibility
+- **Streaming Support**: Real-time responses via SSE
+- **Cross Platform**: Linux, macOS, and Windows (AMD64/ARM64)
+- **Process Management**: Background service with auto-startup
+- **Health Monitoring**: Built-in status tracking
+- **Security**: API validation, access control, rate limiting
+
+## 🎯 Model Selection Strategy
+
+CCProxy intelligently routes requests based on:
+- Token count (>60K → longContext route)
+- Model type (haiku models → background route)
+- Thinking parameter (thinking: true → think route if configured)
+- Explicit selection (provider,model format)
+
+**Note**: For Claude Code compatibility, models must support function calling (tool use).
 
 ## 🚀 Quick Start
 
@@ -76,25 +84,24 @@ docker build -t ccproxy .
 docker run -d -p 3456:3456 -v $(pwd)/config.json:/home/ccproxy/.ccproxy/config.json ccproxy
 ```
 
-### Option 4: One-Command Setup with Claude Code (Recommended)
+### Option 4: One-Command Setup (Recommended)
 
 ```bash
-# The fastest way to start using CCProxy with Claude Code
-# This command auto-configures everything for Claude Code integration
+# Fastest setup - auto-configures everything
 ./ccproxy code
 ```
 
-This is the **recommended method for Claude Code users** as it automatically:
-- Starts the CCProxy AI proxy server
-- Configures Claude Code environment variables
-- Sets up the proxy connection for Claude Code
-- Enables access to all configured AI providers
+This command automatically:
+- Starts the proxy server
+- Configures environment variables
+- Sets up the connection
+- Enables access to all configured providers
 
-## 🔧 Configuration Guide for Claude Code Integration
+## 🔧 Configuration Guide
 
-### Quick Start Configuration for Claude Code
+### Quick Start Configuration
 
-The easiest way to configure CCProxy as an AI proxy for Claude Code is to create a configuration file with your AI provider API keys:
+Create a configuration file with your provider API keys:
 
 1. **Create configuration directory** (if it doesn't exist):
    ```bash
@@ -110,10 +117,16 @@ The easiest way to configure CCProxy as an AI proxy for Claude Code is to create
          "name": "openai",
          "api_base_url": "https://api.openai.com/v1",
          "api_key": "your-openai-api-key",
-         "models": ["gpt-4", "gpt-3.5-turbo"],
+         "models": ["gpt-4.1", "gpt-4.1-mini"],  // Available models for validation
          "enabled": true
        }
-     ]
+     ],
+     "routes": {
+       "default": {
+         "provider": "openai",
+         "model": "gpt-4.1"  // This is the actual model that will be used
+       }
+     }
    }
    EOF
    ```
@@ -164,7 +177,7 @@ ccproxy start --config /path/to/my/config.json
 
 ### 🔑 Understanding the Two-Level API Key System
 
-CCProxy, as an AI proxy for Claude Code, uses two types of API keys for different purposes:
+CCProxy uses two types of API keys:
 
 #### 1. **CCProxy Authentication Key** (Optional)
 
@@ -199,7 +212,7 @@ CCProxy, as an AI proxy for Claude Code, uses two types of API keys for differen
 Claude Code → (uses CCProxy API key) → CCProxy → (uses Provider API key) → OpenAI/Anthropic/etc
 ```
 
-### 📋 Complete Configuration Example for Claude Code
+### 📋 Complete Configuration Example
 
 ```json
 {
@@ -213,37 +226,44 @@ Claude Code → (uses CCProxy API key) → CCProxy → (uses Provider API key) �
       "name": "anthropic",
       "api_base_url": "https://api.anthropic.com",
       "api_key": "sk-ant-...",  // Required: your Anthropic API key
-      "models": ["claude-3-opus-20240229", "claude-3-sonnet-20240229"],
+      "models": ["claude-opus-4-20250720", "claude-sonnet-4-20250720"],
       "enabled": true
     },
     {
       "name": "openai",
       "api_base_url": "https://api.openai.com/v1",
       "api_key": "sk-...",  // Required: your OpenAI API key
-      "models": ["gpt-4", "gpt-4-turbo", "gpt-3.5-turbo"],
+      "models": ["gpt-4.1", "gpt-4.1-turbo", "gpt-4.1-mini"],
       "enabled": true
     },
     {
       "name": "gemini",
       "api_base_url": "https://generativelanguage.googleapis.com/v1",
       "api_key": "AIza...",  // Required: your Google AI API key
-      "models": ["gemini-pro", "gemini-pro-vision"],
+      "models": ["gemini-2.5-flash", "gemini-2.5-pro"],
       "enabled": false
     }
   ],
   "routes": {
     "default": {
       "provider": "anthropic",
-      "model": "claude-3-sonnet-20240229"
+      "model": "claude-sonnet-4-20250720"
     },
     "longContext": {
       "provider": "anthropic",
-      "model": "claude-3-opus-20240229",
-      "conditions": [{
-        "type": "tokenCount",
-        "operator": ">",
-        "value": 60000
-      }]
+      "model": "claude-opus-4-20250720"
+    },
+    "background": {
+      "provider": "openai",
+      "model": "gpt-4.1-mini"
+    },
+    "think": {  // Optional: route for thinking parameter
+      "provider": "anthropic",
+      "model": "claude-opus-4-20250720"
+    },
+    "gpt-4.1": {
+      "provider": "openai",
+      "model": "gpt-4.1-turbo"
     }
   },
   "performance": {
@@ -254,6 +274,46 @@ Claude Code → (uses CCProxy API key) → CCProxy → (uses Provider API key) �
     "circuit_breaker_enabled": true
   }
 }
+```
+
+### 🎯 How Model Selection Works
+
+CCProxy uses intelligent routing to select the appropriate model and provider:
+
+**1. Explicit Provider Selection** (Highest Priority)
+```json
+// Force a specific provider/model combination
+{"model": "openai,gpt-4.1-turbo"}
+```
+
+**2. Direct Model Routes**
+```json
+// If "gpt-4.1" is defined in routes, use that configuration
+{"model": "gpt-4.1"}
+```
+
+**3. Automatic Token-Based Routing**
+```json
+// Requests with >60K tokens automatically use longContext route
+{"model": "claude-sonnet-4", "messages": [/* very long context */]}
+```
+
+**4. Background Task Routing**
+```json
+// Models starting with "claude-3-5-haiku" use background route
+{"model": "claude-3-5-haiku-20241022"}
+```
+
+**5. Thinking Mode Routing**
+```json
+// Requests with thinking parameter use think route (if configured)
+{"model": "claude-sonnet-4", "thinking": true}
+```
+
+**6. Default Route**
+```json
+// Any unmatched model uses the default route
+{"model": "some-model"}
 ```
 
 ### Environment Variables
@@ -272,7 +332,7 @@ Claude Code → (uses CCProxy API key) → CCProxy → (uses Provider API key) �
 
 ### Real-World Configuration Examples
 
-#### Example 1: Simple Claude Code Setup (Local Development)
+#### Example 1: Simple Setup (Local Development)
 ```json
 {
   "providers": [
@@ -281,11 +341,17 @@ Claude Code → (uses CCProxy API key) → CCProxy → (uses Provider API key) �
       "api_key": "sk-proj-...",
       "enabled": true
     }
-  ]
+  ],
+  "routes": {
+    "default": {
+      "provider": "openai",
+      "model": "gpt-4.1-turbo"
+    }
+  }
 }
 ```
 
-#### Example 2: Multi-Provider Setup for Claude Code
+#### Example 2: Multi-Provider Setup with Smart Routing
 ```json
 {
   "providers": [
@@ -308,11 +374,19 @@ Claude Code → (uses CCProxy API key) → CCProxy → (uses Provider API key) �
   "routes": {
     "default": {
       "provider": "deepseek",
-      "model": "deepseek-coder"
+      "model": "deepseek-chat"
     },
-    "longContext": {
+    "longContext": {  // Auto-selected for >60K tokens
       "provider": "anthropic",
-      "model": "claude-3-opus-20240229"
+      "model": "claude-opus-4-20250720"
+    },
+    "gpt-4.1": {  // Direct model mapping
+      "provider": "openai",
+      "model": "gpt-4.1-turbo"
+    },
+    "claude-opus-4": {  // Another direct mapping
+      "provider": "anthropic",
+      "model": "claude-opus-4-20250720"
     }
   }
 }
@@ -326,16 +400,16 @@ Claude Code → (uses CCProxy API key) → CCProxy → (uses Provider API key) �
 # Result: CCProxy uses port 7070 (command flag wins)
 ```
 
-## 🎯 Using CCProxy as an AI Proxy for Claude Code
+## 🎯 Using CCProxy
 
-### Automatic Setup for Claude Code (Recommended)
+### Automatic Setup (Recommended)
 
 ```bash
-# One command to set up CCProxy as your AI proxy for Claude Code
+# One command setup
 ./ccproxy code
 ```
 
-✨ **What happens**: CCProxy automatically configures itself as the AI proxy for Claude Code, enabling access to all your configured providers.
+✨ **What happens**: Automatic configuration enabling access to all configured providers.
 
 ### Manual Setup
 
@@ -355,12 +429,12 @@ Claude Code → (uses CCProxy API key) → CCProxy → (uses Provider API key) �
    claude "Help me with my code"
    ```
 
-## 🏆 Supported AI Providers for Claude Code Integration
+## 🏆 Supported AI Providers
 
-**CCProxy acts as an AI request proxy for Claude Code**, enabling seamless integration with multiple language model providers:
+CCProxy enables seamless integration with multiple providers:
 
 - **Anthropic** - Claude models with native support
-- **OpenAI** - GPT-4, GPT-3.5 models
+- **OpenAI** - GPT-4.1, GPT-4.1-mini models
 - **Google Gemini** - Advanced multimodal models
 - **DeepSeek** - Cost-effective coding models
 - **OpenRouter** - Access to 100+ models from various providers
@@ -394,14 +468,14 @@ Add providers to your `config.json`:
       "name": "openai",
       "api_base_url": "https://api.openai.com/v1",
       "api_key": "your-api-key",
-      "models": ["gpt-4", "gpt-3.5-turbo"],
+      "models": ["gpt-4.1", "gpt-4.1-mini"],
       "enabled": true
     }
   ]
 }
 ```
 
-## 📊 API Endpoints for Claude Code Proxy
+## 📊 API Endpoints
 
 - `POST /v1/messages` - Anthropic-compatible messages endpoint
 - `GET /health` - Health check endpoint
@@ -411,14 +485,15 @@ Add providers to your `config.json`:
 - `PUT /providers/:name` - Update provider
 - `DELETE /providers/:name` - Remove provider
 
-### Example Request
+### Example Requests
 
+#### Basic Request (uses default route)
 ```bash
 curl -X POST http://localhost:3456/v1/messages \
   -H "Content-Type: application/json" \
   -H "x-api-key: your-api-key" \
   -d '{
-    "model": "claude-3-sonnet-20240229",
+    "model": "claude-sonnet-4-20250720",
     "max_tokens": 1000,
     "messages": [
       {
@@ -429,7 +504,41 @@ curl -X POST http://localhost:3456/v1/messages \
   }'
 ```
 
-## 🔨 Development Guide for CCProxy AI Proxy
+#### Force Specific Provider
+```bash
+curl -X POST http://localhost:3456/v1/messages \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: your-api-key" \
+  -d '{
+    "model": "openai,gpt-4.1-turbo",
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
+
+#### Long Context (auto-routes to longContext route)
+```bash
+curl -X POST http://localhost:3456/v1/messages \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: your-api-key" \
+  -d '{
+    "model": "any-model",
+    "messages": [{"role": "user", "content": "/* 100K+ token content */"}]
+  }'
+```
+
+#### Thinking Mode (routes to think route if configured)
+```bash
+curl -X POST http://localhost:3456/v1/messages \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: your-api-key" \
+  -d '{
+    "model": "claude-sonnet-4",
+    "thinking": true,
+    "messages": [{"role": "user", "content": "Solve this complex problem"}]
+  }'
+```
+
+## 🔨 Development Guide
 
 ### Building
 
@@ -470,7 +579,7 @@ Built with ❤️ for the Claude Code community.
 
 Inspired by the original [Claude Code Router](https://github.com/musistudio/claude-router) project.
 
-## 🐛 Troubleshooting Claude Code AI Proxy Issues
+## 🐛 Troubleshooting
 
 ### Common Issues
 
@@ -505,19 +614,17 @@ LOG=true ./ccproxy start
 
 ## 🌟 Summary
 
-**CCProxy is the essential AI request proxy for Claude Code**, providing seamless multi-provider integration for AI-powered development. Whether you're using OpenAI's GPT-4, Google's Gemini, Anthropic's Claude, or other LLM providers, CCProxy makes it easy to switch between them while using Claude Code.
+CCProxy provides seamless multi-provider integration for AI-powered development. Switch easily between OpenAI, Google Gemini, Anthropic Claude, and other providers.
 
-### Key Benefits of Using CCProxy with Claude Code:
-- ✅ **Multi-Provider Support**: Access OpenAI, Google Gemini, DeepSeek, and more through Claude Code
-- ✅ **Cost Optimization**: Route requests to the most cost-effective AI provider
-- ✅ **High Performance**: Written in Go for minimal latency and resource usage
-- ✅ **Easy Setup**: One command (`ccproxy code`) configures everything
-- ✅ **Enterprise Ready**: Built-in security, monitoring, and rate limiting
+### Key Benefits:
+- ✅ **Multi-Provider Support**: Access multiple AI providers
+- ✅ **Cost Optimization**: Route to cost-effective providers
+- ✅ **High Performance**: Minimal latency with Go
+- ✅ **Easy Setup**: One command configuration
+- ✅ **Enterprise Ready**: Built-in security and monitoring
 
-Start using CCProxy as your AI proxy for Claude Code today and unlock the full potential of multi-provider AI development!
+Start using CCProxy today to unlock multi-provider AI development!
 
 ---
-
-**Keywords**: CCProxy, AI proxy for Claude Code, Claude Code proxy server, LLM gateway, multi-provider AI proxy, Anthropic Claude proxy, OpenAI GPT proxy, Google Gemini proxy, AI model router, Claude Code integration, AI request routing, LLM proxy server
 
 If you find this project useful, please consider giving it a ⭐ on GitHub!
