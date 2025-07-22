@@ -36,6 +36,8 @@ func NewParametersTransformer() *ParametersTransformer {
 			},
 			// DeepSeek uses standard names
 			"deepseek": {},
+			// Groq uses standard names
+			"groq": {},
 		},
 		parameterLimits: map[string]map[string]Range{
 			"anthropic": {
@@ -55,6 +57,10 @@ func NewParametersTransformer() *ParametersTransformer {
 				"topK":        {Min: 1, Max: 100},
 			},
 			"deepseek": {
+				"temperature": {Min: 0, Max: 2},
+				"top_p":       {Min: 0, Max: 1},
+			},
+			"groq": {
 				"temperature": {Min: 0, Max: 2},
 				"top_p":       {Min: 0, Max: 1},
 			},

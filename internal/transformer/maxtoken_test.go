@@ -33,9 +33,12 @@ func TestNewMaxTokenTransformer(t *testing.T) {
 	expectedLimits := map[string]int{
 		"anthropic":  200000,
 		"openai":     128000,
+		"groq":       32768,
 		"gemini":     1048576,
 		"deepseek":   32768,
 		"openrouter": 200000,
+		"mistral":    32768,
+		"xai":        128000,
 	}
 
 	for provider, expectedLimit := range expectedLimits {

@@ -7,7 +7,7 @@ keywords: CCProxy, AI proxy for Claude Code, Claude Code proxy server, LLM gatew
 hero:
   name: "CCProxy"
   text: "AI Request Proxy for Claude Code"
-  tagline: "Enable Claude Code to work with OpenAI, Google Gemini, DeepSeek, and 7+ AI providers through intelligent routing"
+  tagline: "Enable Claude Code to work with OpenAI, Google Gemini, DeepSeek, and 100+ models via OpenRouter through intelligent routing"
   image:
     src: /ccproxy_icon.png
     alt: CCProxy - Universal AI Proxy
@@ -16,19 +16,19 @@ hero:
       text: Get Started
       link: /guide/
     - theme: alt
-      text: Try Kimi K2
-      link: /kimi-k2
+      text: Try Qwen3 235B
+      link: /guide/routing#qwen3
     - theme: alt
       text: Share Feedback
       link: https://github.com/orchestre-dev/ccproxy/discussions
 
 features:
   - icon: ⚡
-    title: Ultra-Fast Kimi K2 Support
-    details: Experience blazing-fast inference with Moonshot AI's Kimi K2 through Groq's LPU infrastructure - sub-second response times!
+    title: Top-Ranked Qwen3 235B via OpenRouter
+    details: Access the #1 ranked model with 70.3 AIME score - Qwen3 235B delivers superior reasoning and problem-solving capabilities!
   - icon: 🌐
-    title: 7+ AI Providers
-    details: Groq, OpenRouter, OpenAI, XAI (Grok), Google Gemini, Mistral AI, and Ollama - all in one proxy
+    title: 5 AI Providers with 100+ Models via OpenRouter
+    details: Anthropic, OpenAI, Google Gemini, DeepSeek, and OpenRouter (100+ models including Qwen3, Kimi K2, Grok, and more)
   - icon: 🔄
     title: Perfect Claude Code Integration
     details: Seamless Anthropic API compatibility - just set environment variables and you're ready to go
@@ -49,29 +49,29 @@ features:
 
 <NewsletterForm />
 
-## 🌟 Featured: Kimi K2 + Claude Code
+## 🌟 Featured: Qwen3 235B + Claude Code
 
 <div class="showcase-grid">
   <div class="showcase-item">
-    <div class="showcase-title">⚡ Ultra-Fast Kimi K2</div>
+    <div class="showcase-title">🏆 #1 Ranked Model: Qwen3 235B</div>
     <div class="showcase-description">
-      Experience blazing-fast inference with Moonshot AI's Kimi K2 via Groq or OpenRouter. Sub-second response times with 32B activated parameters and 1T total parameters for exceptional AI performance.
+      Access the top-ranked AI model via OpenRouter. Qwen3 235B achieves an impressive 70.3 AIME score, surpassing other models in reasoning, mathematics, and complex problem-solving tasks.
     </div>
-    <a href="/kimi-k2" class="showcase-link">Learn More →</a>
+    <a href="/guide/routing#qwen3" class="showcase-link">Learn More →</a>
   </div>
   
   <div class="showcase-item">
-    <div class="showcase-title">💰 Incredible Value</div>
+    <div class="showcase-title">🌐 100+ Models via OpenRouter</div>
     <div class="showcase-description">
-      Kimi K2 offers exceptional value - significantly cheaper than GPT-4 with comparable quality. Available via Groq for ultra-fast inference or OpenRouter for reliable access.
+      Beyond Qwen3, access Kimi K2, XAI Grok, Mistral, and 100+ other models through OpenRouter. One API key unlocks the entire AI ecosystem with intelligent routing.
     </div>
-    <a href="/kimi-k2" class="showcase-link">See Details →</a>
+    <a href="/guide/providers#openrouter" class="showcase-link">See All Models →</a>
   </div>
   
   <div class="showcase-item">
     <div class="showcase-title">🔧 Zero Setup Required</div>
     <div class="showcase-description">
-      Works instantly with Claude Code. No API changes, no code modifications - just set two environment variables and unlock the power of Kimi K2 through CCProxy.
+      Works instantly with Claude Code. No API changes, no code modifications - just set two environment variables and unlock the power of 100+ models through CCProxy.
     </div>
     <a href="/guide/quick-start" class="showcase-link">Quick Start →</a>
   </div>
@@ -137,13 +137,11 @@ CCProxy transforms Claude Code into a **universal AI development tool** by conne
   <div class="showcase-item">
     <div class="showcase-title">🎯 Top AI Providers</div>
     <div class="showcase-description">
-      <strong>Groq + Kimi K2:</strong> Ultra-fast inference with sub-second response times<br><br>
-      <strong>OpenRouter + Kimi K2:</strong> Access to 100+ models including Kimi K2<br><br>
+      <strong>OpenRouter:</strong> 100+ models including Qwen3 235B (#1 ranked), Kimi K2, XAI Grok, Mistral, and more<br><br>
       <strong>OpenAI GPT:</strong> Industry-standard models with latest features<br><br>
-      <strong>XAI Grok:</strong> Real-time data access and X integration<br><br>
       <strong>Google Gemini:</strong> Advanced multimodal capabilities<br><br>
-      <strong>Mistral AI:</strong> European privacy-focused models<br><br>
-      <strong>Ollama:</strong> Complete privacy with local models
+      <strong>DeepSeek:</strong> Cost-effective Chinese models with strong coding abilities<br><br>
+      <strong>Anthropic:</strong> Native Claude support for seamless integration
     </div>
   </div>
   
@@ -178,9 +176,9 @@ CCProxy gets you **fast, affordable AI access**. But what about **production-rea
   <div class="showcase-item">
     <div class="showcase-title">🏗️ CCProxy: Infrastructure Layer</div>
     <div class="showcase-description">
-      <strong>Ultra-fast AI access:</strong> Kimi K2 via Groq in sub-seconds<br><br>
+      <strong>Ultra-fast AI access:</strong> Qwen3 235B and 100+ models via OpenRouter<br><br>
       <strong>Cost-effective:</strong> Cheaper alternatives to expensive APIs<br><br>
-      <strong>Multi-provider:</strong> 7+ AI providers in one proxy<br><br>
+      <strong>Multi-provider:</strong> 5 AI providers with 100+ models in one proxy<br><br>
       <strong>Claude Code compatible:</strong> Zero configuration changes
     </div>
   </div>
@@ -210,7 +208,7 @@ CCProxy gets you **fast, affordable AI access**. But what about **production-rea
 
 ### Why Developers Choose Both
 
-> *"I use CCProxy with Groq's Kimi K2 for ultra-fast AI responses during development. Then Orchestre's context intelligence ensures my code is production-ready from day one. Shipped my SaaS MVP in 3 days."*
+> *"I use CCProxy with OpenRouter's Qwen3 235B for superior reasoning during development. Then Orchestre's context intelligence ensures my code is production-ready from day one. Shipped my SaaS MVP in 3 days."*
 
 **The Modern AI Development Workflow:**
 1. **CCProxy** handles blazing-fast, cost-effective AI infrastructure

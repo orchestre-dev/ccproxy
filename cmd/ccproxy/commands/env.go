@@ -36,6 +36,7 @@ func EnvCmd() *cobra.Command {
 			fmt.Println("  GOOGLE_API_KEY      - Google AI API key")
 			fmt.Println("  DEEPSEEK_API_KEY    - DeepSeek API key")
 			fmt.Println("  OPENROUTER_API_KEY  - OpenRouter API key")
+			fmt.Println("  GROQ_API_KEY        - Groq API key")
 			fmt.Println()
 			fmt.Println("Proxy Configuration:")
 			fmt.Println("  HTTP_PROXY          - HTTP proxy URL")

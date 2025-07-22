@@ -26,9 +26,12 @@ func NewMaxTokenTransformer() *MaxTokenTransformer {
 		providerLimits: map[string]int{
 			"anthropic":  200000,  // Claude 3 models
 			"openai":     128000,  // GPT-4 Turbo
+			"groq":       32768,   // Typical Groq limit
 			"gemini":     1048576, // Gemini 1.5 Pro
 			"deepseek":   32768,   // DeepSeek default
 			"openrouter": 200000,  // Varies by model
+			"mistral":    32768,   // Mistral default
+			"xai":        128000,  // Grok models
 		},
 	}
 }
