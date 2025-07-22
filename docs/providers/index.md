@@ -16,44 +16,85 @@ CCProxy supports 7 major AI providers, each with unique strengths and characteri
 
 ## Quick Setup
 
-Each provider requires different setup steps. Here's the minimal configuration for each:
+CCProxy uses a JSON configuration file. Here's the minimal configuration for each provider:
 
 ::: code-group
 
-```bash [Groq]
-export PROVIDER=groq
-export GROQ_API_KEY=gsk_your_key_here
+```json [Groq]
+{
+  "providers": [{
+    "name": "groq",
+    "api_base_url": "https://api.groq.com/openai/v1",
+    "api_key": "gsk_your_key_here",
+    "enabled": true
+  }]
+}
 ```
 
-```bash [OpenRouter]
-export PROVIDER=openrouter
-export OPENROUTER_API_KEY=sk-or-v1-your_key_here
+```json [OpenRouter]
+{
+  "providers": [{
+    "name": "openrouter",
+    "api_base_url": "https://openrouter.ai/api/v1",
+    "api_key": "sk-or-v1-your_key_here",
+    "enabled": true
+  }]
+}
 ```
 
-```bash [OpenAI]
-export PROVIDER=openai
-export OPENAI_API_KEY=sk-your_key_here
+```json [OpenAI]
+{
+  "providers": [{
+    "name": "openai",
+    "api_base_url": "https://api.openai.com/v1",
+    "api_key": "sk-your_key_here",
+    "enabled": true
+  }]
+}
 ```
 
-```bash [XAI (Grok)]
-export PROVIDER=xai
-export XAI_API_KEY=xai-your_key_here
+```json [XAI (Grok)]
+{
+  "providers": [{
+    "name": "xai",
+    "api_base_url": "https://api.x.ai/v1",
+    "api_key": "xai-your_key_here",
+    "enabled": true
+  }]
+}
 ```
 
-```bash [Google Gemini]
-export PROVIDER=gemini
-export GEMINI_API_KEY=your_key_here
+```json [Google Gemini]
+{
+  "providers": [{
+    "name": "gemini",
+    "api_base_url": "https://generativelanguage.googleapis.com/v1",
+    "api_key": "your_key_here",
+    "enabled": true
+  }]
+}
 ```
 
-```bash [Mistral AI]
-export PROVIDER=mistral
-export MISTRAL_API_KEY=your_key_here
+```json [Mistral AI]
+{
+  "providers": [{
+    "name": "mistral",
+    "api_base_url": "https://api.mistral.ai/v1",
+    "api_key": "your_key_here",
+    "enabled": true
+  }]
+}
 ```
 
-```bash [Ollama]
-export PROVIDER=ollama
-export OLLAMA_MODEL=llama3.2
-# Requires Ollama running locally
+```json [Ollama]
+{
+  "providers": [{
+    "name": "ollama",
+    "api_base_url": "http://localhost:11434/v1",
+    "models": ["llama3.2"],
+    "enabled": true
+  }]
+}
 ```
 
 :::

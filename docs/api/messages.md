@@ -521,5 +521,5 @@ async function retryRequest(request, maxRetries = 3) {
 ## Next Steps
 
 - Learn about [health endpoints](/api/health) for monitoring
-- Explore [Claude Code integration](/api/claude-code) for seamless usage
+- Explore [Claude Code integration](/api/claude) for seamless usage
 - Check out [provider-specific features](/providers/) for optimization

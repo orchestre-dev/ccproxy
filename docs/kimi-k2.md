@@ -157,13 +157,13 @@ The combination of **Kimi K2 + Claude Code + CCProxy** creates an unmatched deve
 ### 3. **Use Specific Commands**
 ```bash
 # Code review
-claude-code "Review this Pull Request for security issues and performance optimizations"
+claude "Review this Pull Request for security issues and performance optimizations"
 
 # Architecture planning
-claude-code "Design a microservices architecture for this e-commerce platform"
+claude "Design a microservices architecture for this e-commerce platform"
 
 # Testing strategies
-claude-code "Generate comprehensive unit tests for this authentication module"
+claude "Generate comprehensive unit tests for this authentication module"
 ```
 
 

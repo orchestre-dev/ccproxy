@@ -71,7 +71,7 @@ export ANTHROPIC_BASE_URL=http://localhost:3456
 export ANTHROPIC_API_KEY=dummy_key
 
 # Use Claude Code normally!
-claude-code "Explain this function"
+claude "Explain this function"
 ```
 
 ### Option 2: OpenRouter (Most Reliable)

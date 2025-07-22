@@ -97,7 +97,7 @@ ccproxy start
 
 # Connect Claude Code
 export ANTHROPIC_BASE_URL=http://localhost:3456
-claude-code "Help me with coding tasks"
+claude "Help me with coding tasks"
 ```
 
 **[Complete setup guide →](/guide/quick-start)** • **[Installation options →](/guide/installation)**

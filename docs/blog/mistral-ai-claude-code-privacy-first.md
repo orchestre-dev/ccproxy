@@ -246,16 +246,16 @@ The General Data Protection Regulation (GDPR) affects how professionals across i
 **Healthcare: Patient Data Analysis**
 ```bash
 # Safe way to analyze patient symptoms without exposing personal data
-claude-code "Analyze these anonymized symptoms: fever, cough, fatigue. What are potential diagnoses?"
+claude "Analyze these anonymized symptoms: fever, cough, fatigue. What are potential diagnoses?"
 
 # Instead of:
-# claude-code "Analyze symptoms for John Smith, DOB 1980-01-15..."
+# claude "Analyze symptoms for John Smith, DOB 1980-01-15..."
 ```
 
 **Legal: Contract Review**
 ```bash
 # Secure contract analysis without revealing client identity
-claude-code "Review this contract clause for potential risks: [insert clause text]"
+claude "Review this contract clause for potential risks: [insert clause text]"
 
 # Best practice: Remove all identifying information before analysis
 ```
@@ -263,7 +263,7 @@ claude-code "Review this contract clause for potential risks: [insert clause tex
 **Finance: Market Analysis**
 ```bash
 # Analyze market trends without exposing proprietary trading strategies
-claude-code "What are the key factors driving current market volatility in tech stocks?"
+claude "What are the key factors driving current market volatility in tech stocks?"
 
 # Instead of sharing specific portfolio positions or trading algorithms
 ```
@@ -271,7 +271,7 @@ claude-code "What are the key factors driving current market volatility in tech 
 **Government: Policy Analysis**
 ```bash
 # Analyze policy impacts without revealing sensitive information
-claude-code "What are the potential economic impacts of implementing a carbon tax?"
+claude "What are the potential economic impacts of implementing a carbon tax?"
 
 # Focus on public information and general policy frameworks
 ```
@@ -279,7 +279,7 @@ claude-code "What are the potential economic impacts of implementing a carbon ta
 **Academia: Research Assistance**
 ```bash
 # Get research help without compromising participant privacy
-claude-code "Help me design a survey methodology for studying workplace satisfaction"
+claude "Help me design a survey methodology for studying workplace satisfaction"
 
 # Instead of sharing actual participant responses or identifying information
 ```
@@ -357,7 +357,7 @@ When using Claude Code for development work, consider these privacy-focused revi
 **Security-First Code Review**
 ```bash
 # Instead of sharing your entire codebase:
-claude-code "Review this authentication function for security vulnerabilities"
+claude "Review this authentication function for security vulnerabilities"
 
 # Focus on specific functions or components
 # Remove any hardcoded secrets or credentials
@@ -367,7 +367,7 @@ claude-code "Review this authentication function for security vulnerabilities"
 **Privacy Impact Assessment**
 ```bash
 # Get help assessing privacy implications:
-claude-code "What privacy considerations should I think about for a user login system?"
+claude "What privacy considerations should I think about for a user login system?"
 
 # This helps you understand privacy implications without exposing your specific implementation
 ```
@@ -375,7 +375,7 @@ claude-code "What privacy considerations should I think about for a user login s
 **Compliance Checking**
 ```bash
 # Check compliance requirements:
-claude-code "What are the key GDPR requirements for user data collection in web applications?"
+claude "What are the key GDPR requirements for user data collection in web applications?"
 
 # Get general compliance guidance without sharing specific business logic
 ```

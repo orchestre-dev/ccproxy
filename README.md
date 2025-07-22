@@ -468,7 +468,7 @@ Contributions are welcome! Please read our [Contributing Guidelines](docs/guide/
 
 Built with ❤️ for the Claude Code community.
 
-Inspired by the original [Claude Code Router](https://github.com/musistudio/claude-code-router) project.
+Inspired by the original [Claude Code Router](https://github.com/musistudio/claude-router) project.
 
 ## 🐛 Troubleshooting Claude Code AI Proxy Issues
 

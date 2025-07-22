@@ -123,7 +123,7 @@ export ANTHROPIC_BASE_URL=http://localhost:3456
 export ANTHROPIC_API_KEY=dummy
 
 # Use Claude Code normally - now with Groq speed!
-claude-code "Explain this function"
+claude "Explain this function"
 ```
 
 ### Choosing the Right Model

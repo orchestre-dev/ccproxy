@@ -651,7 +651,7 @@ CMD ["ccproxy", "start", "--foreground"]
 
 ```bash
 # Monitor Claude Code requests through CCProxy
-tail -f ccproxy.log | grep claude-code
+tail -f ccproxy.log | grep claude
 
 # Track usage patterns
 curl http://localhost:3456/status | jq '.metrics'

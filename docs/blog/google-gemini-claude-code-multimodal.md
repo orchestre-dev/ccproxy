@@ -127,7 +127,7 @@ export ANTHROPIC_BASE_URL=http://localhost:3456
 export ANTHROPIC_API_KEY=dummy
 
 # Now Claude Code can work with Gemini through CCProxy
-claude-code "Can you analyze this screenshot and tell me what you see?"
+claude "Can you analyze this screenshot and tell me what you see?"
 ```
 
 When you run this command, Claude Code will prompt you to upload an image. CCProxy will handle the format conversion, sending your image to Gemini and returning the response to Claude Code.
@@ -233,9 +233,9 @@ Create shortcuts for frequently used visual analysis tasks:
 
 ```bash
 # Add to your .bashrc or .zshrc
-alias analyze-ui='claude-code "Analyze this UI design and provide implementation suggestions with specific CSS/HTML code"'
-alias debug-visual='claude-code "Identify the layout issue in this screenshot and suggest fixes"'
-alias analyze-competitor='claude-code "Analyze this competitor page and identify conversion optimization opportunities"'
+alias analyze-ui='claude "Analyze this UI design and provide implementation suggestions with specific CSS/HTML code"'
+alias debug-visual='claude "Identify the layout issue in this screenshot and suggest fixes"'
+alias analyze-competitor='claude "Analyze this competitor page and identify conversion optimization opportunities"'
 ```
 
 **Claude Code Custom Commands**

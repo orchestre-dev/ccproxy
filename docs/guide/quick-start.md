@@ -10,34 +10,38 @@ keywords: CCProxy quick start, Claude Code integration, AI proxy setup
 
 Get CCProxy running with Claude Code in under 2 minutes.
 
-## 1. Download CCProxy
+## 1. Install CCProxy
 
-Download the latest binary for your platform from the [releases page](https://github.com/orchestre-dev/ccproxy/releases).
+Install with one command:
 
 ```bash
-# Example for macOS/Linux
-chmod +x ccproxy
+curl -sSL https://raw.githubusercontent.com/orchestre-dev/ccproxy/main/install.sh | bash
 ```
+
+Or download manually from the [releases page](https://github.com/orchestre-dev/ccproxy/releases).
 
 ## 2. Configure and Start
 
-Create a `config.json` file:
+Create a configuration file:
 
-```json
+```bash
+mkdir -p ~/.ccproxy
+cat > ~/.ccproxy/config.json << 'EOF'
 {
-  "host": "127.0.0.1",
-  "port": 3456,
   "providers": [{
-    "name": "anthropic",
-    "api_key": "your-anthropic-api-key",
+    "name": "openai",
+    "api_base_url": "https://api.openai.com/v1",
+    "api_key": "your-openai-api-key",
+    "models": ["gpt-4", "gpt-3.5-turbo"],
     "enabled": true
   }]
 }
+EOF
 ```
 
 Start CCProxy:
 ```bash
-./ccproxy start
+ccproxy start
 ```
 
 ## 3. Connect Claude Code

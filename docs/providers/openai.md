@@ -1,25 +1,10 @@
 ---
 title: OpenAI with Claude Code - Industry-Leading AI Models via CCProxy
 description: Access GPT-4, GPT-4o, and o1 reasoning models with Claude Code through CCProxy. Experience enterprise-grade AI with vision capabilities, function calling, and production reliability.
-keywords: OpenAI, Claude Code, CCProxy, GPT-4, GPT-4o, o1 reasoning, AI proxy, enterprise AI, vision AI, function calling, production AI
+keywords: OpenAI, Claude Code, CCProxy, GPT-4, GPT-4o, o1 reasoning, AI proxy, enterprise AI, vision AI, function calling
 ---
 
 # OpenAI Provider
-
-<div class="social-share">
-  <button class="share-twitter" onclick="shareToTwitter()">
-    🐦 Share on Twitter
-  </button>
-  <button class="share-linkedin" onclick="shareToLinkedIn()">
-    💼 Share on LinkedIn
-  </button>
-  <button class="share-reddit" onclick="shareToReddit()">
-    🔗 Share on Reddit
-  </button>
-  <button class="share-copy" onclick="copyToClipboard()">
-    📋 Copy Link
-  </button>
-</div>
 
 **OpenAI sets the industry standard** for AI models, offering the most mature ecosystem and reliable performance for production applications. Through **CCProxy integration with Claude Code**, you can harness the full power of GPT-4, GPT-4o, and advanced reasoning models while maintaining your familiar development workflow.
 
@@ -34,7 +19,7 @@ keywords: OpenAI, Claude Code, CCProxy, GPT-4, GPT-4o, o1 reasoning, AI proxy, e
 
 ## Setup
 
-### 1. Get an API Key
+### 1. Get an OpenAI API Key
 
 1. Visit [platform.openai.com](https://platform.openai.com)
 2. Sign up for an account
@@ -43,418 +28,197 @@ keywords: OpenAI, Claude Code, CCProxy, GPT-4, GPT-4o, o1 reasoning, AI proxy, e
 
 ### 2. Configure CCProxy
 
-Set the following environment variables:
+Create or update your CCProxy configuration file:
 
 ```bash
-export PROVIDER=openai
-export OPENAI_API_KEY=sk-your_openai_api_key_here
+mkdir -p ~/.ccproxy
+cat > ~/.ccproxy/config.json << 'EOF'
+{
+  "providers": [
+    {
+      "name": "openai",
+      "api_base_url": "https://api.openai.com/v1",
+      "api_key": "sk-your_openai_api_key_here",
+      "models": ["gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "gpt-3.5-turbo"],
+      "enabled": true
+    }
+  ]
+}
+EOF
 ```
 
-### 3. Optional Configuration
+### 3. Start CCProxy and Claude Code
 
 ```bash
-# Custom model (default: gpt-4o)
-export OPENAI_MODEL=gpt-4o-mini
+# Start CCProxy
+ccproxy start
 
-# Custom max tokens (default: 16384)
-export OPENAI_MAX_TOKENS=8192
-
-# Custom base URL (default: https://api.openai.com/v1)
-export OPENAI_BASE_URL=https://api.openai.com/v1
-
-# Organization ID (optional)
-export OPENAI_ORGANIZATION=org-your_org_id_here
+# Configure Claude Code to use CCProxy
+ccproxy code
 ```
 
 ## Available Models
 
-OpenAI provides access to various model families:
+OpenAI provides various model families optimized for different use cases:
 
-- **GPT-4 Series** - Latest and most capable models with multimodal support
-- **GPT-3.5 Series** - Cost-effective models for simpler tasks
-- **o1 Series** - Advanced reasoning models for complex problem-solving
-- **Specialized Models** - Fine-tuned models for specific use cases
+| Model | Context Length | Best For | Function Calling |
+|-------|----------------|----------|------------------|
+| `gpt-4o` | 128,000 tokens | Most capable, multimodal | ✅ Yes |
+| `gpt-4o-mini` | 128,000 tokens | Cost-effective, fast | ✅ Yes |
+| `gpt-4-turbo` | 128,000 tokens | High quality, vision support | ✅ Yes |
+| `gpt-4` | 8,192 tokens | Classic GPT-4 | ✅ Yes |
+| `gpt-3.5-turbo` | 16,385 tokens | Fast, affordable | ✅ Yes |
+| `o1-preview` | 128,000 tokens | Complex reasoning | ❌ No* |
+| `o1-mini` | 128,000 tokens | Fast reasoning | ❌ No* |
 
-**🔧 Critical for Claude Code**: You must select models that support **tool calling** or **function calling** capabilities, as Claude Code requires these features to operate correctly.
+**⚠️ Important**: Claude Code requires models with function calling support. Models marked with ✅ work perfectly with Claude Code.
 
-### Model Selection Guidelines
+*Note: o1 models don't support function calling but can be used for pure text generation tasks.
 
-When choosing OpenAI models:
+## Configuration Options
 
-1. **Verify Tool Support**: Ensure the model supports function calling
-2. **Check Current Availability**: OpenAI's model lineup evolves frequently
-3. **Consider Cost vs Performance**: Balance quality needs with budget
-4. **Review Context Limits**: Different models have different context windows
-5. **Test Capabilities**: Some models excel at specific tasks
+### Complete Configuration Example
 
-For current model availability, capabilities, and pricing, visit [OpenAI's official models page](https://platform.openai.com/docs/models).
-
-## Pricing
-
-### Free Tier
-- Free credits for new users
-- Limited time availability
-- Perfect for testing and development
-
-### Pay-as-you-go Pricing
-- Competitive per-token pricing
-- No minimum spend required
-- Volume discounts available for enterprise
-
-For current, accurate pricing information, visit [OpenAI's official pricing page](https://openai.com/pricing).
-
-## Configuration Examples
-
-### Basic Setup
-
-```bash
-# .env file
-PROVIDER=openai
-OPENAI_API_KEY=sk-your_api_key_here
+```json
+{
+  "providers": [
+    {
+      "name": "openai",
+      "api_base_url": "https://api.openai.com/v1",
+      "api_key": "sk-your_api_key",
+      "models": ["gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "gpt-3.5-turbo"],
+      "enabled": true,
+      "timeout": "60s",
+      "max_retries": 3,
+      "organization": "org-your_org_id",
+      "headers": {
+        "OpenAI-Beta": "assistants=v2"
+      }
+    }
+  ],
+  "routes": {
+    "default": {
+      "provider": "openai",
+      "model": "gpt-4o-mini"
+    },
+    "complex": {
+      "provider": "openai",
+      "model": "gpt-4o",
+      "conditions": [{
+        "type": "tokenCount",
+        "operator": ">",
+        "value": 8000
+      }]
+    }
+  }
+}
 ```
 
-### High-Performance Setup
+### Using Environment Variables
+
+While CCProxy primarily uses config.json, you can use environment variables for API key security:
 
 ```bash
-# For maximum speed
-PROVIDER=openai
-OPENAI_API_KEY=sk-your_api_key_here
-OPENAI_MODEL=gpt-4o-mini
-OPENAI_MAX_TOKENS=4096
+# Store API key in environment
+export OPENAI_API_KEY="sk-your_api_key"
+
+# Reference in config.json
+{
+  "providers": [{
+    "name": "openai",
+    "api_key": "${OPENAI_API_KEY}",
+    ...
+  }]
+}
 ```
-
-### Quality-Focused Setup
-
-```bash
-# For best quality
-PROVIDER=openai
-OPENAI_API_KEY=sk-your_api_key_here
-OPENAI_MODEL=gpt-4o
-OPENAI_MAX_TOKENS=16384
-```
-
-### Reasoning-Focused Setup
-
-```bash
-# For complex reasoning tasks
-PROVIDER=openai
-OPENAI_API_KEY=sk-your_api_key_here
-OPENAI_MODEL=o1-preview
-OPENAI_MAX_TOKENS=8192
-```
-
-## Usage with Claude Code
-
-Once configured, use Claude Code normally:
-
-```bash
-# Set CCProxy as the API endpoint
-export ANTHROPIC_BASE_URL=http://localhost:3456
-export ANTHROPIC_API_KEY=NOT_NEEDED
-
-# Use Claude Code
-claude "Write a Python script to analyze CSV data"
-```
-
-## Features
-
-### ✅ Fully Supported
-- Text generation
-- Function calling
-- Tool use
-- Streaming responses
-- Vision/image input
-- JSON mode
-- Custom temperature/top_p
-- Structured outputs
-- Reasoning models
-
-### ⚠️ Model Dependent
-- Real-time data access (none)
-- File uploads (vision models only)
-- Code execution (none)
 
 ## Advanced Features
 
 ### Vision Capabilities
 
-Use GPT-4o or GPT-4-turbo with images:
+GPT-4o and GPT-4-turbo support image inputs:
 
-```bash
-# Configure for vision tasks
-export OPENAI_MODEL=gpt-4o
-```
-
-### JSON Mode
-
-Force JSON responses:
-
-```bash
-# Enable JSON mode in requests
-# (handled automatically by CCProxy when tools are used)
+```json
+{
+  "messages": [
+    {
+      "role": "user",
+      "content": [
+        {"type": "text", "text": "What's in this image?"},
+        {"type": "image_url", "image_url": {"url": "data:image/jpeg;base64,..."}}
+      ]
+    }
+  ]
+}
 ```
 
 ### Function Calling
 
-OpenAI has the most robust function calling:
+All OpenAI models (except o1 series) support function calling, making them perfect for Claude Code:
 
-```bash
-# All models support function calling
-# No additional configuration needed
+```json
+{
+  "model": "gpt-4o",
+  "messages": [...],
+  "tools": [{
+    "type": "function",
+    "function": {
+      "name": "get_weather",
+      "description": "Get the current weather",
+      "parameters": {...}
+    }
+  }]
+}
 ```
-
-## Performance Tips
-
-### 1. Choose the Right Model
-
-```bash
-# For development/testing
-export OPENAI_MODEL=gpt-4o-mini
-
-# For production
-export OPENAI_MODEL=gpt-4o
-
-# For complex reasoning
-export OPENAI_MODEL=o1-preview
-```
-
-### 2. Optimize Token Usage
-
-```bash
-# Set appropriate limits
-export OPENAI_MAX_TOKENS=2048
-
-# Use shorter prompts when possible
-```
-
-### 3. Handle Rate Limits
-
-OpenAI has different rate limits per model:
-
-| Model | Requests/min | Tokens/min |
-|-------|--------------|------------|
-| **gpt-4o** | 10,000 | 30,000,000 |
-| **gpt-4o-mini** | 30,000 | 200,000,000 |
-| **gpt-4-turbo** | 10,000 | 2,000,000 |
-| **o1-preview** | 20 | 20,000 |
 
 ## Troubleshooting
 
-### Rate Limit Errors
+### Rate Limits
+OpenAI has different rate limits based on your usage tier:
+- Monitor usage at [platform.openai.com/usage](https://platform.openai.com/usage)
+- Consider upgrading your plan for higher limits
+- Implement exponential backoff for rate limit errors
 
-```json
-{
-  "error": {
-    "message": "Rate limit exceeded",
-    "type": "rate_limit_error"
-  }
-}
-```
+### API Errors
+Common errors and solutions:
+- **401 Unauthorized**: Check your API key
+- **429 Too Many Requests**: You've hit rate limits
+- **500 Server Error**: OpenAI service issue, retry with backoff
 
-**Solution**: Implement exponential backoff or upgrade to higher tier.
-
-### Authentication Errors
-
-```json
-{
-  "error": {
-    "message": "Incorrect API key provided",
-    "type": "invalid_request_error"
-  }
-}
-```
-
-**Solution**: Verify your API key is correct and active.
-
-### Model Access Errors
-
-```json
-{
-  "error": {
-    "message": "The model does not exist",
-    "type": "invalid_request_error"
-  }
-}
-```
-
-**Solution**: Check if you have access to the model. Some models require specific tier access.
-
-### Content Policy Violations
-
-```json
-{
-  "error": {
-    "message": "Your request was rejected as a result of our safety system",
-    "type": "invalid_request_error"
-  }
-}
-```
-
-**Solution**: Modify your prompt to comply with OpenAI's usage policies.
-
-### Insufficient Quota
-
-```json
-{
-  "error": {
-    "message": "You exceeded your current quota",
-    "type": "insufficient_quota"
-  }
-}
-```
-
-**Solution**: Add credits to your OpenAI account or upgrade your plan.
-
-## Usage Monitoring
-
-### View Usage
-
-```bash
-# Check OpenAI usage
-curl https://api.openai.com/v1/usage \
-  -H "Authorization: Bearer $OPENAI_API_KEY"
-
-# Monitor CCProxy logs
-tail -f ccproxy.log
-
-# Check status
-curl http://localhost:3456/status
-```
-
-### Cost Management
-
-```bash
-# Set usage limits in OpenAI dashboard
-# Monitor spending regularly
-# Use gpt-4o-mini for development
-```
+### Organization Access
+If using an organization:
+1. Ensure your API key has access to the organization
+2. Add organization ID to your configuration
+3. Check organization settings at platform.openai.com
 
 ## Best Practices
 
-### 1. Model Selection
+1. **Model Selection**: 
+   - Use `gpt-4o-mini` for most tasks (best price/performance)
+   - Use `gpt-4o` for complex or multimodal tasks
+   - Use `gpt-3.5-turbo` for simple, high-volume tasks
 
-- **Development**: Use `gpt-4o-mini` for cost efficiency
-- **Production**: Use `gpt-4o` for reliability
-- **Complex reasoning**: Use `o1-preview` for difficult problems
+2. **Cost Management**:
+   - Set usage limits in OpenAI dashboard
+   - Monitor token usage in responses
+   - Use smaller models when possible
 
-### 2. Prompt Engineering
+3. **Performance Optimization**:
+   - Implement caching for repeated queries
+   - Use streaming for better perceived performance
+   - Batch requests when possible
 
-```bash
-# Use clear, specific prompts
-# Include examples when needed
-# Structure complex requests
-```
+## Pricing
 
-### 3. Error Handling
+Current pricing (subject to change):
+- **GPT-4o**: $5.00 / 1M input tokens, $15.00 / 1M output tokens
+- **GPT-4o-mini**: $0.15 / 1M input tokens, $0.60 / 1M output tokens
+- **GPT-3.5-turbo**: $0.50 / 1M input tokens, $1.50 / 1M output tokens
 
-```bash
-# Implement retry logic
-# Handle rate limits gracefully
-# Monitor for content policy issues
-```
-
-### 4. Security
-
-```bash
-# Never log API keys
-# Use environment variables
-# Rotate keys regularly
-```
-
-## Integration Examples
-
-### Python SDK
-
-```python
-import openai
-
-# Point to CCProxy
-client = openai.OpenAI(
-    api_key="NOT_NEEDED",
-    base_url="http://localhost:3456"
-)
-
-response = client.chat.completions.create(
-    model="claude-3-sonnet",  # Will be mapped to OpenAI model
-    messages=[{"role": "user", "content": "Hello!"}],
-    max_tokens=100
-)
-```
-
-### Node.js SDK
-
-```javascript
-import OpenAI from 'openai';
-
-const client = new OpenAI({
-    apiKey: 'NOT_NEEDED',
-    baseURL: 'http://localhost:3456'
-});
-
-const response = await client.chat.completions.create({
-    model: 'claude-3-sonnet',
-    messages: [{ role: 'user', content: 'Hello!' }],
-    max_tokens: 100
-});
-```
-
-## Monitoring and Analytics
-
-### OpenAI Dashboard
-
-Monitor usage at [platform.openai.com/usage](https://platform.openai.com/usage):
-
-- Request counts
-- Token usage
-- Cost breakdown
-- Error rates
-
-### CCProxy Monitoring
-
-```bash
-# Real-time logs
-tail -f ccproxy.log | grep openai
-
-# Status endpoint
-curl http://localhost:3456/status
-
-# Health check
-curl http://localhost:3456/health
-```
+Check [openai.com/pricing](https://openai.com/pricing) for current rates.
 
 ## Next Steps
 
-- Explore function calling with OpenAI models
-- Learn about vision capabilities with GPT-4o
-- Set up [usage monitoring](/guide/monitoring) for cost control
-- Compare with [other providers](/providers/) including [Groq with Kimi K2](/providers/groq) for speed
-
-<script>
-function shareToTwitter() {
-  const url = encodeURIComponent(window.location.href);
-  const text = encodeURIComponent('🏭 OpenAI + Claude Code + CCProxy = Enterprise-grade AI development! Access GPT-4, GPT-4o, and o1 reasoning models seamlessly');
-  window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`, '_blank');
-}
-
-function shareToLinkedIn() {
-  const url = encodeURIComponent(window.location.href);
-  window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank');
-}
-
-function shareToReddit() {
-  const url = encodeURIComponent(window.location.href);
-  const title = encodeURIComponent('OpenAI with Claude Code - Industry-Leading AI Models via CCProxy');
-  window.open(`https://reddit.com/submit?url=${url}&title=${title}`, '_blank');
-}
-
-function copyToClipboard() {
-  navigator.clipboard.writeText(window.location.href).then(() => {
-    const button = event.target;
-    const originalText = button.textContent;
-    button.textContent = '✅ Copied!';
-    setTimeout(() => {
-      button.textContent = originalText;
-    }, 2000);
-  });
-}
-</script>
+- [Quick Start Guide](/guide/quick-start) - Get running in 2 minutes
+- [Configuration Guide](/guide/configuration) - Advanced configuration options
+- [Provider Comparison](/providers/) - Compare with other providers
