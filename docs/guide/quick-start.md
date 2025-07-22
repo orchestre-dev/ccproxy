@@ -18,19 +18,31 @@ Install with one command:
 curl -sSL https://raw.githubusercontent.com/orchestre-dev/ccproxy/main/install.sh | bash
 ```
 
+The installer will:
+- ✅ Install ccproxy to `/usr/local/bin`
+- ✅ Create `~/.ccproxy` directory
+- ✅ Generate a starter configuration file
+- ✅ Update your PATH if needed
+- ✅ Show clear next steps
+
 Or download manually from the [releases page](https://github.com/orchestre-dev/ccproxy/releases).
 
-## 2. Configure and Start
+## 2. Configure Your API Key
 
-Create a configuration file:
+The installer creates a configuration file at `~/.ccproxy/config.json`. Edit it to add your API key:
 
 ```bash
-mkdir -p ~/.ccproxy
-cat > ~/.ccproxy/config.json << 'EOF'
+# Open in your preferred editor
+nano ~/.ccproxy/config.json    # or vim, code, etc.
+```
+
+Replace `your-openai-api-key-here` with your actual API key:
+
+```json
 {
   "providers": [{
     "name": "openai",
-    "api_key": "your-openai-api-key",
+    "api_key": "sk-proj-...",  // <- Your actual API key here
     "models": ["gpt-4o", "gpt-4o-mini"],
     "enabled": true
   }],
@@ -41,28 +53,36 @@ cat > ~/.ccproxy/config.json << 'EOF'
     }
   }
 }
-EOF
 ```
 
-**Important**: The `models` array lists available models for validation. The `routes` section defines which provider and model handle your requests.
+## 3. Start CCProxy
 
-Start CCProxy:
 ```bash
 ccproxy start
 ```
 
-## 3. Connect Claude Code
-
-Use the auto-configuration:
-```bash
-./ccproxy code
+You'll see:
 ```
+Starting CCProxy on port 3456...
+✅ Server started successfully
+```
+
+## 4. Connect Claude Code
+
+The easiest way:
+```bash
+ccproxy code
+```
+
+This command:
+- Sets environment variables for Claude Code
+- Verifies the connection
+- Shows you're ready to go
 
 Or configure manually:
 ```bash
 export ANTHROPIC_BASE_URL=http://localhost:3456
 export ANTHROPIC_AUTH_TOKEN=test
-claude "Write a Python function to reverse a string"
 ```
 
 ## 🎉 Done!
@@ -144,11 +164,45 @@ CCProxy uses intelligent routing to select the appropriate model based on your r
 
 ## Troubleshooting
 
-**Connection refused?** Check if CCProxy is running:
+### "ccproxy: command not found"
+The installer adds `/usr/local/bin` to your PATH. Try:
 ```bash
-./ccproxy status
+# Reload your shell configuration
+source ~/.bashrc    # or ~/.zshrc for zsh
+
+# Or use the full path
+/usr/local/bin/ccproxy start
 ```
 
-**API key error?** Verify your provider API key in config.json.
+### "Connection refused"
+Check if CCProxy is running:
+```bash
+ccproxy status
+```
+
+If not running, start it:
+```bash
+ccproxy start
+```
+
+### "API key error"
+1. Check your configuration file:
+   ```bash
+   cat ~/.ccproxy/config.json
+   ```
+
+2. Ensure you replaced `your-openai-api-key-here` with your actual API key
+
+3. Verify the API key format:
+   - OpenAI: Starts with `sk-`
+   - Anthropic: Starts with `sk-ant-`
+   - Google: Starts with `AI`
+
+### "Config file not found"
+The config should be at `~/.ccproxy/config.json`. If missing, create it:
+```bash
+mkdir -p ~/.ccproxy
+ccproxy init    # Coming soon - for now, copy from examples above
+```
 
 **Need help?** [💬 GitHub Discussions](https://github.com/orchestre-dev/ccproxy/discussions) • [🐛 Report Issues](https://github.com/orchestre-dev/ccproxy/issues)

@@ -381,6 +381,118 @@ install_binary() {
     fi
 }
 
+# Setup CCProxy configuration
+setup_config() {
+    local config_dir="$HOME/.ccproxy"
+    local config_file="$config_dir/config.json"
+    
+    # Create config directory
+    if [ ! -d "$config_dir" ]; then
+        echo -e "${BLUE}Creating configuration directory: $config_dir${NC}"
+        mkdir -p "$config_dir"
+    fi
+    
+    # Create default config if it doesn't exist
+    if [ ! -f "$config_file" ]; then
+        echo -e "${BLUE}Creating default configuration file...${NC}"
+        cat > "$config_file" << 'EOF'
+{
+  "providers": [
+    {
+      "name": "openai",
+      "api_key": "your-openai-api-key-here",
+      "api_base_url": "https://api.openai.com/v1",
+      "models": ["gpt-4o", "gpt-4o-mini"],
+      "enabled": true
+    }
+    // Add more providers below (uncomment and configure as needed):
+    // {
+    //   "name": "anthropic",
+    //   "api_key": "sk-ant-...",
+    //   "api_base_url": "https://api.anthropic.com",
+    //   "models": ["claude-3-5-sonnet-20241022", "claude-3-5-haiku-20241022"],
+    //   "enabled": true
+    // },
+    // {
+    //   "name": "gemini",
+    //   "api_key": "AI...",
+    //   "api_base_url": "https://generativelanguage.googleapis.com/v1",
+    //   "models": ["gemini-2.0-flash-exp", "gemini-1.5-pro"],
+    //   "enabled": true
+    // }
+  ],
+  "routes": {
+    "default": {
+      "provider": "openai",
+      "model": "gpt-4o"
+    }
+    // Special routes (uncomment to enable):
+    // "longContext": {
+    //   "provider": "anthropic",
+    //   "model": "claude-3-5-sonnet-20241022"
+    // }
+  }
+}
+EOF
+        echo -e "${GREEN}Created default configuration at: $config_file${NC}"
+    else
+        echo -e "${YELLOW}Configuration already exists at: $config_file${NC}"
+    fi
+}
+
+# Update PATH in shell configuration
+update_shell_path() {
+    local shell_rc=""
+    local shell_name=""
+    
+    # Determine shell configuration file
+    if [ -n "$ZSH_VERSION" ]; then
+        shell_rc="$HOME/.zshrc"
+        shell_name="zsh"
+    elif [ -n "$BASH_VERSION" ]; then
+        shell_rc="$HOME/.bashrc"
+        shell_name="bash"
+    else
+        # Try to detect from SHELL variable
+        case "$SHELL" in
+            */zsh)
+                shell_rc="$HOME/.zshrc"
+                shell_name="zsh"
+                ;;
+            */bash)
+                shell_rc="$HOME/.bashrc"
+                shell_name="bash"
+                ;;
+            *)
+                echo -e "${YELLOW}Warning: Could not detect shell type${NC}"
+                return
+                ;;
+        esac
+    fi
+    
+    # Check if PATH needs updating
+    if ! echo "$PATH" | grep -q "$INSTALL_DIR"; then
+        echo -e "${BLUE}Adding $INSTALL_DIR to PATH in $shell_rc${NC}"
+        
+        # Add PATH update to shell rc file
+        if [ -f "$shell_rc" ]; then
+            # Check if PATH export already exists for this directory
+            if ! grep -q "export PATH=.*$INSTALL_DIR" "$shell_rc"; then
+                echo "" >> "$shell_rc"
+                echo "# Added by CCProxy installer" >> "$shell_rc"
+                echo "export PATH=\"$INSTALL_DIR:\$PATH\"" >> "$shell_rc"
+                echo -e "${GREEN}Updated PATH in $shell_rc${NC}"
+                echo -e "${YELLOW}Note: Run 'source $shell_rc' or start a new terminal for PATH changes to take effect${NC}"
+            fi
+        else
+            echo -e "${YELLOW}Warning: Shell configuration file $shell_rc not found${NC}"
+            echo -e "${YELLOW}You may need to manually add $INSTALL_DIR to your PATH${NC}"
+        fi
+    else
+        echo -e "${GREEN}$INSTALL_DIR is already in your PATH${NC}"
+    fi
+}
+
 # Verify installation
 verify_installation() {
     # Check if binary is in PATH
@@ -434,18 +546,50 @@ main() {
     # Install binary
     install_binary "$temp_file"
     
+    # Setup configuration
+    setup_config
+    
+    # Update PATH if needed
+    update_shell_path
+    
     # Verify installation
     verify_installation
     
     echo
     echo -e "${GREEN}=== Installation Complete ===${NC}"
     echo
-    echo -e "${BLUE}Quick start:${NC}"
-    echo "  1. Create a config file with your provider API keys"
-    echo "  2. Run: ccproxy start"
-    echo "  3. Run: ccproxy code  # For Claude Code integration"
+    echo -e "${BLUE}Next Steps:${NC}"
     echo
-    echo -e "${BLUE}For more information, visit: https://github.com/${REPO}${NC}"
+    echo "1. ${YELLOW}Edit your configuration file:${NC}"
+    echo "   Location: $HOME/.ccproxy/config.json"
+    echo "   "
+    if [ -n "$EDITOR" ]; then
+        echo "   Run: $EDITOR $HOME/.ccproxy/config.json"
+    elif command -v code &> /dev/null; then
+        echo "   Run: code $HOME/.ccproxy/config.json"
+    elif command -v vim &> /dev/null; then
+        echo "   Run: vim $HOME/.ccproxy/config.json"
+    elif command -v nano &> /dev/null; then
+        echo "   Run: nano $HOME/.ccproxy/config.json"
+    else
+        echo "   Open in your text editor"
+    fi
+    echo "   "
+    echo "   Replace 'your-openai-api-key-here' with your actual API key"
+    echo
+    echo "2. ${YELLOW}Start CCProxy:${NC}"
+    echo "   ccproxy start"
+    echo
+    echo "3. ${YELLOW}Configure Claude Code:${NC}"
+    echo "   ccproxy code"
+    echo
+    echo -e "${BLUE}Documentation:${NC}"
+    echo "  Configuration Guide: https://ccproxy.orchestre.dev/guide/configuration"
+    echo "  Provider Setup: https://ccproxy.orchestre.dev/providers/"
+    echo "  Quick Start: https://ccproxy.orchestre.dev/guide/quick-start"
+    echo
+    echo -e "${GREEN}Tip:${NC} If 'ccproxy' command is not found, run:"
+    echo "  source ~/.bashrc  # or ~/.zshrc for zsh users"
 }
 
 # Run main function with all arguments
