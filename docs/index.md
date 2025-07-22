@@ -1,7 +1,7 @@
 ---
 layout: home
 title: CCProxy - AI Request Proxy for Claude Code | Multi-Provider LLM Gateway
-description: CCProxy is the premier AI request proxy for Claude Code, enabling seamless integration with OpenAI GPT-4, Google Gemini, DeepSeek, Kimi K2, and more. Transform Claude Code into a multi-provider AI development platform.
+description: CCProxy is the premier AI request proxy for Claude Code, enabling seamless integration with OpenAI GPT-4, Google Gemini, DeepSeek, Kimi K2, and more. Transform Claude Code into a multi-provider AI development platform through standard OpenAI-compatible API translation.
 keywords: CCProxy, AI proxy for Claude Code, Claude Code proxy server, LLM gateway, AI model router, OpenAI proxy, Anthropic proxy, Google Gemini proxy, multi-provider AI, Claude Code integration
 
 hero:
@@ -34,7 +34,7 @@ features:
     details: Seamless Anthropic API compatibility - just set environment variables and you're ready to go
   - icon: 🛠️
     title: Advanced Tool Support
-    details: Full function calling and tool use across all providers with intelligent format conversion
+    details: Full function calling and tool use across all providers with intelligent format conversion. Note that Claude Code requires function calling support.
   - icon: 📊
     title: Production Ready
     details: Built-in health monitoring, logging, and Docker deployment for enterprise use
@@ -44,6 +44,10 @@ features:
 ---
 
 <SocialShare />
+
+---
+
+<NewsletterForm />
 
 ## 🌟 Featured: Kimi K2 + Claude Code
 
@@ -84,11 +88,19 @@ cat > ~/.ccproxy/config.json << EOF
 {
   "providers": [
     {
-      "name": "groq",
-      "api_key": "your-groq-api-key",
+      "name": "openai",
+      "api_key": "sk-...",
+      "models": ["gpt-4.1", "gpt-4.1-mini", "o3"],
       "enabled": true
     }
-  ]
+  ],
+  "routes": {
+    "default": {
+      "provider": "openai",
+      "model": "gpt-4.1"
+    }
+  },
+  "note": "CCProxy transforms standard OpenAI-compatible requests to each provider's format"
 }
 EOF
 
@@ -102,9 +114,24 @@ claude "Help me with coding tasks"
 
 **[Complete setup guide →](/guide/quick-start)** • **[Installation options →](/guide/installation)**
 
+## What CCProxy Does
+
+CCProxy is a **translation proxy** that:
+- ✅ Converts OpenAI-compatible API requests to provider-specific formats
+- ✅ Routes requests to different providers based on model names
+- ✅ Supports standard parameters (temperature, max_tokens, etc.)
+- ✅ Handles streaming responses (SSE)
+- ✅ Provides function calling support for compatible clients
+- ✅ Offers health monitoring and logging
+
+CCProxy does **not**:
+- ❌ Add new capabilities to Claude Code beyond API translation
+- ❌ Support provider-specific features without function calling
+- ❌ Modify request/response content (it's a pass-through proxy)
+
 ## Why Choose CCProxy?
 
-CCProxy transforms Claude Code into a **universal AI development tool** by connecting it to the best AI providers available. Instead of being limited to Claude models, unlock the power of:
+CCProxy transforms Claude Code into a **universal AI development tool** by connecting it to the best AI providers available. CCProxy acts as a translation layer, converting standard OpenAI-compatible requests into each provider's specific format. Instead of being limited to Claude models, unlock the power of:
 
 <div class="showcase-grid">
   <div class="showcase-item">
@@ -189,6 +216,187 @@ CCProxy gets you **fast, affordable AI access**. But what about **production-rea
 1. **CCProxy** handles blazing-fast, cost-effective AI infrastructure
 2. **Orchestre** adds context intelligence and quality assurance  
 3. **You** ship production applications in days, not months
+
+---
+
+<div class="info-cards">
+  <div class="info-card">
+    <div class="card-icon">📋</div>
+    <h3>Latest Models</h3>
+    <p>CCProxy supports the newest models from each provider:</p>
+    <ul>
+      <li><strong>Anthropic:</strong> Claude Opus 4 & Sonnet 4 (July 2025)</li>
+      <li><strong>OpenAI:</strong> GPT-4.1 series & o3/o4-mini (July 2025)</li>
+      <li><strong>Google:</strong> Gemini 2.5 family (July 2025)</li>
+      <li><strong>DeepSeek:</strong> V3-0324 & R1-0528 (2025)</li>
+    </ul>
+    <p class="note">Note: CCProxy supports standard OpenAI-compatible parameters. Provider-specific features require function calling support.</p>
+    <a href="/guide/routing" class="card-link">See routing guide →</a>
+  </div>
+  
+  <div class="info-card orchestre-card">
+    <div class="card-icon">🚀</div>
+    <h3>Stop getting AI slop</h3>
+    <p>CCProxy handles the AI infrastructure. <strong>Orchestre</strong> adds the context intelligence that transforms generic AI code into production-ready software that actually works.</p>
+    <p class="highlight">✨ Ship MVPs in 3 days with battle-tested recipes</p>
+    <a href="https://orchestre.dev" class="cta-button">Get Started with Orchestre</a>
+  </div>
+</div>
+
+<style>
+.info-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 24px;
+  margin: 48px 0;
+}
+
+.info-card {
+  background: var(--vp-c-bg-alt);
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 12px;
+  padding: 32px;
+  transition: all 0.25s ease;
+  position: relative;
+}
+
+.info-card:hover {
+  border-color: var(--vp-c-brand-1);
+  transform: translateY(-2px);
+}
+
+.dark .info-card {
+  background: var(--vp-c-bg-elv);
+}
+
+.info-card .card-icon {
+  font-size: 48px;
+  line-height: 1;
+  margin-bottom: 16px;
+  display: block;
+}
+
+.info-card h3 {
+  margin: 0 0 16px 0;
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 32px;
+}
+
+.info-card p {
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--vp-c-text-2);
+  margin: 0 0 12px 0;
+}
+
+.info-card ul {
+  list-style: none;
+  padding: 0;
+  margin: 16px 0;
+}
+
+.info-card li {
+  font-size: 14px;
+  line-height: 24px;
+  color: var(--vp-c-text-2);
+  padding: 4px 0;
+}
+
+.info-card .note {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--vp-c-text-3);
+  margin-top: 16px;
+}
+
+.info-card .highlight {
+  color: #2563eb;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.dark .info-card .highlight {
+  color: #60a5fa;
+}
+
+/* Fix for Orchestre card highlight text */
+.orchestre-card .highlight {
+  color: #0066ff;
+}
+
+.dark .orchestre-card .highlight {
+  color: #00aaff;
+}
+
+.orchestre-card .cta-button {
+  color: #000000;
+}
+
+.orchestre-card .cta-button:hover {
+  color: #000000;
+}
+
+.card-link {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 16px;
+  color: var(--vp-c-brand-1);
+  text-decoration: none !important;
+  font-weight: 500;
+  font-size: 16px;
+  transition: color 0.25s;
+}
+
+.card-link:hover {
+  color: var(--vp-c-brand-2);
+}
+
+.cta-button {
+  display: inline-block;
+  margin-top: 24px;
+  padding: 12px 24px;
+  background-color: var(--vp-button-brand-bg);
+  color: var(--vp-button-brand-text);
+  text-decoration: none !important;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 24px;
+  border-radius: 24px;
+  transition: all 0.25s ease;
+  text-align: center;
+  border: 1px solid var(--vp-button-brand-bg);
+}
+
+.cta-button:hover {
+  background-color: var(--vp-button-brand-hover-bg);
+  border-color: var(--vp-button-brand-hover-bg);
+  color: var(--vp-button-brand-text);
+  text-decoration: none !important;
+  transform: translateY(-1px);
+}
+
+.orchestre-card {
+  background: var(--vp-c-bg-alt);
+}
+
+.dark .orchestre-card {
+  background: var(--vp-c-bg-elv);
+}
+
+@media (max-width: 768px) {
+  .info-cards {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .info-card {
+    padding: 24px;
+  }
+}
+</style>
 
 ---
 
