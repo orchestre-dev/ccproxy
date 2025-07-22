@@ -10,7 +10,7 @@ on:
       - '.github/workflows/**'
 
 env:
-  GO_VERSION: '1.24.2'
+  GO_VERSION: '1.23'
 
 jobs:
   check-changes:
@@ -124,15 +124,20 @@ jobs:
 
       - name: Create Release
         id: create_release
-        uses: actions/create-release@v1
+        run: |
+          # Create the release and capture the output
+          RELEASE_OUTPUT=$(gh release create "${{ steps.create_tag.outputs.tag_name }}" \
+            --title "Pre-Release ${{ steps.create_tag.outputs.tag_name }}" \
+            --notes-file changelog.md \
+            --prerelease \
+            --verify-tag)
+          
+          # Extract upload URL from the release page
+          RELEASE_URL=$(gh release view "${{ steps.create_tag.outputs.tag_name }}" --json url -q .url)
+          UPLOAD_URL="${RELEASE_URL/releases\/tag\//releases/download/}/"
+          echo "upload_url=${UPLOAD_URL}" >> $GITHUB_OUTPUT
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ steps.create_tag.outputs.tag_name }}
-          release_name: Pre-Release ${{ steps.create_tag.outputs.tag_name }}
-          body: ${{ steps.changelog.outputs.notes }}
-          draft: false
-          prerelease: true
 
   build-pre-release:
     name: Build Pre-Release Binaries
@@ -179,28 +184,17 @@ jobs:
           GOARCH: ${{ matrix.goarch }}
           CGO_ENABLED: 0
         run: |
-          go build -a -installsuffix cgo -ldflags="-w -s -X main.version=${{ needs.create-pre-release.outputs.tag_name }}" -o ${{ steps.binary_name.outputs.name }} ./cmd/proxy
+          go build -a -installsuffix cgo -ldflags="-w -s -X main.version=${{ needs.create-pre-release.outputs.tag_name }}" -o ${{ steps.binary_name.outputs.name }} ./cmd/ccproxy
 
       - name: Generate checksum
         run: |
           sha256sum ${{ steps.binary_name.outputs.name }} > ${{ steps.binary_name.outputs.name }}.sha256
 
-      - name: Upload Release Asset
-        uses: actions/upload-release-asset@v1
+      - name: Upload Release Assets
+        run: |
+          gh release upload "${{ needs.create-pre-release.outputs.tag_name }}" \
+            "${{ steps.binary_name.outputs.name }}" \
+            "${{ steps.binary_name.outputs.name }}.sha256" \
+            --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ needs.create-pre-release.outputs.upload_url }}
-          asset_path: ./${{ steps.binary_name.outputs.name }}
-          asset_name: ${{ steps.binary_name.outputs.name }}
-          asset_content_type: application/octet-stream
-
-      - name: Upload Checksum
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ needs.create-pre-release.outputs.upload_url }}
-          asset_path: ./${{ steps.binary_name.outputs.name }}.sha256
-          asset_name: ${{ steps.binary_name.outputs.name }}.sha256
-          asset_content_type: text/plain
