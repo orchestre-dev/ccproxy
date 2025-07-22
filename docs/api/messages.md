@@ -130,7 +130,7 @@ Responses follow the Anthropic Messages API format:
   "id": "msg_123abc",
   "type": "message",
   "role": "assistant",
-  "model": "groq/llama-3.1-70b-versatile",
+  "model": "anthropic/claude-3-sonnet-20240229",
   "content": [
     {
       "type": "text",
@@ -153,7 +153,7 @@ Responses follow the Anthropic Messages API format:
   "id": "msg_456def",
   "type": "message",
   "role": "assistant", 
-  "model": "groq/llama-3.1-70b-versatile",
+  "model": "anthropic/claude-3-sonnet-20240229",
   "content": [
     {
       "type": "tool_use",

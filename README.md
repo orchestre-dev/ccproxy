@@ -4,7 +4,7 @@ CCProxy is a high-performance Go proxy server that enables Claude Code to work w
 
 ## 🌟 Features
 
-- **Multi-Provider Support**: Anthropic, OpenAI, Google Gemini, Mistral, DeepSeek, Groq, OpenRouter, Ollama, and more
+- **Multi-Provider Support**: Anthropic, OpenAI, Google Gemini, DeepSeek, OpenRouter
 - **Intelligent Routing**: Automatic model selection based on token count and parameters
 - **API Translation**: Seamless conversion between Anthropic and provider-specific formats
 - **Tool Support**: Full support for function calling across all compatible providers
@@ -141,12 +141,26 @@ CCProxy supports multiple AI providers with full API translation:
 - **Anthropic** - Claude models with native support
 - **OpenAI** - GPT-4, GPT-3.5 models
 - **Google Gemini** - Advanced multimodal models
-- **Mistral AI** - European privacy-focused models
 - **DeepSeek** - Cost-effective coding models
-- **Groq** - Ultra-fast inference with LPU technology
 - **OpenRouter** - Access to 100+ models from various providers
-- **XAI** - Grok models with real-time data
-- **Ollama** - Local models for complete privacy
+
+### Provider Support Levels
+
+CCProxy offers different levels of support for various providers:
+
+#### Full Support (with dedicated transformers)
+These providers have complete API translation and all features work seamlessly:
+- **Anthropic** - Native Claude API support
+- **OpenAI** - Complete GPT model compatibility
+- **Google Gemini** - Full multimodal support
+- **DeepSeek** - Optimized for coding tasks
+- **OpenRouter** - Unified access to multiple providers
+
+#### Basic Routing Support
+These providers have basic routing capabilities but may have limited functionality:
+- Groq, Mistral, XAI, Ollama - Basic message routing only
+
+For production use, we recommend using providers with full support.
 
 ### Configuration Example
 

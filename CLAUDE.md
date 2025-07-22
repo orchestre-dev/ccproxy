@@ -20,7 +20,7 @@ CCProxy is a high-performance Go implementation of the Claude Code Router, provi
 ### Key Features
 
 - **Intelligent Routing**: Automatic model selection based on token count (>60K → longContext), model type, and thinking parameters
-- **Multi-Provider Support**: Anthropic, OpenAI, Gemini, DeepSeek, OpenRouter, Groq, Mistral, XAI, Ollama
+- **Multi-Provider Support**: Anthropic, OpenAI, Gemini, DeepSeek, OpenRouter
 - **Streaming Support**: Server-Sent Events (SSE) for real-time responses
 - **Process Management**: Background service with PID file locking and graceful shutdown
 - **Claude Code Integration**: Auto-start, environment variable management, reference counting
@@ -215,6 +215,22 @@ Enable detailed logging by setting `LOG=true` environment variable. Logs are wri
 - Comprehensive error recovery
 - Process management with proper cleanup
 - Atomic state transitions
+
+## Provider Support
+
+### Full Support (with Transformers)
+These providers have dedicated transformer implementations in `internal/transformer/`:
+- **Anthropic** (`anthropic.go`) - Complete Claude API support
+- **OpenAI** (`openai.go`) - Full GPT model compatibility  
+- **Google Gemini** (`gemini.go`) - Multimodal capabilities
+- **DeepSeek** (`deepseek.go`) - Specialized for coding
+- **OpenRouter** (`openrouter.go`) - Multi-provider access
+
+### Basic Routing Support
+These providers have basic routing in the codebase but lack dedicated transformers:
+- Groq, Mistral, XAI, Ollama - Limited to basic message routing
+
+For production deployments, use providers with full transformer support.
 
 ## Recent Security Fixes (2025-07-21)
 
