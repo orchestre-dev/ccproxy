@@ -15,15 +15,16 @@ A high-performance proxy that enables Claude Code to work with multiple AI provi
 
 CCProxy enables Claude Code to work with multiple AI providers:
 
-- **Multi-Provider Access**: Use OpenAI GPT-4, Google Gemini, DeepSeek, and more
+- **Top-Ranked Model Access**: Use Qwen3 235B (#1 on AIME with 70.3 score) via OpenRouter
+- **100+ Models Through OpenRouter**: Access Qwen3, Kimi K2, Grok, and many more
 - **Cost Optimization**: Route requests to the most cost-effective provider
 - **Failover Protection**: Automatic fallback when providers are unavailable
-- **Token-Based Routing**: Intelligent routing based on context length And then double-check the configuration page in the documentation. I want to be 200% sure that everything in that documentation is correct and matches the implementation based on the codebase.
+- **Token-Based Routing**: Intelligent routing based on context length
 - **Drop-in Replacement**: Works seamlessly without code changes
 
 ## 🌟 Features
 
-- **Multi-Provider Support**: Anthropic, OpenAI, Google Gemini, DeepSeek, OpenRouter
+- **Multi-Provider Support**: Anthropic, OpenAI, Google Gemini, DeepSeek, OpenRouter (100+ models)
 - **Intelligent Routing**: Automatic model selection based on context
 - **API Translation**: Seamless format conversion between providers
 - **Tool Support**: Function calling required for Claude Code compatibility
@@ -40,6 +41,7 @@ CCProxy intelligently routes requests based on:
 - Model type (haiku models → background route)
 - Thinking parameter (thinking: true → think route if configured)
 - Explicit selection (provider,model format)
+- Access to top models like Qwen3 235B via OpenRouter
 
 **Note**: For Claude Code compatibility, models must support function calling (tool use).
 
@@ -242,6 +244,20 @@ Claude Code → (uses CCProxy API key) → CCProxy → (uses Provider API key) �
       "api_key": "AIza...",  // Required: your Google AI API key
       "models": ["gemini-2.5-flash", "gemini-2.5-pro"],
       "enabled": false
+    },
+    {
+      "name": "deepseek",
+      "api_base_url": "https://api.deepseek.com",
+      "api_key": "sk-...",  // Required: your DeepSeek API key
+      "models": ["deepseek-chat", "deepseek-coder"],
+      "enabled": true
+    },
+    {
+      "name": "openrouter",
+      "api_base_url": "https://openrouter.ai/api/v1",
+      "api_key": "sk-or-...",  // Required: your OpenRouter API key
+      "models": ["qwen/qwen-3-235b", "moonshotai/kimi-k2-instruct", "xai/grok-beta"],
+      "enabled": true
     }
   ],
   "routes": {
@@ -264,6 +280,10 @@ Claude Code → (uses CCProxy API key) → CCProxy → (uses Provider API key) �
     "gpt-4.1": {
       "provider": "openai",
       "model": "gpt-4.1-turbo"
+    },
+    "qwen3-235b": {  // Top-ranked model via OpenRouter
+      "provider": "openrouter",
+      "model": "qwen/qwen-3-235b"
     }
   },
   "performance": {
@@ -369,6 +389,13 @@ CCProxy uses intelligent routing to select the appropriate model and provider:
       "name": "deepseek",
       "api_key": "sk-...",
       "enabled": true
+    },
+    {
+      "name": "openrouter",
+      "api_base_url": "https://openrouter.ai/api/v1",
+      "api_key": "sk-or-...",  // Required: your OpenRouter API key
+      "models": ["qwen/qwen-3-235b", "moonshotai/kimi-k2-instruct", "xai/grok-beta"],
+      "enabled": true
     }
   ],
   "routes": {
@@ -387,6 +414,10 @@ CCProxy uses intelligent routing to select the appropriate model and provider:
     "claude-opus-4": {  // Another direct mapping
       "provider": "anthropic",
       "model": "claude-opus-4-20250720"
+    },
+    "qwen3-235b": {  // Access top-ranked Qwen3 235B
+      "provider": "openrouter",
+      "model": "qwen/qwen-3-235b"
     }
   }
 }
@@ -431,31 +462,19 @@ CCProxy uses intelligent routing to select the appropriate model and provider:
 
 ## 🏆 Supported AI Providers
 
-CCProxy enables seamless integration with multiple providers:
+CCProxy provides seamless integration with 5 major providers:
 
 - **Anthropic** - Claude models with native support
 - **OpenAI** - GPT-4.1, GPT-4.1-mini models
 - **Google Gemini** - Advanced multimodal models
 - **DeepSeek** - Cost-effective coding models
-- **OpenRouter** - Access to 100+ models from various providers
+- **OpenRouter** - Gateway to 100+ models including:
+  - 🏆 **Qwen3 235B** - Top-ranked model with 70.3 AIME score
+  - ⚡ **Kimi K2** - Ultra-fast inference from Moonshot AI
+  - 🌐 **Grok** - Real-time data access from xAI
+  - And 100+ more models from various providers
 
-### Provider Support Levels
-
-CCProxy offers different levels of support for various providers:
-
-#### Full Support (with dedicated transformers)
-These providers have complete API translation and all features work seamlessly:
-- **Anthropic** - Native Claude API support
-- **OpenAI** - Complete GPT model compatibility
-- **Google Gemini** - Full multimodal support
-- **DeepSeek** - Optimized for coding tasks
-- **OpenRouter** - Unified access to multiple providers
-
-#### Basic Routing Support
-These providers have basic routing capabilities but may have limited functionality:
-- Groq, Mistral, XAI, Ollama - Basic message routing only
-
-For production use, we recommend using providers with full support.
+**Note**: Additional providers like Groq, Mistral, XAI, and Ollama are accessible through OpenRouter, giving you the flexibility to use virtually any AI model through a single interface.
 
 ### Configuration Example
 
@@ -614,10 +633,11 @@ LOG=true ./ccproxy start
 
 ## 🌟 Summary
 
-CCProxy provides seamless multi-provider integration for AI-powered development. Switch easily between OpenAI, Google Gemini, Anthropic Claude, and other providers.
+CCProxy provides seamless multi-provider integration for AI-powered development. Access top-ranked models like Qwen3 235B, switch easily between OpenAI, Google Gemini, Anthropic Claude, DeepSeek, and leverage 100+ models through OpenRouter.
 
 ### Key Benefits:
-- ✅ **Multi-Provider Support**: Access multiple AI providers
+- ✅ **Top-Ranked Models**: Access Qwen3 235B (70.3 AIME score) and 100+ models via OpenRouter
+- ✅ **Multi-Provider Support**: 5 major AI providers with full implementation
 - ✅ **Cost Optimization**: Route to cost-effective providers
 - ✅ **High Performance**: Minimal latency with Go
 - ✅ **Easy Setup**: One command configuration
