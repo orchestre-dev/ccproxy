@@ -94,3 +94,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - refactor(blog): optimize release post for Claude Code users
 - docs: add detailed routing reference and fix route examples
 
+## [1.2.1] - 2025-07-22
+
+### 🐛 Bug Fixes
+
+- resolve all dead links in documentation
+
