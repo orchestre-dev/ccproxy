@@ -5,16 +5,10 @@ on:
     branches: [main]
     paths:
       - 'docs/**'
-      - 'README.md'
-      - 'CLAUDE.md'
-      - '.github/workflows/docs.yml'
   pull_request:
     branches: [main]
     paths:
       - 'docs/**'
-      - 'README.md'
-      - 'CLAUDE.md'
-      - '.github/workflows/docs.yml'
   workflow_dispatch:
     inputs:
       deploy_production:
@@ -54,62 +48,21 @@ jobs:
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
             export VITE_BASE="/pr-${{ github.event.pull_request.number }}/"
             echo "Building preview for PR #${{ github.event.pull_request.number }}"
-            echo "Base URL: $VITE_BASE"
           else
             export VITE_BASE="/"
             echo "Building for production"
           fi
           
-          # Clean any existing build
-          echo "Cleaning build directory..."
-          rm -rf .vitepress/dist
-          
-          # Show environment
-          echo "Current directory: $(pwd)"
-          echo "NODE_ENV: ${NODE_ENV}"
-          
-          # Debug VitePress
-          echo "VitePress version:"
-          npx vitepress --version || echo "VitePress version check failed"
-          echo ""
-          echo "VitePress help:"
-          npx vitepress --help || echo "VitePress help failed"
-          echo ""
-          echo "Checking VitePress binary:"
-          which vitepress || echo "vitepress not in PATH"
-          ls -la ./node_modules/.bin/vitepress || echo "vitepress binary not found"
-          
-          # Build the documentation explicitly
-          echo "Starting build process..."
-          echo "Available npm scripts:"
-          npm run
-          echo ""
-          
-          # Try different approaches to ensure build runs
-          echo "Attempt 1: Using NODE_ENV and CI environment variables"
-          CI=true NODE_ENV=production npm run build || {
-            echo "npm run build failed, trying direct vitepress command"
-            echo "Attempt 2: Direct vitepress build command"
-            NODE_ENV=production npx vitepress build . || {
-              echo "Direct vitepress also failed"
-              exit 1
-            }
-          }
+          # Build the documentation
+          npm run build
           
           # Verify build output
-          echo "Checking build output..."
           if [ ! -d ".vitepress/dist" ]; then
-            echo "Error: Build output directory .vitepress/dist not found"
-            echo "Contents of current directory:"
-            ls -la
-            echo "Contents of .vitepress directory:"
-            ls -la .vitepress/ || echo ".vitepress directory not found"
+            echo "Error: Build output directory not found"
             exit 1
           fi
           
           echo "Build completed successfully"
-          echo "Build output contents:"
-          ls -la .vitepress/dist
         env:
           GA_MEASUREMENT_ID: ${{ secrets.GA_MEASUREMENT_ID }}
           NODE_ENV: production

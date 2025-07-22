@@ -30,7 +30,6 @@ cat > ~/.ccproxy/config.json << 'EOF'
 {
   "providers": [{
     "name": "openai",
-    "api_base_url": "https://api.openai.com/v1",
     "api_key": "your-openai-api-key",
     "models": ["gpt-4o", "gpt-4o-mini"],
     "enabled": true
@@ -123,7 +122,7 @@ Add more providers to your config.json:
 
 The `routes` section controls which provider handles different types of requests. Requests with >60K tokens automatically use the `longContext` route.
 
-**Note:** For Claude Code integration, ensure your selected models support function calling. Most modern models from major providers (Anthropic Claude, OpenAI GPT-4, Google Gemini, DeepSeek) include this capability.
+**Note:** For Claude Code integration, ensure your selected models support function calling. Most modern models from major providers (Anthropic Claude, OpenAI, Google Gemini, DeepSeek) include this capability.
 
 ## Understanding Model Selection
 

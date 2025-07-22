@@ -1,7 +1,7 @@
 ---
 layout: home
 title: CCProxy - AI Request Proxy for Claude Code | Multi-Provider LLM Gateway
-description: CCProxy is the premier AI request proxy for Claude Code, enabling seamless integration with OpenAI GPT-4, Google Gemini, DeepSeek, Kimi K2, and more. Transform Claude Code into a multi-provider AI development platform through standard OpenAI-compatible API translation.
+description: CCProxy is the premier AI request proxy for Claude Code, enabling seamless integration with OpenAI models, Google Gemini, DeepSeek, Kimi K2, and more. Transform Claude Code into a multi-provider AI development platform through standard OpenAI-compatible API translation.
 keywords: CCProxy, AI proxy for Claude Code, Claude Code proxy server, LLM gateway, AI model router, OpenAI proxy, Anthropic proxy, Google Gemini proxy, multi-provider AI, Claude Code integration
 
 hero:
@@ -224,7 +224,7 @@ CCProxy gets you **fast, affordable AI access**. But what about **production-rea
     <p>CCProxy supports the newest models from each provider:</p>
     <ul>
       <li><strong>Anthropic:</strong> Claude Opus 4 & Sonnet 4 (July 2025)</li>
-      <li><strong>OpenAI:</strong> GPT-4.1 series & o3/o4-mini (July 2025)</li>
+      <li><strong>OpenAI:</strong> Latest models including o3/o4-mini (July 2025)</li>
       <li><strong>Google:</strong> Gemini 2.5 family (July 2025)</li>
       <li><strong>DeepSeek:</strong> V3-0324 & R1-0528 (2025)</li>
     </ul>

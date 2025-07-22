@@ -13,7 +13,7 @@ readTime: "8 min read"
 
 *Published on July 14, 2025*
 
-Claude Code is a powerful AI assistant tool, but what if you want to use it with different AI models like OpenAI's GPT-4? This scenario is common among professionals who want to leverage different AI capabilities for different tasks.
+Claude Code is a powerful AI assistant tool, but what if you want to use it with different AI models like OpenAI's latest offerings? This scenario is common among professionals who want to leverage different AI capabilities for different tasks.
 
 Today, we'll explore how CCProxy enables this integration by acting as a simple API proxy that translates between different AI provider formats, allowing you to use OpenAI models seamlessly with Claude Code. Whether you're building applications with modern development tools or simply want more flexibility in your AI workflow, this guide will show you how to bridge these powerful systems.
 
@@ -53,7 +53,7 @@ CCProxy is intentionally simple - it's just a proxy that translates API calls.
 
 ### OpenAI's Strengths Across Professional Fields
 
-OpenAI's models, particularly GPT-4 and GPT-4 Turbo, excel in several areas crucial for professional work:
+OpenAI's models excel in several areas crucial for professional work:
 
 **For Healthcare Professionals:**
 - Medical documentation and template creation
@@ -160,7 +160,7 @@ export ANTHROPIC_BASE_URL=http://localhost:3456
 
 **The Result:**
 - **Familiar interface:** Dr. Sarah continues using Claude Code as usual
-- **OpenAI power:** Access to GPT-4's capabilities for medical documentation
+- **OpenAI power:** Access to OpenAI's advanced capabilities for medical documentation
 - **Simple setup:** No complex code changes required
 - **Reliable operation:** Straightforward proxy translation
 
@@ -334,7 +334,7 @@ export PROVIDER=groq
 export GROQ_API_KEY=your_groq_key
 export GROQ_MODEL=llama3-8b-8192
 
-# OpenAI for more complex tasks requiring GPT-4
+# OpenAI for more complex tasks
 export PROVIDER=openai
 export OPENAI_API_KEY=your_openai_key
 export OPENAI_MODEL=gpt-4
