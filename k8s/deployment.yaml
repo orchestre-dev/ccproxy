@@ -32,15 +32,11 @@ spec:
             secretKeyRef:
               name: ccproxy-secrets
               key: api-key
-        - name: CCPROXY_PROVIDERS_0_NAME
-          value: "anthropic"
-        - name: CCPROXY_PROVIDERS_0_API_KEY
+        - name: ANTHROPIC_API_KEY
           valueFrom:
             secretKeyRef:
               name: ccproxy-secrets
               key: anthropic-api-key
-        - name: CCPROXY_PROVIDERS_0_ENABLED
-          value: "true"
         resources:
           requests:
             memory: "512Mi"
