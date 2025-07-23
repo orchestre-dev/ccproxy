@@ -178,3 +178,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - docs: simplify README to focus on essentials
 - docs: add environment example and CSP documentation
 
+## [1.5.0] - 2025-07-23
+
+### ✨ Features
+
+- add sample configurations and update docs for OpenAI models
+- add environment variable demo and simple config example
+- add human-readable environment variable support for API keys
+
+### 🐛 Bug Fixes
+
+- correct apikey field name in example configurations
+- resolve Go version compatibility and formatting issues
+
+### 🔧 Other Changes
+
+- docs: add comprehensive Ollama provider documentation
+- docs: add comprehensive Groq provider documentation
+- docs: fix guide index to reflect actual provider support
+- docs: update providers index with OpenAI-compatible providers
+- chore: add .serena/ to .gitignore
+- docs: update CHANGELOG with unreleased features
+- docs: update CLAUDE.md environment variables to human-readable format
+- docs: update README to use human-readable environment variable
+- docs: add comprehensive environment variable documentation
+- docs: update guide configuration and environment documentation
+- docs: update routing guide with clarifications
+- docs: update API and guide documentation for consistency
+- docs: update Docker documentation with human-readable env vars
+- docs: update provider documentation with environment variables
+- docs: update examples README with human-readable env vars
+- chore: update k8s deployment with human-readable env vars
+
