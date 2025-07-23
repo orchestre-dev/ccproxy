@@ -144,3 +144,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - add Windows support and platform-specific clarity
 - enhance installer safety and validation
 
+## [1.4.0] - 2025-07-23
+
+### ✨ Features
+
+- add comprehensive analytics tracking system
+- integrate analytics tracking into components
+
+### 🐛 Bug Fixes
+
+- address all PR review comments for analytics implementation
+
+### 🔧 Other Changes
+
+- docs: align documentation with actual implementation
+- docs: refocus homepage on open source LLMs
+- docs: simplify README to focus on essentials
+- docs: add environment example and CSP documentation
+
