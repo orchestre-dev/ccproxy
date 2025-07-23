@@ -96,7 +96,7 @@ We provide ready-to-use configurations:
 cp examples/configs/openai-gpt4.json ~/.ccproxy/config.json
 
 # Set your API key via environment variable
-export CCPROXY_PROVIDERS_0_API_KEY="sk-your-openai-key"
+export OPENAI_API_KEY="sk-your-openai-key"
 ```
 
 Available examples:

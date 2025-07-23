@@ -283,7 +283,7 @@ done
 {
   "host": "0.0.0.0",
   "port": 3456,
-  "apikey": "${CCPROXY_API_KEY}",
+  "apikey": "${CCPROXY_APIKEY}",
   "performance": {
     "rate_limit_enabled": true,
     "circuit_breaker_enabled": true
@@ -370,7 +370,7 @@ cp config.test.json config.json
 {
   "host": "0.0.0.0",
   "port": 443,
-  "apikey": "${CCPROXY_API_KEY}",
+  "apikey": "${CCPROXY_APIKEY}",
   "log": false,
   "performance": {
     "rate_limit_enabled": true,
