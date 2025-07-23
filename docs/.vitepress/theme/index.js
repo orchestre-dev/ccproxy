@@ -6,6 +6,7 @@ import Layout from './components/Layout.vue'
 import Mermaid from 'vitepress-plugin-mermaid/Mermaid.vue'
 import NewsletterForm from './components/NewsletterForm.vue'
 import AnalyticsTracker from './components/AnalyticsTracker.vue'
+import ProductHunt from './components/ProductHunt.vue'
 import './style.css'
 
 export default {
@@ -21,6 +22,8 @@ export default {
     app.component('NewsletterForm', NewsletterForm)
     // Register the AnalyticsTracker component globally
     app.component('AnalyticsTracker', AnalyticsTracker)
+    // Register the ProductHunt component globally
+    app.component('ProductHunt', ProductHunt)
   },
   Layout
 }
