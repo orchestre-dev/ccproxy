@@ -5,6 +5,7 @@ import CookieConsent from './components/CookieConsent.vue'
 import Layout from './components/Layout.vue'
 import Mermaid from 'vitepress-plugin-mermaid/Mermaid.vue'
 import NewsletterForm from './components/NewsletterForm.vue'
+import AnalyticsTracker from './components/AnalyticsTracker.vue'
 import './style.css'
 
 export default {
@@ -18,6 +19,8 @@ export default {
     app.component('Mermaid', Mermaid)
     // Register the NewsletterForm component globally
     app.component('NewsletterForm', NewsletterForm)
+    // Register the AnalyticsTracker component globally
+    app.component('AnalyticsTracker', AnalyticsTracker)
   },
   Layout
 }

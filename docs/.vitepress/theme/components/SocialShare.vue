@@ -52,9 +52,11 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useData } from 'vitepress'
+import { useAnalytics } from '../composables/useAnalytics'
 
 const { page } = useData()
 const copyButtonText = ref('Copy link')
+const { trackSocialShare } = useAnalytics()
 
 const twitterTooltip = computed(() => {
   return 'Share on Twitter/X'
@@ -62,25 +64,31 @@ const twitterTooltip = computed(() => {
 
 function shareToTwitter() {
   const url = encodeURIComponent(window.location.href)
-  const text = '🚀 CCProxy + Claude Code = Universal AI development! Connect Claude Code to 7+ AI providers (Groq, OpenAI, Gemini, XAI, Mistral, Ollama) with zero config changes!'
+  const text = '🚀 CCProxy + Claude Code = Universal AI development! Connect Claude Code to 100+ open source LLMs with zero config changes!'
   
+  trackSocialShare('twitter', 'documentation')
   window.open(`https://twitter.com/intent/tweet?url=${url}&text=${encodeURIComponent(text)}`, '_blank')
 }
 
 function shareToLinkedIn() {
   const url = encodeURIComponent(window.location.href)
+  
+  trackSocialShare('linkedin', 'documentation')
   window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank')
 }
 
 function shareToReddit() {
   const url = encodeURIComponent(window.location.href)
   const title = encodeURIComponent(page.value.title)
+  
+  trackSocialShare('reddit', 'documentation')
   window.open(`https://reddit.com/submit?url=${url}&title=${title}`, '_blank')
 }
 
 function copyToClipboard() {
   navigator.clipboard.writeText(window.location.href).then(() => {
     copyButtonText.value = '✅ Copied!'
+    trackSocialShare('copy_link', 'documentation')
     setTimeout(() => {
       copyButtonText.value = 'Copy link'
     }, 2000)

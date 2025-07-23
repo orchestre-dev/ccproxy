@@ -53,6 +53,7 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useAnalytics } from '../composables/useAnalytics'
 
 const formData = ref({
   name: '',
@@ -61,6 +62,7 @@ const formData = ref({
 
 const loading = ref(false)
 const submitted = ref(false)
+const { trackFormSubmit, trackConversion } = useAnalytics()
 
 const handleSubmit = async () => {
   loading.value = true
@@ -82,13 +84,14 @@ const handleSubmit = async () => {
     if (response.ok) {
       submitted.value = true
       
-      // Track conversion
-      if (typeof gtag !== 'undefined') {
-        gtag('event', 'form_submit', {
-          'event_category': 'engagement',
-          'event_label': 'newsletter_signup'
-        })
-      }
+      // Track form submission
+      trackFormSubmit('newsletter_signup', {
+        form_location: 'blog_post',
+        form_type: 'newsletter'
+      })
+      
+      // Track as conversion
+      trackConversion('newsletter_signup', 0)
     } else {
       throw new Error('Form submission failed')
     }
