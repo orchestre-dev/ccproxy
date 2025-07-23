@@ -1,0 +1,41 @@
+{
+  "host": "127.0.0.1",
+  "port": 3456,
+  "log": false,
+  "apikey": "",
+  "providers": [
+    {
+      "name": "openai",
+      "api_base_url": "https://api.openai.com/v1",
+      "api_key": "YOUR_OPENAI_API_KEY",
+      "models": ["o3", "o1", "o1-mini", "o4-mini", "o4-mini-high", "gpt-4.1"],
+      "enabled": true
+    }
+  ],
+  "routes": {
+    "default": {
+      "provider": "openai",
+      "model": "gpt-4.1"
+    },
+    "think": {
+      "provider": "openai",
+      "model": "o3"
+    },
+    "background": {
+      "provider": "openai",
+      "model": "o4-mini"
+    },
+    "claude-opus-4": {
+      "provider": "openai",
+      "model": "o3"
+    },
+    "claude-3-5-sonnet-20241022": {
+      "provider": "openai",
+      "model": "gpt-4.1"
+    },
+    "claude-3-5-haiku-20241022": {
+      "provider": "openai",
+      "model": "o4-mini"
+    }
+  }
+}

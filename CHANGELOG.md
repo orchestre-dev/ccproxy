@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### ✨ New Features
+
+- **Human-readable environment variables**: CCProxy now automatically detects provider-specific environment variables like `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, etc. This eliminates the need for confusing indexed variables (`CCPROXY_PROVIDERS_0_API_KEY`).
+- **Simplified configuration**: API keys can now be omitted from config.json when environment variables are set.
+- **Backward compatibility**: The indexed format still works for users who prefer it.
+- **Multi-format support**: Supports `GEMINI_API_KEY`/`GOOGLE_API_KEY` for Gemini and `XAI_API_KEY`/`GROK_API_KEY` for XAI.
+- **AWS Bedrock support**: Automatically combines `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` for Bedrock authentication.
+
+### 📚 Documentation
+
+- Updated all documentation to use human-readable environment variables
+- Added comprehensive environment variable reference table
+- Created examples demonstrating the new feature
+
 ## [1.0.1] - 2025-07-22
 
 ### 🐛 Bug Fixes

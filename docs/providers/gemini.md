@@ -186,7 +186,7 @@ Once configured, use Claude Code normally:
 ```bash
 # Set CCProxy as the API endpoint
 export ANTHROPIC_BASE_URL=http://localhost:3456
-export ANTHROPIC_API_KEY=NOT_NEEDED
+# Claude Code will use CCProxy, no direct Anthropic API key needed
 
 # Use Claude Code
 claude "Analyze this image and explain what you see"

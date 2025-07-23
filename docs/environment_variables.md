@@ -82,13 +82,29 @@ This document describes all environment variables supported by CCProxy.
 
 ## Provider-Specific Variables
 
-### Provider Configuration (Docker/Kubernetes)
-When running in containerized environments, additional provider configuration can be set:
+### Auto-Detected Provider API Keys
+CCProxy automatically detects and uses provider-specific environment variables:
+
+- `ANTHROPIC_API_KEY`: API key for Anthropic Claude models
+- `OPENAI_API_KEY`: API key for OpenAI models
+- `GEMINI_API_KEY` or `GOOGLE_API_KEY`: API key for Google Gemini models
+- `DEEPSEEK_API_KEY`: API key for DeepSeek models
+- `OPENROUTER_API_KEY`: API key for OpenRouter
+- `GROQ_API_KEY`: API key for Groq
+- `MISTRAL_API_KEY`: API key for Mistral
+- `XAI_API_KEY` or `GROK_API_KEY`: API key for XAI/Grok
+- `OLLAMA_API_KEY`: API key for Ollama (usually not needed for local instances)
+- `AWS_ACCESS_KEY_ID` + `AWS_SECRET_ACCESS_KEY`: Credentials for AWS Bedrock
+
+### Provider Configuration (Manual/Docker/Kubernetes)
+For more control or backward compatibility, you can use indexed environment variables:
 
 - `CCPROXY_PROVIDERS_0_NAME`: Name of the first provider
-- `CCPROXY_PROVIDERS_0_API_KEY`: API key for the first provider
+- `CCPROXY_PROVIDERS_0_API_KEY`: API key for the first provider  
 - `CCPROXY_PROVIDERS_0_API_BASE_URL`: Base URL for the provider's API
 - `CCPROXY_PROVIDERS_0_ENABLED`: Whether the provider is enabled
+
+Note: Auto-detected API keys take precedence over indexed variables when both are set.
 
 ## Standard Proxy Variables
 

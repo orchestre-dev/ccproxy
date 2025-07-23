@@ -53,6 +53,15 @@ go build ./cmd/ccproxy
 }
 ```
 
+Or use one of our [example configurations](examples/configs/):
+```bash
+# Copy a ready-to-use configuration
+cp examples/configs/openai-gpt4.json ~/.ccproxy/config.json
+
+# Add your API key
+export OPENAI_API_KEY="sk-your-openai-key"
+```
+
 2. **Start** CCProxy and configure Claude Code:
 ```bash
 ccproxy code

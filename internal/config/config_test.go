@@ -523,6 +523,80 @@ PROXY_URL=http://proxy.example.com:8080`
 			t.Errorf("Expected ProxyURL 'http://proxy.example.com:8080', got '%s'", config.ProxyURL)
 		}
 	})
+
+	t.Run("Load with provider-specific environment variables", func(t *testing.T) {
+		tempDir := t.TempDir()
+
+		// Create config file with providers but no API keys
+		configPath := filepath.Join(tempDir, "config.json")
+		configContent := `{
+			"host": "127.0.0.1",
+			"port": 3456,
+			"providers": [
+				{
+					"name": "anthropic",
+					"api_base_url": "https://api.anthropic.com",
+					"models": ["claude-3-opus-20240229"],
+					"enabled": true
+				},
+				{
+					"name": "openai",
+					"api_base_url": "https://api.openai.com/v1",
+					"models": ["gpt-4"],
+					"enabled": true
+				}
+			],
+			"routes": {
+				"default": {
+					"provider": "openai",
+					"model": "gpt-4"
+				}
+			}
+		}`
+		err := os.WriteFile(configPath, []byte(configContent), 0644)
+		if err != nil {
+			t.Fatalf("Should write config file: %v", err)
+		}
+
+		// Set provider-specific environment variables
+		originalAnthropicKey := os.Getenv("ANTHROPIC_API_KEY")
+		originalOpenAIKey := os.Getenv("OPENAI_API_KEY")
+		os.Setenv("ANTHROPIC_API_KEY", "sk-ant-load-test")
+		os.Setenv("OPENAI_API_KEY", "sk-openai-load-test")
+		defer func() {
+			os.Setenv("ANTHROPIC_API_KEY", originalAnthropicKey)
+			os.Setenv("OPENAI_API_KEY", originalOpenAIKey)
+		}()
+
+		originalWd, _ := os.Getwd()
+		if err := os.Chdir(tempDir); err != nil {
+			t.Fatalf("Failed to change to temp directory: %v", err)
+		}
+		defer func() {
+			if err := os.Chdir(originalWd); err != nil {
+				t.Errorf("Failed to restore original working directory: %v", err)
+			}
+		}()
+
+		service := NewService()
+		err = service.Load()
+		if err != nil {
+			t.Errorf("Should load config with provider environment variables: %v", err)
+		}
+
+		config := service.Get()
+		if len(config.Providers) != 2 {
+			t.Fatalf("Expected 2 providers, got %d", len(config.Providers))
+		}
+
+		// Check that API keys were automatically applied
+		if config.Providers[0].APIKey != "sk-ant-load-test" {
+			t.Errorf("Expected Anthropic API key 'sk-ant-load-test', got '%s'", config.Providers[0].APIKey)
+		}
+		if config.Providers[1].APIKey != "sk-openai-load-test" {
+			t.Errorf("Expected OpenAI API key 'sk-openai-load-test', got '%s'", config.Providers[1].APIKey)
+		}
+	})
 }
 
 func TestService_Validate_EnhancedScenarios(t *testing.T) {
@@ -1128,6 +1202,147 @@ func TestService_Reload_EdgeCases(t *testing.T) {
 		currentConfig := service.Get()
 		if currentConfig.Host != originalHost {
 			t.Errorf("Config should be preserved on reload failure, expected host '%s', got '%s'", originalHost, currentConfig.Host)
+		}
+	})
+}
+
+func TestService_ApplyProviderEnvironmentMappings(t *testing.T) {
+	t.Run("Apply provider-specific API keys", func(t *testing.T) {
+		// Save original env vars
+		originalAnthropicKey := os.Getenv("ANTHROPIC_API_KEY")
+		originalOpenAIKey := os.Getenv("OPENAI_API_KEY")
+		originalGeminiKey := os.Getenv("GEMINI_API_KEY")
+		originalDeepSeekKey := os.Getenv("DEEPSEEK_API_KEY")
+
+		// Set test values
+		os.Setenv("ANTHROPIC_API_KEY", "sk-ant-test-123")
+		os.Setenv("OPENAI_API_KEY", "sk-openai-test-456")
+		os.Setenv("GEMINI_API_KEY", "AI-gemini-test-789")
+		os.Setenv("DEEPSEEK_API_KEY", "sk-deepseek-test-abc")
+
+		// Restore original values after test
+		defer func() {
+			os.Setenv("ANTHROPIC_API_KEY", originalAnthropicKey)
+			os.Setenv("OPENAI_API_KEY", originalOpenAIKey)
+			os.Setenv("GEMINI_API_KEY", originalGeminiKey)
+			os.Setenv("DEEPSEEK_API_KEY", originalDeepSeekKey)
+		}()
+
+		service := NewService()
+		service.config.Providers = []Provider{
+			{Name: "anthropic", APIKey: ""},
+			{Name: "openai", APIKey: ""},
+			{Name: "gemini", APIKey: ""},
+			{Name: "deepseek", APIKey: ""},
+		}
+
+		service.applyEnvironmentMappings()
+
+		config := service.Get()
+		if len(config.Providers) != 4 {
+			t.Fatalf("Expected 4 providers, got %d", len(config.Providers))
+		}
+
+		// Check each provider got the correct API key
+		if config.Providers[0].APIKey != "sk-ant-test-123" {
+			t.Errorf("Expected Anthropic API key 'sk-ant-test-123', got '%s'", config.Providers[0].APIKey)
+		}
+		if config.Providers[1].APIKey != "sk-openai-test-456" {
+			t.Errorf("Expected OpenAI API key 'sk-openai-test-456', got '%s'", config.Providers[1].APIKey)
+		}
+		if config.Providers[2].APIKey != "AI-gemini-test-789" {
+			t.Errorf("Expected Gemini API key 'AI-gemini-test-789', got '%s'", config.Providers[2].APIKey)
+		}
+		if config.Providers[3].APIKey != "sk-deepseek-test-abc" {
+			t.Errorf("Expected DeepSeek API key 'sk-deepseek-test-abc', got '%s'", config.Providers[3].APIKey)
+		}
+	})
+
+	t.Run("Provider-specific keys override indexed keys", func(t *testing.T) {
+		// Set both indexed and provider-specific keys
+		os.Setenv("CCPROXY_PROVIDERS_0_API_KEY", "indexed-key-0")
+		os.Setenv("ANTHROPIC_API_KEY", "anthropic-specific-key")
+		defer func() {
+			os.Unsetenv("CCPROXY_PROVIDERS_0_API_KEY")
+			os.Unsetenv("ANTHROPIC_API_KEY")
+		}()
+
+		service := NewService()
+		service.config.Providers = []Provider{
+			{Name: "anthropic", APIKey: ""},
+		}
+
+		service.applyEnvironmentMappings()
+
+		config := service.Get()
+		// The indexed key should override the provider-specific key
+		// because it's applied last in the function
+		if config.Providers[0].APIKey != "indexed-key-0" {
+			t.Errorf("Expected indexed key to take precedence, got '%s'", config.Providers[0].APIKey)
+		}
+	})
+
+	t.Run("AWS Bedrock special handling", func(t *testing.T) {
+		originalAccessKey := os.Getenv("AWS_ACCESS_KEY_ID")
+		originalSecretKey := os.Getenv("AWS_SECRET_ACCESS_KEY")
+
+		os.Setenv("AWS_ACCESS_KEY_ID", "AKIAIOSFODNN7EXAMPLE")
+		os.Setenv("AWS_SECRET_ACCESS_KEY", "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY")
+		defer func() {
+			os.Setenv("AWS_ACCESS_KEY_ID", originalAccessKey)
+			os.Setenv("AWS_SECRET_ACCESS_KEY", originalSecretKey)
+		}()
+
+		service := NewService()
+		service.config.Providers = []Provider{
+			{Name: "bedrock", APIKey: ""},
+		}
+
+		service.applyEnvironmentMappings()
+
+		config := service.Get()
+		expectedKey := "AKIAIOSFODNN7EXAMPLE:wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+		if config.Providers[0].APIKey != expectedKey {
+			t.Errorf("Expected Bedrock combined key '%s', got '%s'", expectedKey, config.Providers[0].APIKey)
+		}
+	})
+
+	t.Run("Case-insensitive provider name matching", func(t *testing.T) {
+		os.Setenv("OPENAI_API_KEY", "sk-test-case-insensitive")
+		defer os.Unsetenv("OPENAI_API_KEY")
+
+		service := NewService()
+		service.config.Providers = []Provider{
+			{Name: "OpenAI", APIKey: ""}, // Mixed case
+			{Name: "OPENAI", APIKey: ""}, // Upper case
+		}
+
+		service.applyEnvironmentMappings()
+
+		config := service.Get()
+		// Both should get the API key despite case differences
+		if config.Providers[0].APIKey != "sk-test-case-insensitive" {
+			t.Errorf("Expected OpenAI (mixed case) to get API key, got '%s'", config.Providers[0].APIKey)
+		}
+		if config.Providers[1].APIKey != "sk-test-case-insensitive" {
+			t.Errorf("Expected OPENAI (upper case) to get API key, got '%s'", config.Providers[1].APIKey)
+		}
+	})
+
+	t.Run("Google API key as alternate for Gemini", func(t *testing.T) {
+		os.Setenv("GOOGLE_API_KEY", "google-api-key-123")
+		defer os.Unsetenv("GOOGLE_API_KEY")
+
+		service := NewService()
+		service.config.Providers = []Provider{
+			{Name: "google", APIKey: ""},
+		}
+
+		service.applyEnvironmentMappings()
+
+		config := service.Get()
+		if config.Providers[0].APIKey != "google-api-key-123" {
+			t.Errorf("Expected Google provider to use GOOGLE_API_KEY, got '%s'", config.Providers[0].APIKey)
 		}
 	})
 }

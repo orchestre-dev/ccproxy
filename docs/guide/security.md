@@ -69,7 +69,7 @@ security:
     
     # API key authentication
     api_keys:
-      - key: "${CCPROXY_API_KEY}"
+      - key: "${CCPROXY_APIKEY}"
         name: "production"
         rate_limit: 10000
         allowed_ips:

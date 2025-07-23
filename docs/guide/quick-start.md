@@ -87,13 +87,30 @@ This creates:
 
 ## 2. Configure Your API Key
 
-### Find Your Config File
+### Option A: Use Example Configuration (Recommended)
 
+We provide ready-to-use configurations:
+
+```bash
+# Copy an example configuration
+cp examples/configs/openai-gpt4.json ~/.ccproxy/config.json
+
+# Set your API key via environment variable
+export OPENAI_API_KEY="sk-your-openai-key"
+```
+
+Available examples:
+- **`openai-gpt4.json`** - Latest GPT-4.1 models
+- **`openai-o-series.json`** - O-series reasoning models (O3, O1)
+- **`openai-mixed.json`** - Multi-provider setup
+- **`openai-budget.json`** - Cost-optimized configuration
+
+### Option B: Edit Config Manually
+
+Find your config file:
 - **macOS**: `/Users/YourName/.ccproxy/config.json`
 - **Linux**: `/home/YourName/.ccproxy/config.json`
 - **Windows**: `C:\Users\YourName\.ccproxy\config.json`
-
-### Edit the Configuration
 
 **macOS/Linux:**
 ```bash
@@ -116,22 +133,20 @@ notepad $env:USERPROFILE\.ccproxy\config.json
 code $env:USERPROFILE\.ccproxy\config.json
 ```
 
-### Add Your API Key
-
-In the config file, replace `your-openai-api-key-here` with your actual API key:
+Replace `your-openai-api-key-here` with your actual API key:
 
 ```json
 {
   "providers": [{
     "name": "openai",
     "api_key": "sk-proj-...",  // <- Your actual API key here
-    "models": ["gpt-4o", "gpt-4o-mini"],
+    "models": ["gpt-4.1", "gpt-4.1-mini", "gpt-4o"],
     "enabled": true
   }],
   "routes": {
     "default": {
       "provider": "openai",
-      "model": "gpt-4o"
+      "model": "gpt-4.1"
     }
   }
 }
@@ -202,36 +217,40 @@ Add more providers to your config.json:
     {
       "name": "anthropic",
       "api_key": "sk-ant-...",
-      "models": ["claude-3-5-sonnet-20241022", "claude-3-5-haiku-20241022"],
+      "models": ["claude-opus-4-20250720", "claude-sonnet-4-20250720", "claude-3-5-haiku-20241022"],
       "enabled": true
     },
     {
       "name": "openai",
       "api_key": "sk-...",
-      "models": ["gpt-4o", "gpt-4o-mini"],
+      "models": ["gpt-4.1", "gpt-4.1-mini", "gpt-4o", "o3", "o4-mini"],
       "enabled": true
     },
     {
       "name": "gemini",
       "api_key": "AI...",
-      "models": ["gemini-2.0-flash-exp", "gemini-1.5-pro"],
+      "models": ["gemini-2.5-pro", "gemini-2.5-flash"],
       "enabled": true
     },
     {
       "name": "deepseek",
       "api_key": "sk-...",
-      "models": ["deepseek-chat", "deepseek-coder"],
+      "models": ["deepseek-chat", "deepseek-reasoner"],
       "enabled": true
     }
   ],
   "routes": {
     "default": {
       "provider": "openai",
-      "model": "gpt-4o"
+      "model": "gpt-4.1"
     },
     "longContext": {
       "provider": "anthropic",
-      "model": "claude-3-5-sonnet-20241022"
+      "model": "claude-opus-4-20250720"
+    },
+    "think": {
+      "provider": "openai",
+      "model": "o3"
     }
   }
 }

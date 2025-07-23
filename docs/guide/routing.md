@@ -2,64 +2,97 @@
 
 ## Overview
 
-CCProxy automatically selects the best AI model based on your request characteristics, ensuring optimal performance, cost efficiency, and response quality. The intelligent routing system analyzes multiple factors including token count, model availability, task complexity, and specific request parameters to make routing decisions.
+CCProxy includes an intelligent routing system that automatically selects the appropriate AI provider and model based on request characteristics. The router is designed to work seamlessly with Claude Code, which always sends Anthropic model names.
 
 ## How Routing Works
 
-The router evaluates requests in a priority order, selecting the first matching rule:
+The router evaluates requests in a strict priority order:
 
-1. **Explicit Provider Selection**: When you specify "provider,model" format
-2. **Direct Model Routes**: Configured model-specific routes
-3. **Token-Based Routing**: Automatic selection for long context (>60K tokens)
-4. **Background Task Routing**: Routes to fast models for background processing
-5. **Thinking Parameter Routing**: Complex reasoning tasks requiring deep thinking
-6. **Default Route**: Fallback to configured default model
+1. **Explicit Provider Selection**: When you specify `"provider,model"` format
+2. **Direct Model Routes**: Exact matches for Anthropic model names in routes
+3. **Long Context Routing**: Token count > 60,000 triggers `longContext` route
+4. **Background Routing**: Models starting with `"claude-3-5-haiku"` use `background` route
+5. **Thinking Routing**: Boolean `thinking: true` parameter triggers `think` route
+6. **Default Route**: Fallback for all unmatched requests
 
-## Routing Rules Priority
+## Routing Configuration
+
+### Basic Configuration Structure
+```json
+{
+  "routes": {
+    "default": {
+      "provider": "anthropic",
+      "model": "claude-3-sonnet-20240229"
+    },
+    "longContext": {
+      "provider": "anthropic",
+      "model": "claude-3-opus-20240229"
+    },
+    "background": {
+      "provider": "openai",
+      "model": "gpt-3.5-turbo"
+    },
+    "think": {
+      "provider": "deepseek",
+      "model": "deepseek-reasoner"
+    }
+  }
+}
+```
+
+## Routing Priority Examples
 
 ### 1. Explicit Provider Selection
-When you specify a provider and model using comma notation:
+Override routing by specifying provider and model:
 ```json
 {
-  "model": "anthropic,claude-opus-4-20250720"
+  "model": "anthropic,claude-3-opus-20240229"
 }
 ```
+This bypasses all routing logic and uses the specified provider/model.
 
 ### 2. Direct Model Routes
-Model names that match configured routes:
+Map specific Anthropic models to any provider:
 ```json
 {
-  "model": "gpt-4-turbo"  // Routes to specific provider
+  "routes": {
+    "claude-3-opus-20240229": {
+      "provider": "openai",
+      "model": "gpt-4-turbo"
+    }
+  }
 }
 ```
 
-### 3. Automatic Token-Based Routing
-Requests exceeding 60,000 tokens automatically route to long-context models:
+### 3. Automatic Long Context Routing
+Requests exceeding 60,000 tokens automatically use `longContext` route:
 ```json
 {
-  "messages": [...],  // If total tokens > 60K, routes to longContext
+  "messages": [...],  // If total tokens > 60K
+  "model": "claude-3-sonnet-20240229"  // Will use longContext route
 }
 ```
 
 ### 4. Background Task Routing
-Models ending in "-haiku" trigger fast model routing:
+Models starting with `"claude-3-5-haiku"` automatically use `background` route:
 ```json
 {
-  "model": "claude-3-5-haiku-20241022"
+  "model": "claude-3-5-haiku-20241022"  // Uses background route
 }
 ```
 
 ### 5. Thinking Parameter Routing
-Complex reasoning tasks with thinking enabled (boolean parameter):
+Requests with `thinking: true` use the `think` route:
 ```json
 {
-  "model": "claude-3-5-sonnet-20241022",
-  "thinking": true  // Boolean flag, not thinkingBudget
+  "model": "claude-3-sonnet-20240229",
+  "thinking": true  // Boolean parameter
 }
 ```
 
 ### 6. Default Route
-When no specific rules match, uses the configured default model.
+All other requests use the default route.
 
 ## Recommended Routes by Use Case
 

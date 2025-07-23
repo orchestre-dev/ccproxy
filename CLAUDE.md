@@ -74,8 +74,10 @@ CCProxy is a high-performance Go-based API translation proxy that enables Claude
 - `CCPROXY_HOST` - Override default host  
 - `CCPROXY_API_KEY` - Set API key for authentication
 - `CCPROXY_CONFIG` - Path to configuration file
-- `CCPROXY_PROVIDERS_0_API_KEY` - Override first provider's API key
-- `CCPROXY_PROVIDERS_1_API_KEY` - Override second provider's API key
+- `ANTHROPIC_API_KEY` - Anthropic Claude API key (auto-detected)
+- `OPENAI_API_KEY` - OpenAI API key (auto-detected)
+- `GEMINI_API_KEY` - Google Gemini API key (auto-detected)
+- `DEEPSEEK_API_KEY` - DeepSeek API key (auto-detected)
 - `LOG` - Enable file logging to ~/.ccproxy/ccproxy.log
 
 ## Commands

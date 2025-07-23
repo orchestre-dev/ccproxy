@@ -6,21 +6,52 @@ CCProxy uses a JSON configuration file (`config.json`) as its primary configurat
 
 ## Environment Variable Support
 
+### Automatic Provider API Key Detection
+
+CCProxy automatically detects and uses provider-specific environment variables. You don't need to specify API keys in your config.json if the corresponding environment variables are set:
+
+```bash
+export ANTHROPIC_API_KEY="sk-ant-..."
+export OPENAI_API_KEY="sk-..."
+export GEMINI_API_KEY="AI..."
+./ccproxy start
+```
+
+With these environment variables set, your config.json can be simplified:
+```json
+{
+  "providers": [
+    {
+      "name": "anthropic",
+      "enabled": true
+    },
+    {
+      "name": "openai",
+      "enabled": true
+    },
+    {
+      "name": "gemini",
+      "enabled": true
+    }
+  ]
+}
+```
+
 ### Variable Substitution in config.json
 
-CCProxy supports environment variable substitution in configuration files using the `${VAR_NAME}` syntax:
+You can also use environment variable substitution in configuration files using the `${VAR_NAME}` syntax:
 
 ```json
 {
   "providers": [
     {
       "name": "anthropic",
-      "api_key": "${ANTHROPIC_API_KEY}",
+      "api_key": "${MY_CUSTOM_ANTHROPIC_KEY}",
       "enabled": true
     },
     {
       "name": "openai",
-      "api_key": "${OPENAI_API_KEY}",
+      "api_key": "${MY_CUSTOM_OPENAI_KEY}",
       "enabled": true
     }
   ]
@@ -29,8 +60,8 @@ CCProxy supports environment variable substitution in configuration files using 
 
 Set the environment variables:
 ```bash
-export ANTHROPIC_API_KEY="sk-ant-..."
-export OPENAI_API_KEY="sk-..."
+export MY_CUSTOM_ANTHROPIC_KEY="sk-ant-..."
+export MY_CUSTOM_OPENAI_KEY="sk-..."
 ./ccproxy start
 ```
 
@@ -150,13 +181,37 @@ kubectl create secret generic ccproxy-secrets \
 
 ## Environment Variable Reference
 
+### CCProxy Configuration
+
 | Variable | Description | Default | Example |
 |----------|-------------|---------|---------|
 | `CCPROXY_CONFIG` | Path to configuration file | `~/.ccproxy/config.json` | `/etc/ccproxy/config.json` |
 | `CCPROXY_PORT` | Override port setting | From config.json | `8080` |
 | `CCPROXY_HOST` | Override host setting | From config.json | `0.0.0.0` |
-| `CCPROXY_API_KEY` | API key for CCProxy authentication | None | `secure-key-123` |
+| `CCPROXY_API_KEY` | API key for CCProxy authentication (NOT for AI providers) | None | `secure-key-123` |
 | `LOG` | Enable file logging | `false` | `true` |
+
+### Provider API Keys (Auto-detected)
+
+| Variable | Provider | Example |
+|----------|----------|---------|
+| `ANTHROPIC_API_KEY` | Anthropic | `sk-ant-...` |
+| `OPENAI_API_KEY` | OpenAI | `sk-...` |
+| `GEMINI_API_KEY` | Google Gemini | `AI...` |
+| `GOOGLE_API_KEY` | Google (alternate for Gemini) | `AI...` |
+| `DEEPSEEK_API_KEY` | DeepSeek | `sk-...` |
+| `OPENROUTER_API_KEY` | OpenRouter | `sk-or-v1-...` |
+| `GROQ_API_KEY` | Groq | `gsk_...` |
+| `MISTRAL_API_KEY` | Mistral | `...` |
+| `XAI_API_KEY` | XAI/Grok | `...` |
+| `GROK_API_KEY` | Grok (alternate for XAI) | `...` |
+| `AWS_ACCESS_KEY_ID` | AWS Bedrock | `AKIA...` |
+| `AWS_SECRET_ACCESS_KEY` | AWS Bedrock | `...` |
+
+### Claude Code Integration
+
+| Variable | Description | Default | Example |
+|----------|-------------|---------|---------|
 | `ANTHROPIC_BASE_URL` | Set by `ccproxy code` | None | `http://127.0.0.1:3456` |
 | `ANTHROPIC_AUTH_TOKEN` | Set by `ccproxy code` | None | `test` |
 | `API_TIMEOUT_MS` | Set by `ccproxy code` | None | `600000` |

@@ -1,68 +1,82 @@
 # Introduction
 
-CCProxy is a high-performance, multi-provider AI proxy specifically designed to work seamlessly with Claude Code. It enables you to use any supported AI provider while maintaining perfect compatibility with Claude Code's Anthropic API interface.
+CCProxy is a high-performance Go-based API translation proxy that enables Claude Code to work with multiple AI providers. It acts as a middleware layer that translates Anthropic's API format to various provider-specific formats, enabling seamless integration without modifying Claude Code.
 
 <SocialShare />
 
 ## What is CCProxy?
 
-CCProxy acts as a translation layer between Claude Code and various AI providers. When Claude Code makes requests to what it thinks is the Anthropic API, CCProxy intercepts these requests, converts them to the appropriate format for your chosen provider, and then converts the responses back to Anthropic's format.
+CCProxy is a **translation proxy** - it does not add new capabilities beyond API format translation. When Claude Code makes requests to what it thinks is the Anthropic API, CCProxy intercepts these requests, transforms them to the appropriate format for your chosen provider, and then transforms the responses back to Anthropic's format.
 
 ```mermaid
 graph LR
     A[Claude Code] --> B[CCProxy]
-    B --> C[Groq]
+    B --> C[Anthropic]
     B --> D[OpenAI]
-    B --> E[Gemini]
-    B --> F[Mistral]
-    B --> G[Ollama]
-    B --> H[OpenRouter]
-    B --> I[XAI/Grok]
+    B --> E[Google Gemini]
+    B --> F[DeepSeek]
+    B --> G[OpenRouter]
 ```
 
 ## Key Features
 
-### 🔄 **Perfect Format Conversion**
-- Converts Anthropic API requests to OpenAI format
+### 🔄 **API Translation**
+- Transforms Anthropic API format to provider-specific formats
 - Handles complex message structures including tool calls
-- Maintains full compatibility with Claude Code features
+- Maintains compatibility with Claude Code's expected responses
 
-### 🛠️ **Full Tool Support**
-- Function calling works across all providers
-- Tool use and tool results properly handled
-- Consistent behavior regardless of provider
+### 🛠️ **Function Calling Support**
+- Full support for Anthropic and OpenAI providers
+- Limited support for Gemini (may have compatibility issues)
+- No support for DeepSeek (not recommended for Claude Code)
+- OpenRouter support depends on the underlying model
 
 ### ⚡ **High Performance**
-- Built in Go for maximum speed
-- Minimal latency overhead
-- Efficient request/response processing
+- Built in Go for maximum speed and efficiency
+- <20MB memory usage, <100ms cold start
+- Efficient streaming support for real-time responses
 
 ### 🏗️ **Production Ready**
-- Comprehensive error handling
-- Health monitoring endpoints
-- Structured logging
-- Docker support
+- Comprehensive error handling and validation
+- Health monitoring endpoints with authentication
+- Process management with PID file locking
+- Docker and Kubernetes support
 
-## Supported Providers
+## Implemented Providers
 
-| Provider | Status | Models | Special Features |
-|----------|--------|--------|------------------|
-| **Groq** | ✅ | Llama, Mixtral, Gemma | Ultra-fast inference |
-| **OpenRouter** | ✅ | 100+ models | Model routing & fallbacks |
-| **OpenAI** | ✅ | GPT-4o, GPT-4 Turbo | Industry standard |
-| **XAI (Grok)** | ✅ | Grok-beta | Real-time data access |
-| **Google Gemini** | ✅ | Gemini 2.0 Flash/Pro | Google's latest models |
-| **Mistral AI** | ✅ | Large, Medium, Small | European AI excellence |
-| **Ollama** | ✅ | Local models | Privacy & offline usage |
+| Provider | Function Calling | Claude Code Compatibility | Notes |
+|----------|------------------|---------------------------|-------|
+| **Anthropic** | ✅ Full | ✅ Perfect | Native support, all features work |
+| **OpenAI** | ✅ Full | ✅ Excellent | Most complete parameter support |
+| **Google Gemini** | ⚠️ Limited | ⚠️ Limited | Function calling may have issues |
+| **DeepSeek** | ❌ None | ❌ Not Compatible | No tool support, 8192 token limit |
+| **OpenRouter** | Varies | Varies | Depends on selected model |
+
+### OpenAI-Compatible Providers
+These providers work through the OpenAI transformer by using OpenAI-compatible endpoints:
+
+| Provider | Endpoint | Function Calling | Notes |
+|----------|----------|------------------|-------|
+| **Ollama** | `http://localhost:11434/v1` | ✅ Yes* | Local models, requires Ollama installation |
+| **Groq** | `https://api.groq.com/openai/v1` | ✅ Yes | Ultra-fast inference, OpenAI-compatible |
+
+*Function calling support depends on the specific model used (e.g., Llama 3.1 supports tools)
+
+### Not Yet Implemented
+The following providers would require dedicated transformers:
+- Mistral AI
+- XAI/Grok (if not using OpenAI-compatible mode)
 
 ## How It Works
 
 1. **Claude Code** makes a request to `http://localhost:3456/v1/messages`
-2. **CCProxy** receives the Anthropic-format request
-3. **CCProxy** converts it to the target provider's format
-4. **Provider** processes the request and returns a response  
-5. **CCProxy** converts the response back to Anthropic format
-6. **Claude Code** receives the response as if it came from Claude
+2. **CCProxy** receives the Anthropic-format request via its HTTP server
+3. **Router** determines which provider and model to use based on routing rules
+4. **Pipeline** processes the request through a chain of transformers
+5. **Transformer** converts the request to the target provider's format
+6. **Provider** processes the request and returns a response
+7. **Transformer** converts the response back to Anthropic format
+8. **Claude Code** receives the response as if it came from Claude
 
 ## Getting Started
 
@@ -70,28 +84,58 @@ Ready to get started? Check out our [Quick Start Guide](/guide/quick-start) to s
 
 ## Architecture
 
-CCProxy is designed with a modular architecture:
+CCProxy uses a pipeline-based architecture with pluggable transformers:
 
 ```
 ┌─────────────────┐
-│   HTTP Server   │  ← Gin-based HTTP server
+│   HTTP Server   │  ← Gin-based HTTP server with middleware
 └─────────────────┘
          │
 ┌─────────────────┐
-│    Handlers     │  ← Request/response handling
+│     Router      │  ← Intelligent model routing based on rules
 └─────────────────┘
          │
 ┌─────────────────┐
-│   Converter     │  ← Anthropic ↔ OpenAI format conversion
+│    Pipeline     │  ← Request processing pipeline
 └─────────────────┘
          │
 ┌─────────────────┐
-│ Provider Factory│  ← Provider selection and creation
+│  Transformers   │  ← Chain of format transformers
 └─────────────────┘
          │
 ┌─────────────────┐
-│   Providers     │  ← Individual provider implementations
+│   Providers     │  ← Provider service for API calls
 └─────────────────┘
 ```
 
-Each provider implements a common interface, making it easy to add new providers or switch between them without code changes.
+### Key Components
+
+- **Router**: Determines which provider/model to use based on token count, model type, and routing rules
+- **Pipeline**: Orchestrates the request/response flow through transformers
+- **Transformers**: Modular components that handle format conversion for each provider
+- **Provider Service**: Manages API connections and health checks
+
+### Routing Logic
+
+CCProxy automatically routes requests based on:
+- **Token count > 60K**: Routes to `longContext` configuration
+- **Haiku models**: Routes to `background` configuration  
+- **`thinking: true`**: Routes to `think` configuration
+- **Direct model mapping**: Maps specific Anthropic models to any provider
+- **Default**: Falls back to default route
+
+## Security & Performance
+
+### Security Features
+- **API Key Authentication**: Optional CCProxy API key for access control
+- **Localhost Enforcement**: When no API key is set, only localhost connections allowed
+- **Request Size Limits**: Default 10MB limit to prevent DoS
+- **Error Sanitization**: Provider error responses stripped of sensitive data
+- **Process Isolation**: PID file locking prevents multiple instances
+
+### Performance Features
+- **Metrics Collection**: Request counts, latency tracking (P50, P95, P99)
+- **Circuit Breaker**: Automatic failure detection and recovery
+- **Configurable Timeouts**: Default 30s, prevents hanging requests
+- **Efficient Memory Usage**: <20MB baseline, bounded caches
+- **Connection Pooling**: Reuses HTTP connections to providers

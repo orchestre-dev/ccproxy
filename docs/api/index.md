@@ -18,7 +18,7 @@ CCProxy supports optional API key authentication:
 - **With API key**: Service can be accessed from configured allowed IPs
 - **Health endpoint**: Returns basic info without auth, detailed info with auth
 
-To enable authentication, set the `CCPROXY_API_KEY` environment variable or configure `apikey` in your config file.
+To enable authentication, set the `CCPROXY_APIKEY` environment variable or configure `apikey` in your config file.
 
 Authentication headers:
 ```http
