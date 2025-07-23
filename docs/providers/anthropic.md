@@ -96,8 +96,8 @@ CCProxy provides native support for Anthropic's Claude models, including the lat
 ## Environment Variables
 
 ```bash
-# Required
-export ANTHROPIC_API_KEY="your-api-key"
+# Required - CCProxy will auto-detect this
+export ANTHROPIC_API_KEY="sk-ant-..."
 
 # Optional - for CCProxy to intercept Claude Code
 export ANTHROPIC_BASE_URL="http://127.0.0.1:3456"

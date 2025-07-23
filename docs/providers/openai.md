@@ -141,13 +141,23 @@ OpenAI provides various model families optimized for different use cases:
 
 ### Using Environment Variables
 
-While CCProxy primarily uses config.json, you can use environment variables for API key security:
+CCProxy can automatically detect your OpenAI API key from environment variables:
 
 ```bash
-# Store API key in environment
-export OPENAI_API_KEY="sk-your_api_key"
+# Option 1: Auto-detection (recommended)
+export OPENAI_API_KEY="sk-..."
 
-# Reference in config.json
+# Your config.json can omit the api_key entirely:
+{
+  "providers": [{
+    "name": "openai",
+    "api_base_url": "https://api.openai.com/v1",
+    "enabled": true
+    // api_key not needed - auto-detected from OPENAI_API_KEY
+  }]
+}
+
+# Option 2: Variable substitution in config
 {
   "providers": [{
     "name": "openai",
