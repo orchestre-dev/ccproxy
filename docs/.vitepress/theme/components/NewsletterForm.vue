@@ -39,11 +39,16 @@
         </button>
       </form>
       
-      <p class="fine-print" v-if="!submitted">
+      <p class="fine-print" v-if="!submitted && !errorMessage">
         🤝 We promise to only send you the good stuff. No spam, just pure CCProxy goodness.
       </p>
       
-      <div v-else class="success-message">
+      <div v-if="errorMessage" class="error-message">
+        <span>❌</span>
+        <span>{{ errorMessage }}</span>
+      </div>
+      
+      <div v-else-if="submitted" class="success-message">
         <span>✅</span>
         <span>You're on the list! We'll be in touch soon.</span>
       </div>
@@ -53,6 +58,7 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useAnalytics } from '../composables/useAnalytics'
 
 const formData = ref({
   name: '',
@@ -61,9 +67,15 @@ const formData = ref({
 
 const loading = ref(false)
 const submitted = ref(false)
+const errorMessage = ref('')
+const { trackFormSubmit, trackConversion } = useAnalytics()
+
+// Use environment variable or fallback to default
+const formEndpoint = import.meta.env.VITE_NEWSLETTER_FORM_ENDPOINT || 'https://formspree.io/f/xyzpeyed'
 
 const handleSubmit = async () => {
   loading.value = true
+  errorMessage.value = ''
   
   const formDataToSend = new FormData()
   formDataToSend.append('name', formData.value.name)
@@ -71,7 +83,7 @@ const handleSubmit = async () => {
   formDataToSend.append('_subject', 'New Newsletter Signup for CCProxy')
   
   try {
-    const response = await fetch('https://formspree.io/f/xyzpeyed', {
+    const response = await fetch(formEndpoint, {
       method: 'POST',
       body: formDataToSend,
       headers: {
@@ -82,18 +94,20 @@ const handleSubmit = async () => {
     if (response.ok) {
       submitted.value = true
       
-      // Track conversion
-      if (typeof gtag !== 'undefined') {
-        gtag('event', 'form_submit', {
-          'event_category': 'engagement',
-          'event_label': 'newsletter_signup'
-        })
-      }
+      // Track form submission
+      trackFormSubmit('newsletter_signup', {
+        form_location: 'blog_post',
+        form_type: 'newsletter'
+      })
+      
+      // Track as conversion
+      trackConversion('newsletter_signup', 0)
     } else {
       throw new Error('Form submission failed')
     }
   } catch (error) {
-    alert('Sorry, there was an error. Please try again or email us directly.')
+    console.error('Newsletter signup error:', error)
+    errorMessage.value = 'Sorry, there was an error. Please try again or email us directly.'
   } finally {
     loading.value = false
   }
@@ -221,6 +235,16 @@ const handleSubmit = async () => {
   font-size: 16px;
 }
 
+.error-message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #dc2626;
+  font-weight: 500;
+  font-size: 16px;
+  margin-top: 12px;
+}
+
 .fine-print {
   margin-top: 12px;
   font-size: 14px;
@@ -297,5 +321,9 @@ const handleSubmit = async () => {
 
 .dark .success-message {
   color: #60a5fa;
+}
+
+.dark .error-message {
+  color: #ef4444;
 }
 </style>
