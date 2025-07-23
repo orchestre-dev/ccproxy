@@ -59,7 +59,7 @@ Or use one of our [example configurations](examples/configs/):
 cp examples/configs/openai-gpt4.json ~/.ccproxy/config.json
 
 # Add your API key
-export CCPROXY_PROVIDERS_0_API_KEY="sk-your-openai-key"
+export OPENAI_API_KEY="sk-your-openai-key"
 ```
 
 2. **Start** CCProxy and configure Claude Code:
