@@ -17,7 +17,29 @@ export default withMermaid(defineConfig({
     ['meta', { property: 'og:image', content: '/og-image.png' }],
     ['link', { rel: 'icon', href: '/favicon.ico' }],
     ['link', { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' }],
-    ['link', { rel: 'manifest', href: '/site.webmanifest' }]
+    ['link', { rel: 'manifest', href: '/site.webmanifest' }],
+    // Google Analytics
+    ['script', { async: true, src: `https://www.googletagmanager.com/gtag/js?id=${process.env.GA_MEASUREMENT_ID || 'G-R0JGBZ98R7'}` }],
+    ['script', {}, `
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      
+      // Default consent mode
+      gtag('consent', 'default', {
+        'analytics_storage': 'denied',
+        'ad_storage': 'denied',
+        'ad_user_data': 'denied',
+        'ad_personalization': 'denied',
+        'wait_for_update': 500
+      });
+      
+      // Configuration
+      gtag('config', '${process.env.GA_MEASUREMENT_ID || 'G-R0JGBZ98R7'}', {
+        'anonymize_ip': true,
+        'cookie_flags': 'SameSite=None;Secure'
+      });
+    `]
   ],
 
   // Clean URLs
@@ -38,7 +60,6 @@ export default withMermaid(defineConfig({
     nav: [
       { text: 'Guide', link: '/guide/' },
       { text: 'Providers', link: '/providers/' },
-      { text: 'Kimi K2', link: '/kimi-k2' },
       { text: 'Blog', link: '/blog/' },
       { text: 'API', link: '/api/' },
       {

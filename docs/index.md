@@ -1,7 +1,7 @@
 ---
 layout: home
 title: CCProxy - AI Request Proxy for Claude Code | Multi-Provider LLM Gateway
-description: CCProxy is the premier AI request proxy for Claude Code, enabling seamless integration with OpenAI models, Google Gemini, DeepSeek, Kimi K2, and more. Transform Claude Code into a multi-provider AI development platform through standard OpenAI-compatible API translation.
+description: CCProxy is the premier AI request proxy for Claude Code, enabling seamless integration with OpenAI models, Google Gemini, DeepSeek, and 100+ open source LLMs. Transform Claude Code into a multi-provider AI development platform through standard OpenAI-compatible API translation.
 keywords: CCProxy, AI proxy for Claude Code, Claude Code proxy server, LLM gateway, AI model router, OpenAI proxy, Anthropic proxy, Google Gemini proxy, multi-provider AI, Claude Code integration
 
 hero:
@@ -16,19 +16,16 @@ hero:
       text: Get Started
       link: /guide/
     - theme: alt
-      text: Try Kimi K2
-      link: /blog/kimi-k2-claude-code-ultimate-guide
-    - theme: alt
       text: Share Feedback
       link: https://github.com/orchestre-dev/ccproxy/discussions
 
 features:
-  - icon: 🔥
-    title: Kimi K2 - Claude Sonnet Performance at 1/10th Cost
-    details: Experience 65.8% SWE-bench performance with sub-second responses. Kimi K2 beats Claude Sonnet for coding at a fraction of the price!
   - icon: 🌐
     title: 5 AI Providers with 100+ Models via OpenRouter
-    details: Anthropic, OpenAI, Google Gemini, DeepSeek, and OpenRouter (100+ models featuring Kimi K2, Qwen3 235B, Grok 4, and more)
+    details: Anthropic, OpenAI, Google Gemini, DeepSeek, and OpenRouter (100+ models including open source leaders)
+  - icon: 🚀
+    title: Leading Open Source LLMs - Qwen3, Kimi K2, and More
+    details: Access top open source models like Qwen3 235B (70.3 AIME), Qwen2.5-Coder-32B (73.7% Aider), Kimi K2 (65.8% SWE-bench), DeepSeek, and dozens more via OpenRouter
   - icon: 🔄
     title: Perfect Claude Code Integration
     details: Seamless Anthropic API compatibility - just set environment variables and you're ready to go
@@ -48,34 +45,6 @@ features:
 ---
 
 <NewsletterForm />
-
-## 🌟 Featured: Kimi K2 & Qwen3 235B + Claude Code
-
-<div class="showcase-grid">
-  <div class="showcase-item">
-    <div class="showcase-title">🔥 Kimi K2: Claude Sonnet Killer</div>
-    <div class="showcase-description">
-      Get Claude Sonnet-level coding performance at 1/10th the cost! Kimi K2 achieves 65.8% SWE-bench score with lightning-fast sub-second responses via OpenRouter.
-    </div>
-    <a href="/blog/kimi-k2-claude-code-ultimate-guide" class="showcase-link">Learn More →</a>
-  </div>
-  
-  <div class="showcase-item">
-    <div class="showcase-title">🏆 #1 Reasoning: Qwen3 235B</div>
-    <div class="showcase-description">
-      Access the top-ranked AI model for reasoning. Qwen3 235B achieves an impressive 70.3 AIME score, surpassing other models in mathematics and complex problem-solving.
-    </div>
-    <a href="/guide/routing#qwen3" class="showcase-link">Learn More →</a>
-  </div>
-  
-  <div class="showcase-item">
-    <div class="showcase-title">🔧 Minimal Setup Required</div>
-    <div class="showcase-description">
-      Works instantly with Claude Code. No API changes, no code modifications - just set two environment variables and unlock the power of 100+ models through CCProxy.
-    </div>
-    <a href="/guide/quick-start" class="showcase-link">Quick Start →</a>
-  </div>
-</div>
 
 ## Quick Start
 
@@ -137,7 +106,7 @@ CCProxy transforms Claude Code into a **universal AI development tool** by conne
   <div class="showcase-item">
     <div class="showcase-title">🎯 Top AI Providers</div>
     <div class="showcase-description">
-      <strong>OpenRouter:</strong> 100+ models featuring Kimi K2 (Claude Sonnet killer), Qwen3 235B (#1 reasoning), XAI Grok, Mistral, and more<br><br>
+      <strong>OpenRouter:</strong> 100+ models including Qwen3 235B (#1 reasoning), Qwen2.5-Coder, Kimi K2, XAI Grok, Mistral, and more<br><br>
       <strong>OpenAI GPT:</strong> Industry-standard models with latest features<br><br>
       <strong>Google Gemini:</strong> Advanced multimodal capabilities<br><br>
       <strong>DeepSeek:</strong> Cost-effective Chinese models with strong coding abilities<br><br>
@@ -223,6 +192,7 @@ CCProxy gets you **fast, affordable AI access**. But what about **production-rea
     <h3>Latest Models</h3>
     <p>CCProxy supports the newest models from each provider:</p>
     <ul>
+      <li><strong>Open Source:</strong> Qwen3 235B, Qwen2.5-Coder-32B, Kimi K2, Mistral, and 100+ more via OpenRouter</li>
       <li><strong>Anthropic:</strong> Claude Opus 4 & Sonnet 4 (July 2025)</li>
       <li><strong>OpenAI:</strong> Latest models including o3/o4-mini (July 2025)</li>
       <li><strong>Google:</strong> Gemini 2.5 family (July 2025)</li>
