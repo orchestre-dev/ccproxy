@@ -362,31 +362,31 @@ func (s *Service) applyEnvironmentMappings() {
 
 	// Map provider-specific API keys
 	providerEnvMap := map[string]string{
-		"anthropic":   "ANTHROPIC_API_KEY",
-		"openai":      "OPENAI_API_KEY",
-		"gemini":      "GEMINI_API_KEY",
-		"google":      "GOOGLE_API_KEY", // Alternate for Gemini
-		"deepseek":    "DEEPSEEK_API_KEY",
-		"openrouter":  "OPENROUTER_API_KEY",
-		"groq":        "GROQ_API_KEY",
-		"mistral":     "MISTRAL_API_KEY",
-		"xai":         "XAI_API_KEY",
-		"grok":        "GROK_API_KEY", // Alternate for XAI
-		"ollama":      "OLLAMA_API_KEY",
-		"bedrock":     "AWS_ACCESS_KEY_ID", // AWS Bedrock uses AWS credentials
+		"anthropic":  "ANTHROPIC_API_KEY",
+		"openai":     "OPENAI_API_KEY",
+		"gemini":     "GEMINI_API_KEY",
+		"google":     "GOOGLE_API_KEY", // Alternate for Gemini
+		"deepseek":   "DEEPSEEK_API_KEY",
+		"openrouter": "OPENROUTER_API_KEY",
+		"groq":       "GROQ_API_KEY",
+		"mistral":    "MISTRAL_API_KEY",
+		"xai":        "XAI_API_KEY",
+		"grok":       "GROK_API_KEY", // Alternate for XAI
+		"ollama":     "OLLAMA_API_KEY",
+		"bedrock":    "AWS_ACCESS_KEY_ID", // AWS Bedrock uses AWS credentials
 	}
 
 	// Apply provider-specific environment variables
-	for i, provider := range s.config.Providers {
+	for i := range s.config.Providers {
 		// Check if there's a provider-specific environment variable
-		if envVar, exists := providerEnvMap[strings.ToLower(provider.Name)]; exists {
+		if envVar, exists := providerEnvMap[strings.ToLower(s.config.Providers[i].Name)]; exists {
 			if apiKey := os.Getenv(envVar); apiKey != "" {
 				s.config.Providers[i].APIKey = apiKey
 			}
 		}
 
 		// Special handling for AWS Bedrock which needs two credentials
-		if strings.ToLower(provider.Name) == "bedrock" {
+		if strings.ToLower(s.config.Providers[i].Name) == "bedrock" {
 			if accessKey := os.Getenv("AWS_ACCESS_KEY_ID"); accessKey != "" {
 				s.config.Providers[i].APIKey = accessKey
 				// Also check for secret key and region
