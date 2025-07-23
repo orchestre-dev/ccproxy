@@ -37,7 +37,7 @@ To use an example configuration:
 cp examples/configs/openai-gpt4.json ~/.ccproxy/config.json
 
 # Add your API key
-export CCPROXY_PROVIDERS_0_API_KEY="sk-your-openai-key"
+export OPENAI_API_KEY="sk-your-openai-key"
 
 # Start CCProxy
 ccproxy code
@@ -99,7 +99,7 @@ Each example includes:
   "providers": [
     {
       "name": "anthropic",
-      "api_key": "${ANTHROPIC_API_KEY}",
+      "api_key": "sk-ant-...",
       "api_base_url": "https://api.anthropic.com",
       "models": ["claude-3-opus-20240229", "claude-3-sonnet-20240229"],
       "enabled": true
@@ -253,7 +253,39 @@ Each example includes:
 
 ## Environment Variables
 
-CCProxy supports environment variable substitution in configuration files:
+CCProxy supports environment variable substitution in configuration files and automatically maps human-readable provider-specific environment variables:
+
+### Method 1: Human-Readable Provider Variables (Recommended)
+
+CCProxy automatically detects and uses provider-specific environment variables:
+
+```bash
+export ANTHROPIC_API_KEY="sk-ant-..."
+export OPENAI_API_KEY="sk-..."
+export GEMINI_API_KEY="AI..."
+export DEEPSEEK_API_KEY="sk-..."
+./ccproxy start
+```
+
+Your config.json can omit API keys entirely:
+```json
+{
+  "providers": [
+    {
+      "name": "anthropic",
+      "enabled": true
+    },
+    {
+      "name": "openai", 
+      "enabled": true
+    }
+  ]
+}
+```
+
+### Method 2: Variable Substitution in Config
+
+Use environment variable substitution with `${VAR_NAME}` syntax:
 
 ```json
 {
@@ -267,11 +299,29 @@ CCProxy supports environment variable substitution in configuration files:
 }
 ```
 
-Then set the environment variable:
+### Method 3: Indexed Variables (For Backward Compatibility)
+
+The indexed format still works but is less readable:
 ```bash
-export ANTHROPIC_API_KEY="sk-ant-..."
+export CCPROXY_PROVIDERS_0_API_KEY="sk-ant-..."  # First provider in config array
+export CCPROXY_PROVIDERS_1_API_KEY="sk-..."      # Second provider in config array
 ./ccproxy start
 ```
+
+### Supported Provider Environment Variables
+
+| Provider | Environment Variable | Notes |
+|----------|---------------------|-------|
+| Anthropic | `ANTHROPIC_API_KEY` | |
+| OpenAI | `OPENAI_API_KEY` | |
+| Google Gemini | `GEMINI_API_KEY` or `GOOGLE_API_KEY` | Both work |
+| DeepSeek | `DEEPSEEK_API_KEY` | |
+| OpenRouter | `OPENROUTER_API_KEY` | |
+| Groq | `GROQ_API_KEY` | |
+| Mistral | `MISTRAL_API_KEY` | |
+| XAI/Grok | `XAI_API_KEY` or `GROK_API_KEY` | Both work |
+| Ollama | `OLLAMA_API_KEY` | Usually not needed for local |
+| AWS Bedrock | `AWS_ACCESS_KEY_ID` + `AWS_SECRET_ACCESS_KEY` | Uses standard AWS credentials |
 
 ## Routing Configuration
 
@@ -553,7 +603,7 @@ Manage different environments with separate configuration files:
   "log": true,
   "providers": [{
     "name": "anthropic",
-    "api_key": "${ANTHROPIC_API_KEY}",
+    "api_key": "sk-ant-...",
     "enabled": true
   }]
 }
@@ -564,7 +614,7 @@ Manage different environments with separate configuration files:
 {
   "host": "0.0.0.0",
   "port": 443,
-  "apikey": "${CCPROXY_API_KEY}",
+  "apikey": "${CCPROXY_APIKEY}",
   "log": false,
   "performance": {
     "rate_limit_enabled": true,
@@ -734,35 +784,17 @@ Function calling (tools) requires specific formatting:
     "max_request_body_size": 10485760,
     "metrics_enabled": true,
     "rate_limit_enabled": false,
-    "rate_limit_requests_per_minute": 60,
-    "circuit_breaker_enabled": true,
-    "circuit_breaker_threshold": 5,
-    "circuit_breaker_timeout": "60s",
-    "cache_enabled": true,
-    "cache_ttl": "5m"
-  },
-  
-  "security": {
-    "audit_enabled": false,
-    "audit_log_path": "~/.ccproxy/audit.log",
-    "ip_whitelist": [],
-    "ip_blacklist": [],
-    "allowed_headers": ["Content-Type", "Accept", "Authorization"],
-    "cors_enabled": true,
-    "cors_origins": ["*"],
-    "cors_credentials": false
+    "rate_limit_requests_per_min": 60,
+    "circuit_breaker_enabled": true
   },
   
   "providers": [
     {
       "name": "anthropic",
-      "api_key": "${ANTHROPIC_API_KEY}",
+      "api_key": "sk-ant-...",
       "api_base_url": "https://api.anthropic.com",
       "models": ["claude-3-opus-20240229", "claude-3-sonnet-20240229"],
-      "enabled": true,
-      "priority": 1,
-      "timeout": "30s",
-      "max_retries": 3
+      "enabled": true
     }
   ],
   
@@ -775,16 +807,6 @@ Function calling (tools) requires specific formatting:
       "provider": "anthropic",
       "model": "claude-3-opus-20240229"
     }
-  },
-  
-  "middleware": {
-    "request_id": true,
-    "logging": true,
-    "recovery": true,
-    "timeout": true,
-    "cors": true,
-    "security": true,
-    "performance": true
   }
 }
 ```
@@ -800,6 +822,79 @@ Function calling (tools) requires specific formatting:
 ├── audit.log           # Audit log (when enabled)
 └── .ccproxy.pid        # Process ID file
 ```
+
+### Configuration Field Reference
+
+This section documents all available configuration fields in CCProxy.
+
+#### Root-Level Configuration Fields
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `host` | string | `"127.0.0.1"` | IP address to bind the server to. Use `"0.0.0.0"` to listen on all interfaces |
+| `port` | number | `3456` | Port number for the server to listen on |
+| `log` | boolean | `false` | Enable/disable logging output |
+| `log_file` | string | `""` | Path to log file. If empty, logs to stdout/stderr |
+| `apikey` | string | `""` | CCProxy's own API key for authentication. When set, clients must provide this key. When empty, localhost-only access is enforced |
+| `proxy_url` | string | `""` | HTTP/HTTPS proxy URL for outbound connections |
+| `shutdown_timeout` | duration | `"10s"` | Graceful shutdown timeout |
+| `providers` | array | `[]` | List of AI provider configurations |
+| `routes` | object | `{}` | Routing configuration for model selection |
+| `performance` | object | `{}` | Performance-related settings |
+
+#### Performance Configuration Fields
+
+The `performance` object supports the following fields:
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `metrics_enabled` | boolean | `true` | Enable metrics collection for monitoring |
+| `rate_limit_enabled` | boolean | `false` | Enable rate limiting per IP/API key |
+| `rate_limit_requests_per_min` | number | `60` | Number of requests allowed per minute when rate limiting is enabled |
+| `circuit_breaker_enabled` | boolean | `true` | Enable circuit breaker for provider failures |
+| `request_timeout` | duration | `"30s"` | Maximum time to wait for a response from providers |
+| `max_request_body_size` | number | `10485760` | Maximum request body size in bytes (default: 10MB) |
+
+**Note**: The fields shown in the example configuration like `cache_enabled`, `cache_ttl`, `circuit_breaker_threshold`, and `circuit_breaker_timeout` are not currently implemented in CCProxy.
+
+#### Provider Configuration Fields
+
+Each provider in the `providers` array supports:
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | Yes | Provider identifier (e.g., "anthropic", "openai") |
+| `api_key` | string | No* | API key for the provider. Can be auto-detected from environment |
+| `api_base_url` | string | No | Base URL for the provider's API |
+| `models` | array | No | List of available model names (for validation) |
+| `enabled` | boolean | No | Whether this provider is active (default: true) |
+
+*API keys can be provided via environment variables (e.g., `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`)
+
+#### Route Configuration Fields
+
+Each route in the `routes` object supports:
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `provider` | string | Yes | Target provider name |
+| `model` | string | Yes | Target model name to use |
+| `conditions` | array | No | Not currently implemented |
+
+#### Special Route Names
+
+- `default` - Fallback route for unmatched requests
+- `longContext` - Automatically triggered when token count > 60,000
+- `background` - Automatically triggered for models starting with "claude-3-5-haiku"
+- `think` - Automatically triggered when request includes `thinking: true`
+
+#### Duration Format
+
+Duration fields accept Go duration strings:
+- `"30s"` - 30 seconds
+- `"5m"` - 5 minutes  
+- `"1h"` - 1 hour
+- `"100ms"` - 100 milliseconds
 
 ### Dynamic Configuration Updates
 
