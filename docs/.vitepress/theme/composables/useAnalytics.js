@@ -1,6 +1,37 @@
 import { onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vitepress'
 
+// Utility function to throttle scroll events
+function throttle(func, delay) {
+  let timeoutId
+  let lastExecTime = 0
+  
+  return function (...args) {
+    const currentTime = Date.now()
+    
+    if (currentTime - lastExecTime > delay) {
+      func.apply(this, args)
+      lastExecTime = currentTime
+    } else {
+      clearTimeout(timeoutId)
+      timeoutId = setTimeout(() => {
+        func.apply(this, args)
+        lastExecTime = Date.now()
+      }, delay - (currentTime - lastExecTime))
+    }
+  }
+}
+
+// Utility function to debounce events
+function debounce(func, delay) {
+  let timeoutId
+  
+  return function (...args) {
+    clearTimeout(timeoutId)
+    timeoutId = setTimeout(() => func.apply(this, args), delay)
+  }
+}
+
 // Analytics helper composable
 export function useAnalytics() {
   const route = useRoute()
@@ -100,7 +131,7 @@ export function useAnalytics() {
     let startTime = Date.now()
     let isVisible = true
     
-    const handleVisibilityChange = () => {
+    const handleVisibilityChange = debounce(() => {
       if (document.hidden) {
         isVisible = false
         const timeSpent = Math.round((Date.now() - startTime) / 1000)
@@ -113,7 +144,7 @@ export function useAnalytics() {
         isVisible = true
         startTime = Date.now()
       }
-    }
+    }, 300)
     
     onMounted(() => {
       document.addEventListener('visibilitychange', handleVisibilityChange)
@@ -219,26 +250,5 @@ export function useAnalytics() {
     trackCTA,
     trackError,
     trackConversion
-  }
-}
-
-// Utility function to throttle scroll events
-function throttle(func, delay) {
-  let timeoutId
-  let lastExecTime = 0
-  
-  return function (...args) {
-    const currentTime = Date.now()
-    
-    if (currentTime - lastExecTime > delay) {
-      func.apply(this, args)
-      lastExecTime = currentTime
-    } else {
-      clearTimeout(timeoutId)
-      timeoutId = setTimeout(() => {
-        func.apply(this, args)
-        lastExecTime = Date.now()
-      }, delay - (currentTime - lastExecTime))
-    }
   }
 }
