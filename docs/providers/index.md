@@ -1,6 +1,6 @@
 # Supported Providers
 
-CCProxy supports 5 major AI providers, each with unique strengths and characteristics. This page provides an overview of all supported providers.
+CCProxy supports multiple AI providers through two methods: dedicated transformers and OpenAI-compatible endpoints. This page provides an overview of all supported providers.
 
 ## How CCProxy Works
 
@@ -14,17 +14,28 @@ CCProxy uses a **transformer-based architecture** to translate API requests betw
 
 This architecture allows CCProxy to remain lightweight while supporting multiple providers.
 
-## Provider Overview
+## Native Provider Support
+
+These providers have dedicated transformer implementations:
 
 | Provider | Speed | Cost | Models | Use Case | Transformer Status |
 |----------|-------|------|--------|----------|-------------------|
 | **[Anthropic](/providers/anthropic)** | ⚡⚡⚡ | 💰💰💰 | 4+ | Best reasoning & coding | ✅ Full transformer |
-| **[DeepSeek](/providers/deepseek)** | ⚡⚡ | 💰💰 | 3+ | Advanced reasoning | ✅ Transformer (no tools) |
-| **[OpenRouter](/providers/openrouter)** | ⚡⚡ | 💰💰 | 100+ | Model diversity | ✅ Pass-through transformer |
 | **[OpenAI](/providers/openai)** | ⚡⚡ | 💰💰💰 | 10+ | Industry standard | ✅ Full transformer |
 | **[Google Gemini](/providers/gemini)** | ⚡⚡ | 💰💰 | 5+ | Multimodal AI | ✅ Transformer (limited tools) |
+| **[DeepSeek](/providers/deepseek)** | ⚡⚡ | 💰💰 | 3+ | Advanced reasoning | ✅ Transformer (no tools) |
+| **[OpenRouter](/providers/openrouter)** | ⚡⚡ | 💰💰 | 100+ | Model diversity | ✅ Pass-through transformer |
 
-**Note**: While the codebase contains references to additional providers (Groq, XAI, Mistral, Ollama), these are not yet implemented with transformers. Only the providers listed above have transformer implementations and are functional. Additional providers can be accessed through OpenRouter.
+## OpenAI-Compatible Providers
+
+These providers work through the OpenAI transformer using OpenAI-compatible endpoints:
+
+| Provider | Speed | Cost | Models | Use Case | Tool Support |
+|----------|-------|------|--------|----------|--------------|
+| **[Ollama](/providers/ollama)** | ⚡⚡⚡ | 💰 | 20+ | Local/private AI | ✅ Model dependent |
+| **[Groq](/providers/groq)** | ⚡⚡⚡⚡ | 💰💰 | 8+ | Ultra-fast inference | ✅ Full support |
+
+**Note**: OpenAI-compatible providers use `"openai"` as the provider name in configuration but with different API base URLs.
 
 ## Quick Setup
 
@@ -130,6 +141,42 @@ CCProxy uses a JSON configuration file. Here's the minimal configuration for eac
 }
 ```
 
+```json [Ollama]
+{
+  "providers": [{
+    "name": "openai",
+    "api_base_url": "http://localhost:11434/v1",
+    "api_key": "ollama",
+    "models": ["llama3.1", "codellama", "mistral"],
+    "enabled": true
+  }],
+  "routes": {
+    "default": {
+      "provider": "openai",
+      "model": "llama3.1"
+    }
+  }
+}
+```
+
+```json [Groq]
+{
+  "providers": [{
+    "name": "openai",
+    "api_base_url": "https://api.groq.com/openai/v1",
+    "api_key": "gsk_your_groq_api_key",
+    "models": ["llama-3.1-70b-versatile", "llama-3.1-8b-instant"],
+    "enabled": true
+  }],
+  "routes": {
+    "default": {
+      "provider": "openai",
+      "model": "llama-3.1-70b-versatile"
+    }
+  }
+}
+```
+
 :::
 
 **Important Note**: In each configuration above:
@@ -167,12 +214,15 @@ For current pricing information, visit each provider's official pricing page.
 | Provider | Text | Code | Function Calling | Vision | Reasoning | Claude Code Compatible |
 |----------|------|------|-----------------|--------|-----------|----------------------|
 | **Anthropic** | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ Full Support |
-| **DeepSeek** | ✅ | ✅ | ❌ | ❌ | ✅✅ | ⚠️ Limited (no tools) |
-| **OpenRouter** | ✅ | ✅ | ✅* | ✅* | ✅ | ✅ Model dependent |
 | **OpenAI** | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ Full Support |
 | **Gemini** | ✅ | ✅ | ⚠️ | ✅ | ✅ | ⚠️ Limited support |
+| **DeepSeek** | ✅ | ✅ | ❌ | ❌ | ✅✅ | ⚠️ Limited (no tools) |
+| **OpenRouter** | ✅ | ✅ | ✅* | ✅* | ✅ | ✅ Model dependent |
+| **Ollama** | ✅ | ✅ | ✅** | ❌ | ✅ | ✅ Model dependent |
+| **Groq** | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ Full Support |
 
 *Depends on specific model routed through OpenRouter
+**Depends on specific model (e.g., Llama 3.1 supports tools)
 
 ## Important: Tool Calling Requirement
 
@@ -221,6 +271,18 @@ For best Claude Code compatibility, use Anthropic or OpenAI providers with model
 - 🎯 45-50% less hallucination
 - 💻 Specialized coding models
 - 🔬 Advanced mathematical and scientific analysis
+
+### Choose **Ollama** if you want:
+- 🔒 Complete privacy - all processing happens locally
+- 💰 Zero API costs - just your electricity
+- 🌐 Offline capability after model download
+- 🏠 Full control over your AI infrastructure
+
+### Choose **Groq** if you want:
+- ⚡ Ultra-fast inference (10-100x faster than GPUs)
+- 🚀 Near-instant responses for real-time applications
+- 🛠️ OpenAI-compatible API for easy integration
+- 📊 High-throughput workloads
 
 
 ## Model Selection Guidelines
