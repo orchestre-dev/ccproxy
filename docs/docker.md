@@ -14,9 +14,8 @@ docker pull ghcr.io/orchestre-dev/ccproxy:latest
 docker run -d \
   --name ccproxy \
   -p 3456:3456 \
-  -e CCPROXY_API_KEY=your-api-key \
-  -e CCPROXY_PROVIDERS_0_NAME=anthropic \
-  -e CCPROXY_PROVIDERS_0_API_KEY=your-anthropic-key \
+  -e CCPROXY_APIKEY=your-api-key \
+  -e ANTHROPIC_API_KEY=sk-ant-... \
   ghcr.io/orchestre-dev/ccproxy:latest
 ```
 
@@ -57,15 +56,18 @@ CCProxy can be configured entirely through environment variables:
 # Basic configuration
 CCPROXY_HOST=0.0.0.0
 CCPROXY_PORT=3456
-CCPROXY_API_KEY=your-api-key
+CCPROXY_APIKEY=your-api-key
 CCPROXY_LOG=true
 CCPROXY_LOG_FILE=/logs/ccproxy.log
 
-# Provider configuration
-CCPROXY_PROVIDERS_0_NAME=anthropic
-CCPROXY_PROVIDERS_0_API_BASE_URL=https://api.anthropic.com
-CCPROXY_PROVIDERS_0_API_KEY=your-anthropic-key
-CCPROXY_PROVIDERS_0_ENABLED=true
+# Provider API keys (auto-detected by CCProxy)
+ANTHROPIC_API_KEY=sk-ant-...
+OPENAI_API_KEY=sk-...
+GEMINI_API_KEY=AI...
+
+# Or use indexed format (backward compatibility)
+# CCPROXY_PROVIDERS_0_API_KEY=your-first-provider-key
+# CCPROXY_PROVIDERS_1_API_KEY=your-second-provider-key
 
 # Performance settings
 CCPROXY_PERFORMANCE_METRICS_ENABLED=true
@@ -99,8 +101,8 @@ services:
     ports:
       - "3456:3456"
     environment:
-      - CCPROXY_API_KEY=${CCPROXY_API_KEY}
-      - CCPROXY_PROVIDERS_0_API_KEY=${ANTHROPIC_API_KEY}
+      - CCPROXY_APIKEY=${CCPROXY_API_KEY}
+      - CCPROXY_PROVIDERS_0_API_KEY=${CCPROXY_PROVIDERS_0_API_KEY}
     volumes:
       - ./config.json:/home/ccproxy/.ccproxy/config.json:ro
       - ccproxy-logs:/home/ccproxy/.ccproxy/logs
