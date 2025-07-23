@@ -12,16 +12,37 @@ http://localhost:3456
 
 ## Authentication
 
-CCProxy doesn't require authentication for the proxy functionality. The authentication is handled at the provider level using API keys configured via environment variables.
+CCProxy supports optional API key authentication:
+
+- **Without API key**: Service is restricted to localhost access only
+- **With API key**: Service can be accessed from configured allowed IPs
+- **Health endpoint**: Returns basic info without auth, detailed info with auth
+
+To enable authentication, set the `CCPROXY_API_KEY` environment variable or configure `apikey` in your config file.
+
+Authentication headers:
+```http
+Authorization: Bearer your-api-key
+# OR
+x-api-key: your-api-key
+```
+
+Note: Provider authentication is separate and handled via provider-specific API keys in the configuration.
 
 ## Endpoints Overview
 
 | Endpoint | Method | Purpose |
 |----------|--------|---------|
 | `/v1/messages` | POST | Main proxy endpoint (Anthropic compatible) |
-| `/health` | GET | Detailed health check |
-| `/status` | GET | Provider status and configuration |
-| `/` | GET | Basic health check |
+| `/health` | GET | Health check (authenticated = detailed, public = basic) |
+| `/status` | GET | Service status and configuration |
+| `/` | GET | Basic API info |
+| `/providers` | GET | List configured providers |
+| `/providers` | POST | Create/update provider configuration |
+| `/providers/:name` | GET | Get specific provider details |
+| `/providers/:name` | PUT | Update provider configuration |
+| `/providers/:name` | DELETE | Delete provider |
+| `/providers/:name/toggle` | PATCH | Enable/disable provider |
 
 ## API Flow Diagram
 
@@ -70,7 +91,7 @@ CCProxy uses standard HTTP status codes and returns errors in a consistent forma
 
 ## Provider Rate Limits
 
-CCProxy is a local proxy and doesn't impose any rate limits. However, the underlying providers (Groq, OpenAI, etc.) may have their own rate limits which will be passed through as errors.
+CCProxy is a local proxy and doesn't impose any rate limits. However, the underlying providers (Anthropic, OpenAI, Google Gemini, etc.) may have their own rate limits which will be passed through as errors.
 
 ## Request/Response Format
 
@@ -86,8 +107,8 @@ Accept: application/json
 ```http
 Content-Type: application/json
 X-Request-ID: uuid-v4-string
-X-Provider: groq
-X-Model: llama-3.1-70b-versatile
+X-Provider: openai
+X-Model: gpt-4o
 ```
 
 ## Logging

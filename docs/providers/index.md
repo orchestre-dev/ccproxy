@@ -2,17 +2,29 @@
 
 CCProxy supports 5 major AI providers, each with unique strengths and characteristics. This page provides an overview of all supported providers.
 
+## How CCProxy Works
+
+CCProxy uses a **transformer-based architecture** to translate API requests between Claude Code (which uses Anthropic's API format) and various AI providers. Instead of implementing direct provider clients, CCProxy uses transformers that:
+
+1. **Receive** requests in Anthropic's API format
+2. **Transform** them to the target provider's format
+3. **Forward** the transformed request to the provider
+4. **Transform** the response back to Anthropic's format
+5. **Return** the response to Claude Code
+
+This architecture allows CCProxy to remain lightweight while supporting multiple providers.
+
 ## Provider Overview
 
-| Provider | Speed | Cost | Models | Use Case | Status |
-|----------|-------|------|--------|----------|---------|
-| **[Anthropic](/providers/anthropic)** | ⚡⚡⚡ | 💰💰💰 | 4+ | Best reasoning & coding | ✅ Fully Implemented |
-| **[DeepSeek](/providers/deepseek)** | ⚡⚡ | 💰💰 | 3+ | Advanced reasoning | ✅ Implemented |
-| **[OpenRouter](/providers/openrouter)** | ⚡⚡ | 💰💰 | 100+ | Model diversity | ✅ Implemented |
-| **[OpenAI](/providers/openai)** | ⚡⚡ | 💰💰💰 | 10+ | Industry standard | ✅ Implemented |
-| **[Google Gemini](/providers/gemini)** | ⚡⚡ | 💰💰 | 5+ | Multimodal AI | ✅ Implemented |
+| Provider | Speed | Cost | Models | Use Case | Transformer Status |
+|----------|-------|------|--------|----------|-------------------|
+| **[Anthropic](/providers/anthropic)** | ⚡⚡⚡ | 💰💰💰 | 4+ | Best reasoning & coding | ✅ Full transformer |
+| **[DeepSeek](/providers/deepseek)** | ⚡⚡ | 💰💰 | 3+ | Advanced reasoning | ✅ Transformer (no tools) |
+| **[OpenRouter](/providers/openrouter)** | ⚡⚡ | 💰💰 | 100+ | Model diversity | ✅ Pass-through transformer |
+| **[OpenAI](/providers/openai)** | ⚡⚡ | 💰💰💰 | 10+ | Industry standard | ✅ Full transformer |
+| **[Google Gemini](/providers/gemini)** | ⚡⚡ | 💰💰 | 5+ | Multimodal AI | ✅ Transformer (limited tools) |
 
-**Note**: While the codebase contains references to additional providers (Groq, XAI, Mistral, Ollama), these are not yet fully implemented with request/response transformers. Only the providers listed above have complete transformer implementations and are fully functional.
+**Note**: While the codebase contains references to additional providers (Groq, XAI, Mistral, Ollama), these are not yet implemented with transformers. Only the providers listed above have transformer implementations and are functional. Additional providers can be accessed through OpenRouter.
 
 ## Quick Setup
 

@@ -6,9 +6,9 @@ DeepSeek is an advanced AI provider offering state-of-the-art language models wi
 
 ## ⚠️ Important Limitations
 
-- **LIMITED Function Calling Support**: DeepSeek has basic function calling capabilities. While the models support some tool use, it may not work reliably with Claude Code's extensive function calling requirements. Consider using other providers (Anthropic, OpenAI, Gemini) if you need robust function calling.
+- **NO Function Calling Support**: The DeepSeek transformer in CCProxy does not support function calling/tools. This makes DeepSeek **incompatible with Claude Code**, which requires function calling for its operations. Only use DeepSeek through CCProxy for direct API calls that don't require tools.
 - **Max Tokens Hard Limit**: DeepSeek enforces a hard limit of 8192 max_tokens. Any request exceeding this will be automatically capped at 8192.
-- **Tool Transformation**: CCProxy does not provide specific tool transformation for DeepSeek, meaning tools are passed through as-is, which may cause compatibility issues.
+- **Claude Code Compatibility**: Due to lack of function calling support, DeepSeek is NOT recommended for use with Claude Code. Consider using Anthropic, OpenAI, or Gemini providers instead.
 
 ## Latest Models (July 2025)
 
