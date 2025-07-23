@@ -17,6 +17,38 @@ CCProxy uses a `config.json` file for all configuration. The file is typically l
 - Windows: `%USERPROFILE%\.ccproxy\config.json`
 - Or specify a custom location with `--config` flag
 
+## Example Configurations
+
+Get started quickly with our pre-built configurations:
+
+### 🚀 Quick Start Examples
+
+We provide several ready-to-use configuration examples in the `examples/configs/` directory:
+
+- **[openai-gpt4.json](https://github.com/orchestre-dev/ccproxy/blob/main/examples/configs/openai-gpt4.json)** - Standard GPT-4 setup
+- **[openai-o-series.json](https://github.com/orchestre-dev/ccproxy/blob/main/examples/configs/openai-o-series.json)** - O-series reasoning models
+- **[openai-mixed.json](https://github.com/orchestre-dev/ccproxy/blob/main/examples/configs/openai-mixed.json)** - Multi-provider configuration
+- **[openai-budget.json](https://github.com/orchestre-dev/ccproxy/blob/main/examples/configs/openai-budget.json)** - Cost-optimized setup
+
+To use an example configuration:
+
+```bash
+# Copy the example configuration
+cp examples/configs/openai-gpt4.json ~/.ccproxy/config.json
+
+# Add your API key
+export CCPROXY_PROVIDERS_0_API_KEY="sk-your-openai-key"
+
+# Start CCProxy
+ccproxy code
+```
+
+Each example includes:
+- Pre-configured routing for different use cases
+- Optimized model selection
+- Complete documentation
+- Ready-to-use settings
+
 ## Basic Configuration
 
 ### Minimal Configuration
@@ -124,15 +156,28 @@ CCProxy uses a `config.json` file for all configuration. The file is typically l
       "api_key": "sk-...",
       "api_base_url": "https://api.openai.com/v1",
       "models": [
-        "gpt-4",
-        "gpt-4-turbo-preview",
-        "gpt-3.5-turbo"
+        "gpt-4.1",
+        "gpt-4.1-mini",
+        "gpt-4.1-turbo",
+        "gpt-4o",
+        "o3",
+        "o1",
+        "o1-mini",
+        "o4-mini",
+        "o4-mini-high"
       ],
       "enabled": true
     }
   ]
 }
 ```
+
+**Latest Models (2025):**
+- **GPT-4.1** - Latest GPT-4 with improved coding and instruction following
+- **GPT-4.1-mini** - Cost-effective variant, 80% cheaper
+- **GPT-4o** - Multimodal model (text + vision)
+- **O3** - Advanced reasoning for complex tasks
+- **O4-mini** - Budget-friendly general purpose model
 
 **Get your API key:** [platform.openai.com](https://platform.openai.com/)
 

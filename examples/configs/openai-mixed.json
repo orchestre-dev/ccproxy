@@ -1,0 +1,59 @@
+{
+  "host": "127.0.0.1",
+  "port": 3456,
+  "log": false,
+  "api_key": "",
+  "performance": {
+    "request_timeout": "60s",
+    "max_request_body_size": 10485760,
+    "metrics_enabled": true,
+    "rate_limit_enabled": false,
+    "circuit_breaker_enabled": true
+  },
+  "providers": [
+    {
+      "name": "openai",
+      "api_base_url": "https://api.openai.com/v1",
+      "api_key": "YOUR_OPENAI_API_KEY",
+      "models": ["gpt-4.1", "gpt-4.1-mini", "gpt-4-turbo", "gpt-4o", "o3", "o1-mini", "o4-mini"],
+      "enabled": true
+    },
+    {
+      "name": "anthropic",
+      "api_base_url": "https://api.anthropic.com",
+      "api_key": "YOUR_ANTHROPIC_API_KEY",
+      "models": ["claude-opus-4-20250720", "claude-sonnet-4-20250720", "claude-3-5-haiku-20241022"],
+      "enabled": true
+    }
+  ],
+  "routes": {
+    "default": {
+      "provider": "openai",
+      "model": "gpt-4.1"
+    },
+    "longContext": {
+      "provider": "anthropic",
+      "model": "claude-opus-4-20250720"
+    },
+    "background": {
+      "provider": "openai",
+      "model": "gpt-4.1-mini"
+    },
+    "think": {
+      "provider": "openai",
+      "model": "o3"
+    },
+    "claude-opus-4": {
+      "provider": "openai",
+      "model": "gpt-4.1"
+    },
+    "claude-sonnet-4": {
+      "provider": "openai",
+      "model": "gpt-4.1"
+    },
+    "claude-3-5-haiku-20241022": {
+      "provider": "openai",
+      "model": "o4-mini"
+    }
+  }
+}

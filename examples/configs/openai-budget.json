@@ -1,0 +1,33 @@
+{
+  "host": "127.0.0.1",
+  "port": 3456,
+  "log": false,
+  "api_key": "",
+  "providers": [
+    {
+      "name": "openai",
+      "api_base_url": "https://api.openai.com/v1",
+      "api_key": "YOUR_OPENAI_API_KEY",
+      "models": ["gpt-4.1-mini", "o1-mini", "o4-mini", "o4-mini-high"],
+      "enabled": true
+    }
+  ],
+  "routes": {
+    "default": {
+      "provider": "openai",
+      "model": "gpt-4.1-mini"
+    },
+    "longContext": {
+      "provider": "openai",
+      "model": "gpt-4.1-mini"
+    },
+    "background": {
+      "provider": "openai",
+      "model": "o4-mini"
+    },
+    "think": {
+      "provider": "openai",
+      "model": "o1-mini"
+    }
+  }
+}
