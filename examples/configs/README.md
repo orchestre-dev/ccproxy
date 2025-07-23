@@ -44,8 +44,8 @@ Maximum cost efficiency with mini models.
    # Set in the config file
    sed -i 's/YOUR_OPENAI_API_KEY/sk-your-actual-key/' ~/.ccproxy/config.json
    
-   # Or use environment variable
-   export CCPROXY_PROVIDERS_0_API_KEY="sk-your-actual-key"
+   # Or use environment variable (recommended)
+   export OPENAI_API_KEY="sk-your-actual-key"
    ```
 
 3. Start CCProxy:
@@ -92,5 +92,6 @@ You can override settings without modifying the config:
 export CCPROXY_PORT=3456
 export CCPROXY_HOST=127.0.0.1
 export CCPROXY_API_KEY="your-auth-key"
-export CCPROXY_PROVIDERS_0_API_KEY="sk-openai-key"
+export OPENAI_API_KEY="sk-openai-key"        # Auto-detected by provider name
+# Or use indexed format: export CCPROXY_PROVIDERS_0_API_KEY="sk-openai-key"
 ```
