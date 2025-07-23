@@ -18,7 +18,7 @@ keywords: Google Gemini, Claude Code, CCProxy, Gemini 2.5 Pro, multimodal AI, lo
 - 💰 **Flexible pricing tiers**: From ultra-fast lite to pro models
 - 🔍 **Superior analytics**: Outstanding at data analysis and complex reasoning tasks
 - ⚡ **Claude Code optimized**: Seamless integration with intelligent routing
-- 🛠️ **Function calling support**: Full compatibility with Claude Code's tool use requirements
+- ⚠️ **Limited function calling**: Basic tool support - may have compatibility issues with some Claude Code features
 
 ## Setup
 
@@ -85,6 +85,13 @@ Google's newest Gemini models offer state-of-the-art performance:
 - **Gemini 1.0 Series** - Stable models for general use
 
 **🔧 Critical for Claude Code**: You must select models that support **tool calling** or **function calling** capabilities, as Claude Code requires these features to operate correctly.
+
+⚠️ **Important**: The Gemini transformer in CCProxy has limited tool support. While basic function calling works, complex tool interactions may fail. The transformer:
+- Maps tool definitions to Gemini's function format
+- Does not support provider-specific features like `thinkingBudget`
+- May have compatibility issues with complex Claude Code operations
+
+For full Claude Code compatibility, consider using Anthropic or OpenAI providers instead.
 
 ### Supported Parameters
 
