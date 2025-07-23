@@ -1,5 +1,10 @@
 <template>
   <DefaultTheme.Layout>
+    <template #layout-top>
+      <div v-if="isHomePage" class="product-hunt-wrapper">
+        <ProductHunt />
+      </div>
+    </template>
     <template #layout-bottom>
       <CookieConsent />
       <AnalyticsTracker />
@@ -11,12 +16,16 @@
 import DefaultTheme from 'vitepress/theme'
 import CookieConsent from './CookieConsent.vue'
 import AnalyticsTracker from './AnalyticsTracker.vue'
+import ProductHunt from './ProductHunt.vue'
 import { useAnalytics } from '../composables/useAnalytics'
 import { useRoute } from 'vitepress'
-import { watch, onMounted, onUnmounted, nextTick } from 'vue'
+import { watch, onMounted, onUnmounted, nextTick, computed } from 'vue'
 
 const route = useRoute()
 const { trackPageView, trackScrollDepth, trackTimeOnPage, trackCodeCopy, trackOutboundLink } = useAnalytics()
+
+// Check if we're on the home page
+const isHomePage = computed(() => route.path === '/' || route.path === '/index.html')
 
 // Track initial page view
 onMounted(() => {
@@ -72,3 +81,13 @@ onUnmounted(() => {
   document.removeEventListener('click', clickHandler)
 })
 </script>
+
+<style scoped>
+.product-hunt-wrapper {
+  position: absolute;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30;
+}
+</style>
