@@ -268,4 +268,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [1.0.3]: https://github.com/orchestre-dev/ccproxy/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/orchestre-dev/ccproxy/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/orchestre-dev/ccproxy/compare/v1.0.0...v1.0.1
-[1.0.0]: https://github.com/orchestre-dev/ccproxy/releases/tag/v1.0.0
+[1.0.0]: https://github.com/orchestre-dev/ccproxy/releases/tag/v1.0.0## [1.7.0] - 2025-07-24
+
+### ✨ Features
+
+- add route-level parameter configuration
+- improve parameter handling and code quality
+
+### 🐛 Bug Fixes
+
+- resolve lint error in pipeline.go
+
+### 🔧 Other Changes
+
+- docs: update CHANGELOG
+- ci: add automatic changelog generation
+- chore: update changelog for PR #29
+
