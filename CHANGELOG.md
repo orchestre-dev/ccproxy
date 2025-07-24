@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+
+### ✨ New Features
+
+- improve parameter handling and code quality
+- add route-level parameter configuration
+
+### 🐛 Bug Fixes
+
+- resolve lint error in pipeline.go
+
+### 📚 Documentation
+
+- update CHANGELOG
 ## [1.6.0] - 2025-07-23
 
 ### ✨ Features
