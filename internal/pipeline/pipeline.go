@@ -123,22 +123,37 @@ func (p *Pipeline) ProcessRequest(ctx context.Context, req *RequestContext) (*Re
 		return nil, fmt.Errorf("provider not found: %s", routingDecision.Provider)
 	}
 
-	// 3. Get transformer chain for provider
+	// 3. Apply route parameters to request body
+	requestBody := req.Body
+	if routingDecision.Parameters != nil && len(routingDecision.Parameters) > 0 {
+		// Apply parameters to request body
+		if bodyMap, ok := requestBody.(map[string]interface{}); ok {
+			for key, value := range routingDecision.Parameters {
+				// Only set if not already present in the request
+				if _, exists := bodyMap[key]; !exists {
+					bodyMap[key] = value
+				}
+			}
+			requestBody = bodyMap
+		}
+	}
+
+	// 4. Get transformer chain for provider
 	chain := p.transformerService.GetChainForProvider(routingDecision.Provider)
 
-	// 4. Apply request transformations
-	transformedRequest, err := chain.TransformRequestIn(ctx, req.Body, routingDecision.Provider)
+	// 5. Apply request transformations
+	transformedRequest, err := chain.TransformRequestIn(ctx, requestBody, routingDecision.Provider)
 	if err != nil {
 		return nil, fmt.Errorf("request transformation failed: %w", err)
 	}
 
-	// 5. Build HTTP request with transformed data
+	// 6. Build HTTP request with transformed data
 	httpReq, err := p.buildHTTPRequest(ctx, selectedProvider, transformedRequest, req.IsStreaming, routingDecision.Provider)
 	if err != nil {
 		return nil, fmt.Errorf("failed to build HTTP request: %w", err)
 	}
 
-	// 6. Send request to provider
+	// 7. Send request to provider
 	startTime := time.Now()
 	httpResp, err := p.httpClient.Do(httpReq)
 	duration := time.Since(startTime)
@@ -172,7 +187,7 @@ func (p *Pipeline) ProcessRequest(ctx context.Context, req *RequestContext) (*Re
 		})
 	}
 
-	// 7. Transform response through chain
+	// 8. Transform response through chain
 	transformedResp, err := chain.TransformResponseOut(ctx, httpResp)
 	if err != nil {
 		// Close response body to prevent leak
@@ -182,7 +197,7 @@ func (p *Pipeline) ProcessRequest(ctx context.Context, req *RequestContext) (*Re
 		return nil, fmt.Errorf("response transformation failed: %w", err)
 	}
 
-	// 8. Build response context
+	// 9. Build response context
 	respCtx := &ResponseContext{
 		Response:        transformedResp,
 		Provider:        routingDecision.Provider,

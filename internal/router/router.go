@@ -16,9 +16,10 @@ type Request struct {
 
 // RouteDecision represents the result of routing logic
 type RouteDecision struct {
-	Provider string
-	Model    string
-	Reason   string
+	Provider   string
+	Model      string
+	Reason     string
+	Parameters map[string]interface{}
 }
 
 // Router handles intelligent model routing based on various criteria
@@ -54,9 +55,10 @@ func (r *Router) Route(req Request, tokenCount int) RouteDecision {
 	if route, exists := r.config.Routes[req.Model]; exists && route.Provider != "" {
 		logger.Debugf("Using direct route for model: %s", req.Model)
 		return RouteDecision{
-			Provider: route.Provider,
-			Model:    route.Model,
-			Reason:   "direct model route",
+			Provider:   route.Provider,
+			Model:      route.Model,
+			Reason:     "direct model route",
+			Parameters: route.Parameters,
 		}
 	}
 
@@ -64,9 +66,10 @@ func (r *Router) Route(req Request, tokenCount int) RouteDecision {
 	if longContext, exists := r.config.Routes["longContext"]; exists && tokenCount > 60000 && longContext.Provider != "" {
 		logger.Infof("Using long context model due to token count: %d", tokenCount)
 		return RouteDecision{
-			Provider: longContext.Provider,
-			Model:    longContext.Model,
-			Reason:   fmt.Sprintf("token count (%d) exceeds threshold", tokenCount),
+			Provider:   longContext.Provider,
+			Model:      longContext.Model,
+			Reason:     fmt.Sprintf("token count (%d) exceeds threshold", tokenCount),
+			Parameters: longContext.Parameters,
 		}
 	}
 
@@ -74,9 +77,10 @@ func (r *Router) Route(req Request, tokenCount int) RouteDecision {
 	if background, exists := r.config.Routes["background"]; exists && strings.HasPrefix(req.Model, "claude-3-5-haiku") && background.Provider != "" {
 		logger.Info("Using background model for claude-3-5-haiku")
 		return RouteDecision{
-			Provider: background.Provider,
-			Model:    background.Model,
-			Reason:   "haiku model routed to background",
+			Provider:   background.Provider,
+			Model:      background.Model,
+			Reason:     "haiku model routed to background",
+			Parameters: background.Parameters,
 		}
 	}
 
@@ -84,9 +88,10 @@ func (r *Router) Route(req Request, tokenCount int) RouteDecision {
 	if think, exists := r.config.Routes["think"]; exists && req.Thinking && think.Provider != "" {
 		logger.Info("Using think model due to thinking parameter")
 		return RouteDecision{
-			Provider: think.Provider,
-			Model:    think.Model,
-			Reason:   "thinking parameter enabled",
+			Provider:   think.Provider,
+			Model:      think.Model,
+			Reason:     "thinking parameter enabled",
+			Parameters: think.Parameters,
 		}
 	}
 
@@ -94,9 +99,10 @@ func (r *Router) Route(req Request, tokenCount int) RouteDecision {
 	defaultRoute := r.config.Routes["default"]
 	logger.Debug("Using default model")
 	return RouteDecision{
-		Provider: defaultRoute.Provider,
-		Model:    defaultRoute.Model,
-		Reason:   "default model",
+		Provider:   defaultRoute.Provider,
+		Model:      defaultRoute.Model,
+		Reason:     "default model",
+		Parameters: defaultRoute.Parameters,
 	}
 }
 

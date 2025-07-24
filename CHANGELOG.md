@@ -14,12 +14,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Backward compatibility**: The indexed format still works for users who prefer it.
 - **Multi-format support**: Supports `GEMINI_API_KEY`/`GOOGLE_API_KEY` for Gemini and `XAI_API_KEY`/`GROK_API_KEY` for XAI.
 - **AWS Bedrock support**: Automatically combines `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` for Bedrock authentication.
+- **Route-level parameter configuration**: You can now set default parameters (temperature, top_p, max_tokens) at the route level. These defaults are applied when a route is selected but can be overridden by request parameters.
 
 ### 📚 Documentation
 
 - Updated all documentation to use human-readable environment variables
 - Added comprehensive environment variable reference table
 - Created examples demonstrating the new feature
+- Added route parameters documentation with temperature configuration examples
+- Updated configuration guide with detailed parameter validation and best practices
 
 ## [1.0.1] - 2025-07-22
 
