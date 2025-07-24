@@ -183,8 +183,16 @@ func validateRouteParameters(params map[string]interface{}) error {
 		case int:
 			maxTokensValue = v
 		case float64:
+			// Check for overflow before conversion
+			if v > float64(int(^uint(0)>>1)) || v < float64(-(int(^uint(0)>>1)-1)) {
+				return fmt.Errorf("max_tokens value too large: %v", v)
+			}
 			maxTokensValue = int(v)
 		case int64:
+			// Check for overflow before conversion
+			if v > int64(int(^uint(0)>>1)) || v < int64(-(int(^uint(0)>>1)-1)) {
+				return fmt.Errorf("max_tokens value too large: %v", v)
+			}
 			maxTokensValue = int(v)
 		default:
 			return fmt.Errorf("max_tokens must be an integer, got %T", maxTokens)

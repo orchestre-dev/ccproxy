@@ -56,6 +56,12 @@ func (t *AnthropicTransformer) TransformRequestIn(ctx context.Context, request i
 	if temperature, ok := reqMap["temperature"]; ok {
 		transformed["temperature"] = temperature
 	}
+	if topP, ok := reqMap["top_p"]; ok {
+		transformed["top_p"] = topP
+	}
+	if topK, ok := reqMap["top_k"]; ok {
+		transformed["top_k"] = topK
+	}
 	if stream, ok := reqMap["stream"]; ok {
 		transformed["stream"] = stream
 	}

@@ -897,6 +897,21 @@ func TestValidateRouteParameters(t *testing.T) {
 			errorMsg:    "max_tokens must be positive",
 		},
 		{
+			name: "max_tokens overflow float64",
+			parameters: map[string]interface{}{
+				"max_tokens": float64(9.3e18), // Larger than max int64
+			},
+			expectError: true,
+			errorMsg:    "max_tokens value too large",
+		},
+		{
+			name: "max_tokens at max boundary",
+			parameters: map[string]interface{}{
+				"max_tokens": int64(9223372036854775807), // Max int64, should be valid
+			},
+			expectError: false,
+		},
+		{
 			name: "multiple valid parameters",
 			parameters: map[string]interface{}{
 				"temperature": 0.8,

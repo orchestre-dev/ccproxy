@@ -335,6 +335,8 @@ CCProxy uses an intelligent routing system to determine which provider and model
 ### Routing Priority (Highest to Lowest)
 
 1. **Explicit Provider Selection**: `"provider,model"` format (e.g., `"anthropic,claude-3-opus"`)
+   - Uses default route parameters as fallback if defined
+   - Example: `"openai,gpt-4"` will use parameters from the `default` route
 2. **Direct Model Routes**: Exact Anthropic model name matches in routes config
 3. **Long Context Routing**: Token count > 60,000 triggers `longContext` route
 4. **Background Routing**: Models starting with `"claude-3-5-haiku"` use `background` route

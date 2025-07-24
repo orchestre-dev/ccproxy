@@ -150,6 +150,9 @@ func (t *GeminiTransformer) TransformRequestIn(ctx context.Context, request inte
 	if topP, ok := reqMap["top_p"]; ok {
 		genConfig["topP"] = topP
 	}
+	if topK, ok := reqMap["top_k"]; ok {
+		genConfig["topK"] = topK
+	}
 
 	if len(genConfig) > 0 {
 		transformed["generationConfig"] = genConfig

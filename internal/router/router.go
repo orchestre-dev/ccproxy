@@ -43,10 +43,16 @@ func (r *Router) Route(req Request, tokenCount int) RouteDecision {
 		parts := strings.SplitN(req.Model, ",", 2)
 		if len(parts) == 2 {
 			logger.Debugf("Using explicit model selection: %s", req.Model)
+			// Use default route parameters as fallback for explicit selection
+			var parameters map[string]interface{}
+			if defaultRoute, exists := r.config.Routes["default"]; exists {
+				parameters = defaultRoute.Parameters
+			}
 			return RouteDecision{
-				Provider: parts[0],
-				Model:    parts[1],
-				Reason:   "explicit model selection",
+				Provider:   parts[0],
+				Model:      parts[1],
+				Reason:     "explicit model selection",
+				Parameters: parameters,
 			}
 		}
 	}
