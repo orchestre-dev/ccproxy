@@ -1,0 +1,215 @@
+name: Changelog
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  check-commits:
+    name: Check Conventional Commits
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        
+    - name: Check commit messages
+      uses: webiny/action-conventional-commits@v1.3.0
+      with:
+        allowed-commit-types: "feat,fix,docs,style,refactor,perf,test,build,ci,chore,revert"
+        
+  generate-changelog:
+    name: Generate Changelog
+    runs-on: ubuntu-latest
+    needs: check-commits
+    if: github.event.pull_request.draft == false
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
+        ref: ${{ github.head_ref }}
+        
+    - name: Get changed files
+      id: changed-files
+      uses: tj-actions/changed-files@v44
+      with:
+        files: |
+          **/*.go
+          **/*.md
+          **/*.json
+          **/*.yml
+          **/*.yaml
+          
+    - name: Generate changelog entry
+      if: steps.changed-files.outputs.any_changed == 'true'
+      id: changelog
+      run: |
+        # Get base branch
+        BASE_BRANCH="${{ github.base_ref }}"
+        HEAD_BRANCH="${{ github.head_ref }}"
+        
+        # Get commits in this PR
+        echo "## Changes in this PR" > pr-changelog.md
+        echo "" >> pr-changelog.md
+        
+        # Get commit messages
+        git log --pretty=format:"- %s" origin/$BASE_BRANCH..HEAD >> pr-changelog.md
+        
+        # Categorize commits
+        echo "" >> pr-changelog.md
+        echo "### Categorized Changes" >> pr-changelog.md
+        
+        # Features
+        FEATURES=$(git log --pretty=format:"%s" origin/$BASE_BRANCH..HEAD | grep -E "^feat(\(.*\))?:" | sed 's/^feat\(.*\): /- /')
+        if [ ! -z "$FEATURES" ]; then
+          echo "" >> pr-changelog.md
+          echo "#### ✨ Features" >> pr-changelog.md
+          echo "$FEATURES" >> pr-changelog.md
+        fi
+        
+        # Bug fixes
+        FIXES=$(git log --pretty=format:"%s" origin/$BASE_BRANCH..HEAD | grep -E "^fix(\(.*\))?:" | sed 's/^fix\(.*\): /- /')
+        if [ ! -z "$FIXES" ]; then
+          echo "" >> pr-changelog.md
+          echo "#### 🐛 Bug Fixes" >> pr-changelog.md
+          echo "$FIXES" >> pr-changelog.md
+        fi
+        
+        # Documentation
+        DOCS=$(git log --pretty=format:"%s" origin/$BASE_BRANCH..HEAD | grep -E "^docs(\(.*\))?:" | sed 's/^docs\(.*\): /- /')
+        if [ ! -z "$DOCS" ]; then
+          echo "" >> pr-changelog.md
+          echo "#### 📚 Documentation" >> pr-changelog.md
+          echo "$DOCS" >> pr-changelog.md
+        fi
+        
+        # Other changes
+        OTHERS=$(git log --pretty=format:"%s" origin/$BASE_BRANCH..HEAD | grep -vE "^(feat|fix|docs)(\(.*\))?:")
+        if [ ! -z "$OTHERS" ]; then
+          echo "" >> pr-changelog.md
+          echo "#### 🔧 Other Changes" >> pr-changelog.md
+          echo "$OTHERS" | sed 's/^/- /' >> pr-changelog.md
+        fi
+        
+        # Output changelog
+        cat pr-changelog.md
+        
+    - name: Update CHANGELOG.md
+      if: steps.changed-files.outputs.any_changed == 'true'
+      run: |
+        # Read current CHANGELOG
+        if [ -f CHANGELOG.md ]; then
+          # Find the line with [Unreleased]
+          LINE=$(grep -n "## \[Unreleased\]" CHANGELOG.md | cut -d: -f1)
+          
+          if [ ! -z "$LINE" ]; then
+            # Get commits for unreleased section
+            FEATURES=$(git log --pretty=format:"%s" origin/${{ github.base_ref }}..HEAD | grep -E "^feat(\(.*\))?:" | sed 's/^feat\(.*\): /- /')
+            FIXES=$(git log --pretty=format:"%s" origin/${{ github.base_ref }}..HEAD | grep -E "^fix(\(.*\))?:" | sed 's/^fix\(.*\): /- /')
+            DOCS=$(git log --pretty=format:"%s" origin/${{ github.base_ref }}..HEAD | grep -E "^docs(\(.*\))?:" | sed 's/^docs\(.*\): /- /')
+            
+            # Create temporary file with updated changelog
+            head -n $((LINE + 1)) CHANGELOG.md > CHANGELOG.tmp
+            
+            # Add new entries if they don't already exist
+            if [ ! -z "$FEATURES" ]; then
+              echo "" >> CHANGELOG.tmp
+              echo "### ✨ New Features" >> CHANGELOG.tmp
+              echo "" >> CHANGELOG.tmp
+              echo "$FEATURES" >> CHANGELOG.tmp
+            fi
+            
+            if [ ! -z "$FIXES" ]; then
+              echo "" >> CHANGELOG.tmp
+              echo "### 🐛 Bug Fixes" >> CHANGELOG.tmp
+              echo "" >> CHANGELOG.tmp
+              echo "$FIXES" >> CHANGELOG.tmp
+            fi
+            
+            if [ ! -z "$DOCS" ]; then
+              echo "" >> CHANGELOG.tmp
+              echo "### 📚 Documentation" >> CHANGELOG.tmp
+              echo "" >> CHANGELOG.tmp
+              echo "$DOCS" >> CHANGELOG.tmp
+            fi
+            
+            # Append the rest of the changelog
+            tail -n +$((LINE + 2)) CHANGELOG.md >> CHANGELOG.tmp
+            
+            # Replace the original file
+            mv CHANGELOG.tmp CHANGELOG.md
+          fi
+        fi
+        
+    - name: Check for changes
+      id: check-changes
+      run: |
+        if git diff --quiet; then
+          echo "changed=false" >> $GITHUB_OUTPUT
+        else
+          echo "changed=true" >> $GITHUB_OUTPUT
+        fi
+        
+    - name: Commit changelog updates
+      if: steps.check-changes.outputs.changed == 'true'
+      run: |
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        git add CHANGELOG.md
+        git commit -m "chore: update changelog for PR #${{ github.event.pull_request.number }}"
+        git push
+        
+    - name: Comment on PR
+      if: steps.changed-files.outputs.any_changed == 'true'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          const changelog = fs.readFileSync('pr-changelog.md', 'utf8');
+          
+          // Find existing comment
+          const comments = await github.rest.issues.listComments({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+          });
+          
+          const botComment = comments.data.find(comment => 
+            comment.user.type === 'Bot' && comment.body.includes('## Changelog Preview')
+          );
+          
+          const body = `## 📋 Changelog Preview
+          
+          This PR will add the following entries to the changelog:
+          
+          ${changelog}
+          
+          ---
+          
+          *This comment is automatically generated and will be updated when commits are added.*`;
+          
+          if (botComment) {
+            // Update existing comment
+            await github.rest.issues.updateComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: botComment.id,
+              body: body
+            });
+          } else {
+            // Create new comment
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: body
+            });
+          }

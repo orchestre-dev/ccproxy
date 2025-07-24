@@ -7,20 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### ✨ New Features
-
-- **Route-level parameter configuration**: You can now set default parameters (temperature, top_p, max_tokens) at the route level. These defaults are applied when a route is selected but can be overridden by request parameters.
-
-### 🐛 Bug Fixes
-
-- Fix lint error in pipeline.go - remove unnecessary nil check for map length
-
-### 📚 Documentation
-
-- Add route parameters documentation with temperature configuration examples
-- Update configuration guide with detailed parameter validation and best practices
-- Create new temperature-optimized.json example configuration
-
 ## [1.6.0] - 2025-07-23
 
 ### ✨ Features
