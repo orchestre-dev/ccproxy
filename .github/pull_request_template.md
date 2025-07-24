@@ -2,6 +2,13 @@
 
 Brief description of the changes in this PR.
 
+> **Note**: Please ensure your commits follow the [Conventional Commits](https://www.conventionalcommits.org/) format:
+> - `feat:` for new features
+> - `fix:` for bug fixes
+> - `docs:` for documentation changes
+> - `chore:` for maintenance tasks
+> - etc.
+
 ## Type of Change
 
 Please delete options that are not relevant.

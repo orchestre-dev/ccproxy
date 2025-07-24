@@ -46,6 +46,11 @@ func (c *Config) Validate() error {
 				return fmt.Errorf("invalid condition in route %s: %w", routeName, err)
 			}
 		}
+
+		// Validate parameters
+		if err := validateRouteParameters(route.Parameters); err != nil {
+			return fmt.Errorf("invalid parameters in route %s: %w", routeName, err)
+		}
 	}
 
 	// Validate log file path if logging is enabled
@@ -122,6 +127,80 @@ func validateCondition(c *Condition) error {
 	// Value is required
 	if c.Value == nil {
 		return fmt.Errorf("condition value is required")
+	}
+
+	return nil
+}
+
+// validateRouteParameters validates parameters configured for a route
+func validateRouteParameters(params map[string]interface{}) error {
+	if params == nil {
+		return nil // Parameters are optional
+	}
+
+	// Validate temperature if present
+	if temp, exists := params["temperature"]; exists {
+		var tempValue float64
+		switch v := temp.(type) {
+		case float64:
+			tempValue = v
+		case int:
+			tempValue = float64(v)
+		case float32:
+			tempValue = float64(v)
+		default:
+			return fmt.Errorf("temperature must be a number, got %T", temp)
+		}
+
+		// Temperature range validation (most providers support 0-2)
+		if tempValue < 0 || tempValue > 2 {
+			return fmt.Errorf("temperature must be between 0 and 2, got %v", tempValue)
+		}
+	}
+
+	// Validate other common parameters if present
+	if topP, exists := params["top_p"]; exists {
+		var topPValue float64
+		switch v := topP.(type) {
+		case float64:
+			topPValue = v
+		case int:
+			topPValue = float64(v)
+		case float32:
+			topPValue = float64(v)
+		default:
+			return fmt.Errorf("top_p must be a number, got %T", topP)
+		}
+
+		if topPValue < 0 || topPValue > 1 {
+			return fmt.Errorf("top_p must be between 0 and 1, got %v", topPValue)
+		}
+	}
+
+	if maxTokens, exists := params["max_tokens"]; exists {
+		var maxTokensValue int
+		switch v := maxTokens.(type) {
+		case int:
+			maxTokensValue = v
+		case float64:
+			// Check for overflow before conversion
+			if v > float64(int(^uint(0)>>1)) || v < float64(-(int(^uint(0)>>1)-1)) {
+				return fmt.Errorf("max_tokens value too large: %v", v)
+			}
+			maxTokensValue = int(v)
+		case int64:
+			// Check for overflow before conversion
+			if v > int64(int(^uint(0)>>1)) || v < int64(-(int(^uint(0)>>1)-1)) {
+				return fmt.Errorf("max_tokens value too large: %v", v)
+			}
+			maxTokensValue = int(v)
+		default:
+			return fmt.Errorf("max_tokens must be an integer, got %T", maxTokens)
+		}
+
+		if maxTokensValue <= 0 {
+			return fmt.Errorf("max_tokens must be positive, got %v", maxTokensValue)
+		}
 	}
 
 	return nil

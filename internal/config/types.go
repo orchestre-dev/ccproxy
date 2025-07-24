@@ -33,9 +33,10 @@ type Provider struct {
 
 // Route represents a routing configuration
 type Route struct {
-	Provider   string      `json:"provider" mapstructure:"provider"`
-	Model      string      `json:"model" mapstructure:"model"`
-	Conditions []Condition `json:"conditions" mapstructure:"conditions"`
+	Provider   string                 `json:"provider" mapstructure:"provider"`
+	Model      string                 `json:"model" mapstructure:"model"`
+	Conditions []Condition            `json:"conditions" mapstructure:"conditions"`
+	Parameters map[string]interface{} `json:"parameters,omitempty" mapstructure:"parameters"`
 }
 
 // Condition represents a routing condition

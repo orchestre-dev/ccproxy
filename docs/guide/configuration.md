@@ -335,6 +335,8 @@ CCProxy uses an intelligent routing system to determine which provider and model
 ### Routing Priority (Highest to Lowest)
 
 1. **Explicit Provider Selection**: `"provider,model"` format (e.g., `"anthropic,claude-3-opus"`)
+   - Uses default route parameters as fallback if defined
+   - Example: `"openai,gpt-4"` will use parameters from the `default` route
 2. **Direct Model Routes**: Exact Anthropic model name matches in routes config
 3. **Long Context Routing**: Token count > 60,000 triggers `longContext` route
 4. **Background Routing**: Models starting with `"claude-3-5-haiku"` use `background` route
@@ -554,6 +556,150 @@ Update your CCProxy configuration regularly to ensure you're using the best avai
 ```
 
 **Important**: Without routes configuration, CCProxy cannot determine which provider to use. Always define at least a `default` route.
+
+### Route Parameters
+
+You can configure default parameters (like temperature, max_tokens, etc.) at the route level. These parameters are applied to requests when the route is selected, but can be overridden by parameters in the actual request.
+
+#### Supported Parameters
+
+| Parameter | Type | Range | Description |
+|-----------|------|-------|-------------|
+| `temperature` | float | 0.0 - 2.0 | Controls randomness in responses. Lower = more deterministic |
+| `top_p` | float | 0.0 - 1.0 | Alternative to temperature, nucleus sampling |
+| `max_tokens` | integer | > 0 | Maximum tokens to generate |
+
+#### Examples
+
+##### Different Temperatures for Different Routes
+
+```json
+{
+  "routes": {
+    "default": {
+      "provider": "openai",
+      "model": "gpt-4",
+      "parameters": {
+        "temperature": 0.7  // Balanced creativity
+      }
+    },
+    "creative": {
+      "provider": "openai",
+      "model": "gpt-4",
+      "parameters": {
+        "temperature": 1.5,  // More creative/random
+        "top_p": 0.95
+      }
+    },
+    "precise": {
+      "provider": "openai",
+      "model": "gpt-4",
+      "parameters": {
+        "temperature": 0.2,  // More deterministic
+        "max_tokens": 2000
+      }
+    }
+  }
+}
+```
+
+##### Model-Specific Temperature Settings
+
+```json
+{
+  "routes": {
+    // Claude models with their preferred temperatures
+    "claude-opus-4": {
+      "provider": "anthropic",
+      "model": "claude-opus-4-20250720",
+      "parameters": {
+        "temperature": 0.8  // Good for complex reasoning
+      }
+    },
+    "claude-3-5-haiku-20241022": {
+      "provider": "anthropic",
+      "model": "claude-3-5-haiku-20241022",
+      "parameters": {
+        "temperature": 0.3,  // More focused for quick tasks
+        "max_tokens": 1000
+      }
+    },
+    
+    // Different temperature for thinking models
+    "think": {
+      "provider": "deepseek",
+      "model": "deepseek-reasoner",
+      "parameters": {
+        "temperature": 0.1  // Very low for logical reasoning
+      }
+    }
+  }
+}
+```
+
+##### Provider-Optimized Settings
+
+```json
+{
+  "routes": {
+    "default": {
+      "provider": "openai",
+      "model": "gpt-4.1",
+      "parameters": {
+        "temperature": 0.7,
+        "top_p": 0.9
+      }
+    },
+    "longContext": {
+      "provider": "gemini",
+      "model": "gemini-2.5-pro",
+      "parameters": {
+        "temperature": 0.5,  // Gemini works well with moderate temperature
+        "max_tokens": 8000   // Take advantage of larger context
+      }
+    }
+  }
+}
+```
+
+#### How Route Parameters Work
+
+1. **Route Selection**: When a request matches a route (by model name, token count, etc.)
+2. **Parameter Application**: Route parameters are applied to the request
+3. **Request Priority**: Parameters in the actual request override route parameters
+4. **Provider Validation**: Parameters are validated against provider limits
+
+Example flow:
+```json
+// Route configuration
+{
+  "routes": {
+    "default": {
+      "provider": "openai",
+      "model": "gpt-4",
+      "parameters": {
+        "temperature": 0.7,
+        "max_tokens": 2000
+      }
+    }
+  }
+}
+
+// Incoming request
+{
+  "model": "claude-3-sonnet",
+  "messages": [...],
+  "temperature": 0.9  // This overrides the route's 0.7
+  // max_tokens will use the route's 2000
+}
+```
+
+#### Best Practices
+
+1. **Start with defaults**: Set reasonable defaults in your `default` route
+2. **Specialize by use case**: Create specific routes for creative vs analytical tasks
+3. **Provider limits**: Respect provider-specific parameter ranges
+4. **Test and adjust**: Monitor outputs and adjust temperatures as needed
 
 ## Performance Configuration
 
@@ -880,6 +1026,7 @@ Each route in the `routes` object supports:
 | `provider` | string | Yes | Target provider name |
 | `model` | string | Yes | Target model name to use |
 | `conditions` | array | No | Not currently implemented |
+| `parameters` | object | No | Default parameters for this route (e.g., temperature, max_tokens) |
 
 #### Special Route Names
 

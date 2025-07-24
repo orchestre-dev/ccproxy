@@ -30,6 +30,9 @@ func TestConfig_Validate(t *testing.T) {
 							Value:    1000,
 						},
 					},
+					Parameters: map[string]interface{}{
+						"temperature": 0.7,
+					},
 				},
 			},
 			Log:     true,
@@ -790,6 +793,231 @@ func TestValidation_EdgeCases(t *testing.T) {
 		err := config.Validate()
 		if err != nil {
 			t.Errorf("Expected no error for complex valid config, got: %v", err)
+		}
+	})
+}
+
+func TestValidateRouteParameters(t *testing.T) {
+	testCases := []struct {
+		name        string
+		parameters  map[string]interface{}
+		expectError bool
+		errorMsg    string
+	}{
+		{
+			name:        "nil parameters",
+			parameters:  nil,
+			expectError: false,
+		},
+		{
+			name:        "empty parameters",
+			parameters:  map[string]interface{}{},
+			expectError: false,
+		},
+		{
+			name: "valid temperature float",
+			parameters: map[string]interface{}{
+				"temperature": 0.7,
+			},
+			expectError: false,
+		},
+		{
+			name: "valid temperature int",
+			parameters: map[string]interface{}{
+				"temperature": 1,
+			},
+			expectError: false,
+		},
+		{
+			name: "temperature at min boundary",
+			parameters: map[string]interface{}{
+				"temperature": 0.0,
+			},
+			expectError: false,
+		},
+		{
+			name: "temperature at max boundary",
+			parameters: map[string]interface{}{
+				"temperature": 2.0,
+			},
+			expectError: false,
+		},
+		{
+			name: "temperature below min",
+			parameters: map[string]interface{}{
+				"temperature": -0.1,
+			},
+			expectError: true,
+			errorMsg:    "temperature must be between 0 and 2",
+		},
+		{
+			name: "temperature above max",
+			parameters: map[string]interface{}{
+				"temperature": 2.1,
+			},
+			expectError: true,
+			errorMsg:    "temperature must be between 0 and 2",
+		},
+		{
+			name: "temperature invalid type",
+			parameters: map[string]interface{}{
+				"temperature": "0.7",
+			},
+			expectError: true,
+			errorMsg:    "temperature must be a number",
+		},
+		{
+			name: "valid top_p",
+			parameters: map[string]interface{}{
+				"top_p": 0.9,
+			},
+			expectError: false,
+		},
+		{
+			name: "top_p out of range",
+			parameters: map[string]interface{}{
+				"top_p": 1.5,
+			},
+			expectError: true,
+			errorMsg:    "top_p must be between 0 and 1",
+		},
+		{
+			name: "valid max_tokens",
+			parameters: map[string]interface{}{
+				"max_tokens": 1000,
+			},
+			expectError: false,
+		},
+		{
+			name: "max_tokens negative",
+			parameters: map[string]interface{}{
+				"max_tokens": -1,
+			},
+			expectError: true,
+			errorMsg:    "max_tokens must be positive",
+		},
+		{
+			name: "max_tokens overflow float64",
+			parameters: map[string]interface{}{
+				"max_tokens": float64(9.3e18), // Larger than max int64
+			},
+			expectError: true,
+			errorMsg:    "max_tokens value too large",
+		},
+		{
+			name: "max_tokens at max boundary",
+			parameters: map[string]interface{}{
+				"max_tokens": int64(9223372036854775807), // Max int64, should be valid
+			},
+			expectError: false,
+		},
+		{
+			name: "multiple valid parameters",
+			parameters: map[string]interface{}{
+				"temperature": 0.8,
+				"top_p":       0.95,
+				"max_tokens":  2000,
+			},
+			expectError: false,
+		},
+		{
+			name: "unknown parameter ignored",
+			parameters: map[string]interface{}{
+				"temperature":     0.8,
+				"unknown_param":   "value",
+				"another_unknown": 123,
+			},
+			expectError: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := validateRouteParameters(tc.parameters)
+			if tc.expectError {
+				if err == nil {
+					t.Error("Expected error but got none")
+				} else if tc.errorMsg != "" && !strings.Contains(err.Error(), tc.errorMsg) {
+					t.Errorf("Expected error message to contain '%s', got '%s'", tc.errorMsg, err.Error())
+				}
+			} else {
+				if err != nil {
+					t.Errorf("Expected no error but got: %v", err)
+				}
+			}
+		})
+	}
+}
+
+func TestConfig_ValidateWithRouteParameters(t *testing.T) {
+	t.Run("Config with valid route parameters", func(t *testing.T) {
+		config := &Config{
+			Host: "127.0.0.1",
+			Port: 3456,
+			Providers: []Provider{
+				{
+					Name:       "openai",
+					APIBaseURL: "https://api.openai.com/v1",
+					APIKey:     "sk-test",
+					Models:     []string{"gpt-4"},
+					Enabled:    true,
+				},
+			},
+			Routes: map[string]Route{
+				"default": {
+					Provider: "openai",
+					Model:    "gpt-4",
+					Parameters: map[string]interface{}{
+						"temperature": 0.7,
+						"top_p":       0.9,
+					},
+				},
+				"creative": {
+					Provider: "openai",
+					Model:    "gpt-4",
+					Parameters: map[string]interface{}{
+						"temperature": 1.5,
+						"max_tokens":  4000,
+					},
+				},
+			},
+		}
+
+		err := config.Validate()
+		if err != nil {
+			t.Errorf("Expected no error for config with valid route parameters, got: %v", err)
+		}
+	})
+
+	t.Run("Config with invalid route parameters", func(t *testing.T) {
+		config := &Config{
+			Host: "127.0.0.1",
+			Port: 3456,
+			Providers: []Provider{
+				{
+					Name:       "openai",
+					APIBaseURL: "https://api.openai.com/v1",
+					APIKey:     "sk-test",
+					Models:     []string{"gpt-4"},
+					Enabled:    true,
+				},
+			},
+			Routes: map[string]Route{
+				"invalid": {
+					Provider: "openai",
+					Model:    "gpt-4",
+					Parameters: map[string]interface{}{
+						"temperature": 3.0, // Invalid: above max
+					},
+				},
+			},
+		}
+
+		err := config.Validate()
+		if err == nil {
+			t.Error("Expected error for config with invalid route parameters")
+		} else if !strings.Contains(err.Error(), "temperature must be between 0 and 2") {
+			t.Errorf("Expected error message about temperature range, got: %v", err)
 		}
 	})
 }
