@@ -7,19 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-
 ### ✨ New Features
 
-- improve parameter handling and code quality
-- add route-level parameter configuration
+- **Route-level parameter configuration**: Default parameters (temperature, top_p, max_tokens) can now be set at the route level
+- **Enhanced parameter handling**: Added top_p support to Anthropic transformer and top_k support to Anthropic/Gemini transformers
+- **Explicit provider selection improvements**: Now inherits default route parameters as fallback
 
 ### 🐛 Bug Fixes
 
-- resolve lint error in pipeline.go
+- Fix lint error in pipeline.go - remove unnecessary nil check for map length
+- Add overflow protection for max_tokens type conversion with bounds checking
 
 ### 📚 Documentation
 
-- update CHANGELOG
+- Add comprehensive route parameters documentation with examples
+- Update configuration guide with parameter validation and best practices
+- Create temperature-optimized.json example configuration
+- Update CHANGELOG with complete project history
+
+### 🔧 Other Changes
+
+- Add automatic changelog generation workflow for PRs
+- Add conventional commits validation
+- Update PR template with commit format guidelines
 ## [1.6.0] - 2025-07-23
 
 ### ✨ Features
