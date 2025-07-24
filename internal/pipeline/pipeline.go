@@ -125,7 +125,7 @@ func (p *Pipeline) ProcessRequest(ctx context.Context, req *RequestContext) (*Re
 
 	// 3. Apply route parameters to request body
 	requestBody := req.Body
-	if routingDecision.Parameters != nil && len(routingDecision.Parameters) > 0 {
+	if len(routingDecision.Parameters) > 0 {
 		// Apply parameters to request body
 		if bodyMap, ok := requestBody.(map[string]interface{}); ok {
 			for key, value := range routingDecision.Parameters {
