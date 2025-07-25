@@ -43,7 +43,7 @@ jobs:
         
     - name: Get changed files
       id: changed-files
-      uses: tj-actions/changed-files@v44
+      uses: tj-actions/changed-files@e25e1768529381e31260a5e006f7b342068f8736 # v44
       with:
         files: |
           **/*.go
@@ -54,7 +54,7 @@ jobs:
     
     - name: Check for source code changes
       id: source-changes
-      uses: tj-actions/changed-files@v44
+      uses: tj-actions/changed-files@e25e1768529381e31260a5e006f7b342068f8736 # v44
       with:
         files: |
           **/*.go
@@ -114,7 +114,7 @@ jobs:
         fi
         
         # Other changes
-        OTHERS=$(git log --pretty=format:"%s" origin/$BASE_BRANCH..HEAD | grep -vE "^(feat|fix|docs)(\(.*\))?:")
+        OTHERS=$(git log --pretty=format:"%s" origin/$BASE_BRANCH..HEAD | grep -vE "^(feat|fix|docs)(\(.*\))?:" || true)
         if [ ! -z "$OTHERS" ]; then
           echo "" >> pr-changelog.md
           echo "#### 🔧 Other Changes" >> pr-changelog.md
@@ -174,10 +174,11 @@ jobs:
     - name: Check for changes
       id: check-changes
       run: |
-        if git diff --quiet; then
-          echo "changed=false" >> $GITHUB_OUTPUT
-        else
+        # Use git status to check for changes more reliably
+        if git status --porcelain | grep -q "CHANGELOG.md"; then
           echo "changed=true" >> $GITHUB_OUTPUT
+        else
+          echo "changed=false" >> $GITHUB_OUTPUT
         fi
         
     - name: Commit changelog updates

@@ -195,31 +195,12 @@ has_source_changes() {
         changed_files=$(git diff --name-only --diff-filter=ACMR "${last_tag}"..HEAD)
     fi
     
-    # Check if any non-documentation files have changed
-    while IFS= read -r file; do
-        # Skip if empty line
-        [ -z "$file" ] && continue
-        
-        # Check if it's a source file (not documentation)
-        case "$file" in
-            *.md|docs/*|examples/*.json|.vitepress/*|*_test.go)
-                # Documentation or test file, skip
-                ;;
-            *.go|go.mod|go.sum|Makefile|scripts/*.sh|.github/workflows/*.yml)
-                # Source file found
-                return 0
-                ;;
-            *)
-                # Other file that might be source code
-                if [[ ! "$file" =~ \.(md|txt|json|yaml|yml)$ ]] || [[ "$file" =~ ^(.github/workflows/|scripts/) ]]; then
-                    return 0
-                fi
-                ;;
-        esac
-    done <<< "$changed_files"
-    
-    # No source files changed
-    return 1
+    # Use grep to check if any source files have changed
+    # Return 0 (true) if source files found, 1 (false) if only docs
+    echo "$changed_files" | grep -E '\.(go|mod|sum|sh)$|^Makefile$|^\.github/workflows/.*\.ya?ml$' > /dev/null 2>&1 || {
+        # No direct source files found, check if non-test Go files exist
+        echo "$changed_files" | grep -E '\.go$' | grep -v '_test\.go$' > /dev/null 2>&1
+    }
 }
 
 # Analyze commits since last tag to determine version bump

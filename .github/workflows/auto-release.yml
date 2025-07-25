@@ -63,7 +63,7 @@ jobs:
 
     - name: Check for source code changes
       id: check_source_changes
-      uses: tj-actions/changed-files@v44
+      uses: tj-actions/changed-files@e25e1768529381e31260a5e006f7b342068f8736 # v44
       with:
         files: |
           **/*.go
@@ -103,8 +103,15 @@ jobs:
         VERSION_TYPE="${{ github.event.inputs.version_type || 'auto' }}"
         
         # Check if we need a version bump
-        CURRENT_VERSION=$(./scripts/version.sh current)
-        SUGGESTED_BUMP=$(./scripts/version.sh suggest | grep "Suggested bump:" | cut -d' ' -f3)
+        CURRENT_VERSION=$(./scripts/version.sh current || echo "0.0.0")
+        if [ -z "$CURRENT_VERSION" ]; then
+          echo "::error::Failed to get current version"
+          exit 1
+        fi
+        
+        # Get suggested bump with error handling
+        SUGGEST_OUTPUT=$(./scripts/version.sh suggest || echo "")
+        SUGGESTED_BUMP=$(echo "$SUGGEST_OUTPUT" | grep "Suggested bump:" | cut -d' ' -f3 || echo "none")
         
         echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
         echo "suggested_bump=$SUGGESTED_BUMP" >> $GITHUB_OUTPUT
