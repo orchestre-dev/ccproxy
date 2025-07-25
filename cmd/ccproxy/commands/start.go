@@ -111,9 +111,16 @@ func StartCmd() *cobra.Command {
 
 // runInForeground runs the server in the foreground
 func runInForeground(cfg *config.Config, pidManager *process.PIDManager, configPath string) error {
-	// Acquire lock
+	// Acquire exclusive lock to write PID
 	if err := pidManager.AcquireLock(); err != nil {
 		return fmt.Errorf("failed to acquire lock: %w", err)
+	}
+
+	// Downgrade to shared lock so other commands can read the PID
+	if err := pidManager.AcquireSharedLock(); err != nil {
+		// If we can't downgrade, release the lock and fail
+		_ = pidManager.ReleaseLock()
+		return fmt.Errorf("failed to acquire shared lock: %w", err)
 	}
 
 	// Set up signal handling for graceful shutdown

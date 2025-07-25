@@ -256,6 +256,36 @@ func (pm *PIDManager) AcquireLock() error {
 	return nil
 }
 
+// AcquireSharedLock downgrades from exclusive to shared lock after PID is written
+func (pm *PIDManager) AcquireSharedLock() error {
+	// Check if flock is initialized
+	if pm.flock == nil {
+		return fmt.Errorf("PID file locking not available")
+	}
+
+	pm.mu.Lock()
+	defer pm.mu.Unlock()
+
+	// First unlock the exclusive lock
+	if err := pm.flock.Unlock(); err != nil {
+		return fmt.Errorf("failed to unlock exclusive lock: %w", err)
+	}
+
+	// Then acquire a shared lock
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	locked, err := pm.flock.TryRLockContext(ctx, time.Millisecond*100)
+	if err != nil {
+		return fmt.Errorf("failed to acquire shared lock: %w", err)
+	}
+	if !locked {
+		return fmt.Errorf("could not acquire shared lock")
+	}
+
+	return nil
+}
+
 // ReleaseLock releases the lock by removing PID file
 func (pm *PIDManager) ReleaseLock() error {
 	// Check if flock is initialized - never allow unsafe release
