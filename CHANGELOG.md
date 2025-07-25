@@ -8,6 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 
+### 🐛 Bug Fixes
+
+- update tj-actions/changed-files to v46 to fix security issue
+- address code review comments and fix changelog generation
+- only trigger releases for source code changes
+
+### 📚 Documentation
+
+- add CONTRIBUTING.md with release process documentation
+
 ### ✨ New Features
 
 - improve parameter handling and code quality
