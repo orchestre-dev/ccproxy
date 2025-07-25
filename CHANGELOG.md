@@ -291,3 +291,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - add Qwen3-Coder blog post and configuration examples
 
+## [1.8.1] - 2025-07-25
+
+### 🐛 Bug Fixes
+
+- add Qwen3-Coder blog post to index and sidebar
+
