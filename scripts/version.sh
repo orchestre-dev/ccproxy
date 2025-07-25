@@ -183,10 +183,55 @@ increment_version() {
     echo "${major}.${minor}.${patch}"
 }
 
+# Check if only documentation files have changed since last tag
+has_source_changes() {
+    local last_tag
+    last_tag=$(get_latest_tag)
+    
+    local changed_files
+    if [ "$last_tag" = "v0.0.0" ]; then
+        changed_files=$(git diff --name-only --diff-filter=ACMR HEAD)
+    else
+        changed_files=$(git diff --name-only --diff-filter=ACMR "${last_tag}"..HEAD)
+    fi
+    
+    # Check if any non-documentation files have changed
+    while IFS= read -r file; do
+        # Skip if empty line
+        [ -z "$file" ] && continue
+        
+        # Check if it's a source file (not documentation)
+        case "$file" in
+            *.md|docs/*|examples/*.json|.vitepress/*|*_test.go)
+                # Documentation or test file, skip
+                ;;
+            *.go|go.mod|go.sum|Makefile|scripts/*.sh|.github/workflows/*.yml)
+                # Source file found
+                return 0
+                ;;
+            *)
+                # Other file that might be source code
+                if [[ ! "$file" =~ \.(md|txt|json|yaml|yml)$ ]] || [[ "$file" =~ ^(.github/workflows/|scripts/) ]]; then
+                    return 0
+                fi
+                ;;
+        esac
+    done <<< "$changed_files"
+    
+    # No source files changed
+    return 1
+}
+
 # Analyze commits since last tag to determine version bump
 analyze_commits() {
     local last_tag
     last_tag=$(get_latest_tag)
+    
+    # First check if there are any source code changes
+    if ! has_source_changes; then
+        echo "none"
+        return
+    fi
     
     local commits
     if [ "$last_tag" = "v0.0.0" ]; then
@@ -521,7 +566,11 @@ main() {
                 next_version=$(increment_version "$current_version" "$suggested_type")
                 echo "Next version: $next_version"
             else
-                echo "No version bump needed"
+                if ! has_source_changes; then
+                    echo "No version bump needed (only documentation changes)"
+                else
+                    echo "No version bump needed"
+                fi
             fi
             ;;
             
