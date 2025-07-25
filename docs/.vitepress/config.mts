@@ -141,9 +141,10 @@ export default withMermaid(defineConfig({
           text: 'Blog Posts',
           items: [
             { text: 'All Posts', link: '/blog/' },
+            { text: '🚀 Qwen3-Coder Setup', link: '/blog/qwen3-coder-claude-code' },
             { text: '🎉 v1.0 Release: Use Any Model', link: '/blog/use-any-ai-model-with-claude-code' },
-            { text: '🔥 Kimi K2 Guide', link: '/blog/kimi-k2-claude-code-ultimate-guide' },
             { text: 'Qwen3 235B: Top Model', link: '/blog/qwen3-235b-top-model' },
+            { text: '🔥 Kimi K2 Guide', link: '/blog/kimi-k2-claude-code-ultimate-guide' },
             { text: 'OpenAI Integration', link: '/blog/openai-claude-code-integration' },
             { text: 'Google Gemini Guide', link: '/blog/google-gemini-claude-code-multimodal' },
             { text: 'Mistral AI & Privacy', link: '/blog/mistral-ai-claude-code-privacy-first' },
