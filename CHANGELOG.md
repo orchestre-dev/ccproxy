@@ -285,3 +285,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ci: add automatic changelog generation
 - chore: update changelog for PR #29
 
+## [1.8.0] - 2025-07-25
+
+### ✨ Features
+
+- add Qwen3-Coder blog post and configuration examples
+
