@@ -1,5 +1,16 @@
 name: Auto Release on Main
 
+# This workflow automatically creates releases when source code changes are pushed to main.
+# It will NOT create releases for:
+# - Documentation-only changes (*.md files, docs/ directory)
+# - Example configuration changes (examples/ directory)
+# - Test file changes (*_test.go)
+# - VitePress/blog changes (.vitepress/ directory)
+# 
+# Releases are only created when:
+# 1. Source code files are modified (*.go, go.mod, go.sum, Makefile, scripts/, workflows/)
+# 2. AND conventional commits indicate a version bump is needed (feat:, fix:, or BREAKING CHANGE:)
+
 on:
   push:
     branches: [ main ]
@@ -50,6 +61,24 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-go-
 
+    - name: Check for source code changes
+      id: check_source_changes
+      uses: tj-actions/changed-files@v46
+      with:
+        files: |
+          **/*.go
+          go.mod
+          go.sum
+          Makefile
+          scripts/*.sh
+          .github/workflows/*.yml
+        files_ignore: |
+          docs/**
+          **/*.md
+          examples/**/*.json
+          .vitepress/**
+          **/*_test.go
+
     - name: Install dependencies
       run: |
         go mod download
@@ -63,12 +92,26 @@ jobs:
     - name: Check for version bump needed
       id: check_version
       run: |
+        # First check if there are any source code changes
+        if [ "${{ steps.check_source_changes.outputs.any_changed }}" != "true" ]; then
+          echo "needs_release=false" >> $GITHUB_OUTPUT
+          echo "No source code changes detected, skipping release"
+          exit 0
+        fi
+        
         # Get the version bump type
         VERSION_TYPE="${{ github.event.inputs.version_type || 'auto' }}"
         
         # Check if we need a version bump
-        CURRENT_VERSION=$(./scripts/version.sh current)
-        SUGGESTED_BUMP=$(./scripts/version.sh suggest | grep "Suggested bump:" | cut -d' ' -f3)
+        CURRENT_VERSION=$(./scripts/version.sh current || echo "0.0.0")
+        if [ -z "$CURRENT_VERSION" ]; then
+          echo "::error::Failed to get current version"
+          exit 1
+        fi
+        
+        # Get suggested bump with error handling
+        SUGGEST_OUTPUT=$(./scripts/version.sh suggest || echo "")
+        SUGGESTED_BUMP=$(echo "$SUGGEST_OUTPUT" | grep "Suggested bump:" | cut -d' ' -f3 || echo "none")
         
         echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
         echo "suggested_bump=$SUGGESTED_BUMP" >> $GITHUB_OUTPUT
@@ -215,7 +258,16 @@ jobs:
       run: |
         echo "## ℹ️ No Release Needed" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        echo "No conventional commits requiring a version bump were found since the last release." >> $GITHUB_STEP_SUMMARY
+        if [ "${{ steps.check_source_changes.outputs.any_changed }}" != "true" ]; then
+          echo "Only documentation or non-source files were changed. No release is required." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Changed files that don't trigger releases:" >> $GITHUB_STEP_SUMMARY
+          echo "- Documentation files (*.md, docs/*)" >> $GITHUB_STEP_SUMMARY
+          echo "- Example configurations (examples/)" >> $GITHUB_STEP_SUMMARY
+          echo "- Test files (*_test.go)" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "No conventional commits requiring a version bump were found since the last release." >> $GITHUB_STEP_SUMMARY
+        fi
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "**Current version**: ${{ steps.check_version.outputs.current_version }}" >> $GITHUB_STEP_SUMMARY
 

@@ -183,10 +183,36 @@ increment_version() {
     echo "${major}.${minor}.${patch}"
 }
 
+# Check if only documentation files have changed since last tag
+has_source_changes() {
+    local last_tag
+    last_tag=$(get_latest_tag)
+    
+    local changed_files
+    if [ "$last_tag" = "v0.0.0" ]; then
+        changed_files=$(git diff --name-only --diff-filter=ACMR HEAD)
+    else
+        changed_files=$(git diff --name-only --diff-filter=ACMR "${last_tag}"..HEAD)
+    fi
+    
+    # Use grep to check if any source files have changed
+    # Return 0 (true) if source files found, 1 (false) if only docs
+    echo "$changed_files" | grep -E '\.(go|mod|sum|sh)$|^Makefile$|^\.github/workflows/.*\.ya?ml$' > /dev/null 2>&1 || {
+        # No direct source files found, check if non-test Go files exist
+        echo "$changed_files" | grep -E '\.go$' | grep -v '_test\.go$' > /dev/null 2>&1
+    }
+}
+
 # Analyze commits since last tag to determine version bump
 analyze_commits() {
     local last_tag
     last_tag=$(get_latest_tag)
+    
+    # First check if there are any source code changes
+    if ! has_source_changes; then
+        echo "none"
+        return
+    fi
     
     local commits
     if [ "$last_tag" = "v0.0.0" ]; then
@@ -521,7 +547,11 @@ main() {
                 next_version=$(increment_version "$current_version" "$suggested_type")
                 echo "Next version: $next_version"
             else
-                echo "No version bump needed"
+                if ! has_source_changes; then
+                    echo "No version bump needed (only documentation changes)"
+                else
+                    echo "No version bump needed"
+                fi
             fi
             ;;
             
