@@ -313,3 +313,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - correct blog post chronological ordering on index page
 
+## [1.8.3] - 2025-07-25
+
+### 🐛 Bug Fixes
+
+- only trigger releases for source code changes
+- address code review comments and fix changelog generation
+- update tj-actions/changed-files to v46 to fix security issue
+
+### 🔧 Other Changes
+
+- docs: add CONTRIBUTING.md with release process documentation
+- chore: update changelog for PR #31
+
