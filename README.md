@@ -1,4 +1,11 @@
-# CCProxy
+# CCProxy - ARCHIVED
+
+> [!IMPORTANT]
+> **This project is archived and no longer maintained.** The repository is kept for historical reference only.
+> 
+> **Status:** 🗄️ ARCHIVED - No longer supported
+
+---
 
 [![CI](https://github.com/orchestre-dev/ccproxy/actions/workflows/ci.yml/badge.svg)](https://github.com/orchestre-dev/ccproxy/actions/workflows/ci.yml)
 [![Release](https://github.com/orchestre-dev/ccproxy/actions/workflows/release.yml/badge.svg)](https://github.com/orchestre-dev/ccproxy/actions/workflows/release.yml)
@@ -6,7 +13,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Documentation](https://img.shields.io/badge/docs-ccproxy.orchestre.dev-blue)](https://ccproxy.orchestre.dev)
 
-A proxy that enables Claude Code to work with multiple AI providers (OpenAI, Google Gemini, DeepSeek, OpenRouter).
+A proxy that enabled Claude Code to work with multiple AI providers (OpenAI, Google Gemini, DeepSeek, OpenRouter).
 
 📚 **[Documentation](https://ccproxy.orchestre.dev)** | 🐛 **[Issues](https://github.com/orchestre-dev/ccproxy/issues)** | 💬 **[Discussions](https://github.com/orchestre-dev/ccproxy/discussions)**
 
@@ -106,3 +113,11 @@ MIT License - see [LICENSE](LICENSE) file.
 ## Acknowledgments
 
 Inspired by [Claude Code Router](https://github.com/musistudio/claude-router).
+
+---
+
+> [!WARNING]
+> **Project Status: ARCHIVED**
+> 
+> This project is no longer actively maintained. No new features, bug fixes, or security updates will be provided.
+> The code remains available for reference purposes only.
