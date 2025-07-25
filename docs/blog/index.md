@@ -12,6 +12,11 @@ Welcome to the CCProxy blog! Here you'll find expert guides, tutorials, and insi
 
 ## Latest Posts
 
+### [Using Qwen3-Coder with Claude Code: The Ultimate AI Coding Setup](/blog/qwen3-coder-claude-code)
+*July 25, 2025*
+
+Alibaba just dropped Qwen3-Coder, a massive 480B-parameter model that's setting new benchmarks. Learn how to integrate this powerful open-source coding AI with Claude Code using CCProxy for the ultimate development experience.
+
 ### [Use Any AI Model with Claude Code - CCProxy v1.0 Release](/blog/use-any-ai-model-with-claude-code)
 *July 22, 2025*
 
@@ -21,11 +26,6 @@ CCProxy Version 1.0 is here! Keep using Claude Code while accessing OpenAI model
 *July 22, 2025*
 
 Alibaba's Qwen3 235B shatters benchmarks with a 70.3 AIME score, crushing GPT-4o's 26.7. Learn how to access this game-changing model for FREE through CCProxy and OpenRouter.
-
-### [Using Qwen3-Coder with Claude Code: The Ultimate AI Coding Setup](/blog/qwen3-coder-claude-code)
-*July 25, 2025*
-
-Alibaba just dropped Qwen3-Coder, a massive 480B-parameter model that's setting new benchmarks. Learn how to integrate this powerful open-source coding AI with Claude Code using CCProxy for the ultimate development experience.
 
 ### [Claude Code Reliability Challenges: Why We Built a Backup Solution](/blog/claude-code-reliability-challenges-solution)
 *July 17, 2025*
