@@ -1,0 +1,87 @@
+{
+  "host": "127.0.0.1",
+  "port": 3456,
+  "log": false,
+  "providers": [
+    {
+      "name": "openrouter",
+      "api_key": "${OPENROUTER_API_KEY}",
+      "api_base_url": "https://openrouter.ai/api/v1",
+      "models": ["qwen/qwen3-coder", "qwen/qwen3-coder:free"],
+      "enabled": true
+    }
+  ],
+  "routes": {
+    "default": {
+      "provider": "openrouter",
+      "model": "qwen/qwen3-coder:free",
+      "parameters": {
+        "temperature": 0.2,
+        "max_tokens": 4000
+      }
+    },
+    "longContext": {
+      "provider": "openrouter",
+      "model": "qwen/qwen3-coder:free",
+      "parameters": {
+        "temperature": 0.1,
+        "max_tokens": 8000
+      }
+    },
+    "background": {
+      "provider": "openrouter",
+      "model": "qwen/qwen3-coder:free",
+      "parameters": {
+        "temperature": 0.1,
+        "max_tokens": 2000
+      }
+    },
+    "think": {
+      "provider": "openrouter",
+      "model": "qwen/qwen3-coder:free",
+      "parameters": {
+        "temperature": 0.5,
+        "max_tokens": 8000
+      }
+    },
+    "claude-3-5-haiku-20241022": {
+      "provider": "openrouter",
+      "model": "qwen/qwen3-coder:free",
+      "parameters": {
+        "temperature": 0.1,
+        "max_tokens": 2000
+      }
+    },
+    "claude-3-5-sonnet-20241022": {
+      "provider": "openrouter",
+      "model": "qwen/qwen3-coder:free",
+      "parameters": {
+        "temperature": 0.3,
+        "max_tokens": 4000
+      }
+    },
+    "claude-opus-4": {
+      "provider": "openrouter",
+      "model": "qwen/qwen3-coder:free",
+      "parameters": {
+        "temperature": 0.2,
+        "max_tokens": 8000
+      }
+    },
+    "claude-sonnet-4": {
+      "provider": "openrouter",
+      "model": "qwen/qwen3-coder:free",
+      "parameters": {
+        "temperature": 0.3,
+        "max_tokens": 6000
+      }
+    }
+  },
+  "performance": {
+    "request_timeout": "60s",
+    "max_request_body_size": 10485760,
+    "metrics_enabled": false,
+    "rate_limit_enabled": false,
+    "circuit_breaker_enabled": true
+  }
+}

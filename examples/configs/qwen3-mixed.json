@@ -1,0 +1,77 @@
+{
+  "host": "127.0.0.1",
+  "port": 3456,
+  "log": true,
+  "providers": [
+    {
+      "name": "openrouter",
+      "api_key": "${OPENROUTER_API_KEY}",
+      "api_base_url": "https://openrouter.ai/api/v1",
+      "models": [
+        "qwen/qwen3-coder",
+        "qwen/qwen3-coder:free",
+        "anthropic/claude-sonnet-4-20250720",
+        "anthropic/claude-opus-4-20250720",
+        "openai/gpt-4.1",
+        "openai/gpt-4.1-turbo"
+      ],
+      "enabled": true
+    }
+  ],
+  "routes": {
+    "default": {
+      "provider": "openrouter",
+      "model": "qwen/qwen3-coder",
+      "parameters": {
+        "temperature": 0.3,
+        "max_tokens": 8000
+      }
+    },
+    "longContext": {
+      "provider": "openrouter",
+      "model": "qwen/qwen3-coder",
+      "parameters": {
+        "temperature": 0.1,
+        "max_tokens": 32000
+      }
+    },
+    "think": {
+      "provider": "openrouter",
+      "model": "anthropic/claude-sonnet-4-20250720",
+      "parameters": {
+        "temperature": 0.5
+      }
+    },
+    "background": {
+      "provider": "openrouter",
+      "model": "openai/gpt-4.1-turbo",
+      "parameters": {
+        "temperature": 0.2,
+        "max_tokens": 2000
+      }
+    },
+    "claude-3-5-haiku-20241022": {
+      "provider": "openrouter",
+      "model": "qwen/qwen3-coder:free",
+      "parameters": {
+        "temperature": 0.1,
+        "max_tokens": 4000
+      }
+    },
+    "claude-opus-4": {
+      "provider": "openrouter",
+      "model": "qwen/qwen3-coder",
+      "parameters": {
+        "temperature": 0.2,
+        "max_tokens": 16000
+      }
+    }
+  },
+  "performance": {
+    "request_timeout": "120s",
+    "max_request_body_size": 20971520,
+    "metrics_enabled": true,
+    "rate_limit_enabled": false,
+    "circuit_breaker_enabled": true
+  }
+}
