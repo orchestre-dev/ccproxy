@@ -1,0 +1,47 @@
+{
+  "host": "127.0.0.1",
+  "port": 3456,
+  "log": true,
+  "providers": [
+    {
+      "name": "openrouter",
+      "api_key": "${OPENROUTER_API_KEY}",
+      "api_base_url": "https://openrouter.ai/api/v1",
+      "models": ["qwen/qwen3-coder", "qwen/qwen3-coder:free"],
+      "enabled": true
+    }
+  ],
+  "routes": {
+    "default": {
+      "provider": "openrouter",
+      "model": "qwen/qwen3-coder",
+      "parameters": {
+        "temperature": 0.2,
+        "max_tokens": 8000
+      }
+    },
+    "longContext": {
+      "provider": "openrouter",
+      "model": "qwen/qwen3-coder",
+      "parameters": {
+        "temperature": 0.1,
+        "max_tokens": 16000
+      }
+    },
+    "background": {
+      "provider": "openrouter",
+      "model": "qwen/qwen3-coder:free",
+      "parameters": {
+        "temperature": 0.3,
+        "max_tokens": 4000
+      }
+    }
+  },
+  "performance": {
+    "request_timeout": "120s",
+    "max_request_body_size": 20971520,
+    "metrics_enabled": true,
+    "rate_limit_enabled": false,
+    "circuit_breaker_enabled": true
+  }
+}

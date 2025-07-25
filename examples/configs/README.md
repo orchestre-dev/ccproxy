@@ -32,6 +32,27 @@ Maximum cost efficiency with mini models.
 - **Thinking**: O1-mini
 - **Background**: O4-mini
 
+### 5. `qwen3-coder.json` - Qwen3-Coder Standalone
+Alibaba's powerful 480B parameter coding model (July 2025).
+- **Default**: qwen3-coder-plus (optimized for code generation)
+- **Long context**: Up to 256K tokens native support
+- **Background**: Same model with reduced token limits
+- Excellent performance matching Claude-Sonnet-4
+
+### 6. `qwen3-mixed.json` - Qwen3-Coder Multi-Provider
+Combines Qwen3-Coder with other providers for flexibility.
+- **Default**: Qwen3-Coder (cost-effective primary model)
+- **Thinking**: Claude-Sonnet-4 for complex reasoning
+- **Background**: GPT-4.1-turbo for quick tasks
+- Maps Claude model requests to Qwen3-Coder for cost savings
+
+### 7. `qwen3-budget.json` - Ultra Cost-Optimized with Qwen3-Coder
+Maximum cost savings using Qwen3-Coder for all routes.
+- All Claude model requests routed to Qwen3-Coder
+- Optimized token limits for each use case
+- Perfect for development and testing environments
+- Significant cost reduction while maintaining quality
+
 ## Quick Start
 
 1. Copy your desired configuration:
@@ -69,6 +90,13 @@ Maximum cost efficiency with mini models.
 - **O4-mini**: Latest mini model for general tasks
 - **O4-mini-high**: Enhanced mini model for code
 
+### Qwen3-Coder Series
+- **qwen3-coder-plus**: 480B parameter MoE model (35B active)
+- **256K context window**: Native support, expandable to 1M
+- **119 languages**: Comprehensive programming language support
+- **69.6% SWE-bench**: Near parity with Claude-Sonnet-4 (70.4%)
+- **Cost-effective**: Open-source with competitive pricing
+
 ## Routing Logic
 
 CCProxy automatically routes requests based on:
@@ -93,5 +121,6 @@ export CCPROXY_PORT=3456
 export CCPROXY_HOST=127.0.0.1
 export CCPROXY_API_KEY="your-auth-key"
 export OPENAI_API_KEY="sk-openai-key"        # Auto-detected by provider name
+export OPENROUTER_API_KEY="sk-or-v1-your-key" # For OpenRouter models including Qwen3-Coder
 # Or use indexed format: export CCPROXY_PROVIDERS_0_API_KEY="sk-openai-key"
 ```
