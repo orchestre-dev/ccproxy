@@ -297,3 +297,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - add Qwen3-Coder blog post to index and sidebar
 
+## [1.8.2] - 2025-07-25
+
+### 🐛 Bug Fixes
+
+- correct blog post chronological ordering on index page
+
